@@ -1,0 +1,14 @@
+//tsconfig.json
+{
+  "files": [],
+  "references": [{ "path": "packages/db" }, { "path": "packages/auth" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@acme/db": ["packages/db/src/index.ts"],
+      "@acme/auth": ["packages/auth/index.ts"],
+      "@acme/utils": ["packages/utils"],
+      "@acme/ui": ["packages/ui"]
+    }
+  }
+}

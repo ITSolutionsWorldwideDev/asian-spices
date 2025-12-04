@@ -5,7 +5,12 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@acme/ui": ["../../packages/ui"],
+      "@acme/utils": ["../../packages/utils"],
+      "@acme/db": ["../../packages/db"]
+    }
   },
   "include": [
     "**/*.ts",

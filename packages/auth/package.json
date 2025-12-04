@@ -1,0 +1,9 @@
+{
+  "name": "@acme/auth",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "types": "./next-auth.d.ts"
+}

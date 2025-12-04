@@ -9,6 +9,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@types/pg": "^8.15.6",
     "prettier": "^3.6.2",
     "turbo": "^2.6.2",
     "typescript": "5.9.2"
@@ -20,5 +21,13 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/client": "^7.1.0",
+    "bcryptjs": "^3.0.3",
+    "next-auth": "^4.24.13",
+    "pg": "^8.16.3",
+    "prisma": "^7.1.0"
+  }
 }
