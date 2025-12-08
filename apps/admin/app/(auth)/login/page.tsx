@@ -1,18 +1,8 @@
-import { signIn } from "next-auth/react";
+// apps/admin/app/(auth)/login/page.tsx
+import SigninTwoComponent from "@/components/pages/login/signinTwo";
 
-export default function Login() {
-  return (
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const email = (e.target as any).email.value;
-        const password = (e.target as any).password.value;
-        await signIn("credentials", { email, password, callbackUrl: "/dashboard" });
-      }}
-    >
-      <input name="email" type="email" />
-      <input name="password" type="password" />
-      <button type="submit">Login</button>
-    </form>
-  );
+export default function Signin2(){
+    return(
+        <><SigninTwoComponent /></>
+    )
 }
