@@ -1,4 +1,48 @@
-:root {
+@import "tailwindcss";
+
+
+@keyframes color-cycle {
+  0%, 25% {
+    /* Step 1: ONE (Yellow) */
+    --color-one: #facc15; /* yellow-400 */
+    --color-two: white; /* slate-400 (default) */
+    --color-three: white;
+    --color-four: white;
+  }
+  26%, 50% {
+    /* Step 2: SPICE (Red) */
+    --color-one: white;
+    --color-two: #ef4444; /* red-500 */
+    --color-three: white;
+    --color-four: white;
+  }
+  51%, 75% {
+    /* Step 3: AT A (Black) */
+    --color-one: white;
+    --color-two: white;
+    --color-three: #000000; /* black */
+    --color-four: white;
+  }
+  76%, 100% {
+    /* Step 4: TIME (Yellow) */
+    --color-one: white;
+    --color-two: white;
+    --color-three: white;
+    --color-four: #facc15; /* yellow-400 */
+  }
+}
+
+/* Define a utility class to use the animation */
+.animate-color-cycle {
+  animation: color-cycle 4s infinite; /* 4 seconds duration, infinite loop */
+}
+
+
+.fire-icon-animated {
+  animation: pulse-fire 1s infinite alternate; /* Example: pulsing animation */
+}
+/* @source "../../packages/ui*.{js,ts,jsx,tsx,mdx}"; */
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -47,4 +91,4 @@ a {
   .imgDark {
     display: unset;
   }
-}
+} */
