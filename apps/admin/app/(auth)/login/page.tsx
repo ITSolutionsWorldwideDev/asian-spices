@@ -1,8 +1,8 @@
 // apps/admin/app/(auth)/login/page.tsx
-import SigninTwoComponent from "@/components/pages/login/signinTwo";
+import SigninComponent from "@/components/pages/login/signin";
 
-export default function Signin2(){
+export default function Signin(){
     return(
-        <><SigninTwoComponent /></>
+        <><SigninComponent /></>
     )
 }

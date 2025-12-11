@@ -25,6 +25,8 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
+        console.log('credentials ==== ',credentials);
+
         const result = await runQuery(
           `SELECT * FROM "User" WHERE email = $1 LIMIT 1`,
           [credentials.email]
