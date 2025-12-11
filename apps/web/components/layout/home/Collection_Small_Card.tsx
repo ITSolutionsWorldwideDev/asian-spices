@@ -1,6 +1,6 @@
 import Image from "next/image";
 // import { ArrowRight } from "lucide-react";
-import CollectionText from "./Collection_Text";
+import CollectionText from "../../ui/HeadingDescription";
 import TextOverCollectionCard from "./Text_Over_Collection_Card";
 
 interface CardProps {

@@ -10,7 +10,7 @@ interface FlashSaleProduct {
   price: number;
   oldPrice: number;
   off: string;
-  left: string;
+  left: number;
   save: string;
   description: string;
   qualities: string[];
@@ -31,7 +31,7 @@ const FlashSaleProductCard = () => {
       price: 39.99,
       oldPrice: 69.99,
       off: "43% OFF",
-      left: "Only 12 Left!",
+      left: 12,
       save: "$30.00",
       description:
         "Premium saffron, known as the “king of spices” or “red gold,” is a rare and valuable spice harvested from the Crocus sativus flower requiring about 75,000 blossoms for just one pound. Its rich aroma and vibrant color make it a prized ingredient in gourmet dishes, traditional remedies for mood and digestion, and luxury skincare for its soothing and brightening effects.",
@@ -54,7 +54,7 @@ const FlashSaleProductCard = () => {
       price: 14.99,
       oldPrice: 24.99,
       off: "43% OFF",
-      left: "Only 24 Left!",
+       left: 12,
       save: "$10.00",
       description:
         "Premium saffron, known as the “king of spices” or “red gold,” is a rare and valuable spice harvested from the Crocus sativus flower requiring about 75,000 blossoms for just one pound. Its rich aroma and vibrant color make it a prized ingredient in gourmet dishes, traditional remedies for mood and digestion, and luxury skincare for its soothing and brightening effects.",
@@ -76,7 +76,7 @@ const FlashSaleProductCard = () => {
       price: 11.99,
       oldPrice: 19.99,
       off: "43% OFF",
-      left: "Only 18 Left!",
+       left: 12,
       save: "$8.00",
       description:
         "Premium saffron, known as the “king of spices” or “red gold,” is a rare and valuable spice harvested from the Crocus sativus flower requiring about 75,000 blossoms for just one pound. Its rich aroma and vibrant color make it a prized ingredient in gourmet dishes, traditional remedies for mood and digestion, and luxury skincare for its soothing and brightening effects.",
@@ -93,25 +93,25 @@ const FlashSaleProductCard = () => {
     },
   ];
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 ">
       {FalshSaleProducts.map((item) => (
         <div
           key={item.id}
-          className="bg-white text-black rounded-2xl p-5 shadow-lg"
+          className="bg-white text-black rounded-2xl p-5 shadow-lg relative"
         >
           {/* Image */}
           <div className="relative ">
             <span className="absolute z-20 top-3 left-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
               {item.off}
             </span>
-            <span className="absolute bottom-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded-full">
-              {item.left}
+            <span className="absolute bottom-3 z-50 right-3 bg-white/90 text-black text-xs px-2 py-1 rounded-full">
+              only {item.left} left!
             </span>
 
             <div
               className="relative h-48 w-full overflow-hidden rounded-xl  cursor-pointer"
               onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
+             
             >
               <Image
                 src={`/assets/home/hot_sale/${item.image}`}
@@ -141,11 +141,11 @@ const FlashSaleProductCard = () => {
           </button>
 
           <div
-            className={`absolute top-[-20] left-0  h-full   rounded-2xl transition-transform duration-300 ${
+            className={`absolute -top-1/4 left-0  h-full   rounded-2xl transition-transform duration-300 ${
               hoveredId === item.id ? "translate-x-0" : "hidden"
             } z-50`}
           >
-            {item &&  <Flash_Sale_Hover_product_Card item={item}/>}
+            {item &&  <Flash_Sale_Hover_product_Card item={item} setHoveredId={setHoveredId}/>}
           </div>
         </div>
       ))}
