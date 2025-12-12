@@ -6,7 +6,7 @@ import ReviewsCard from "../layout/reviews/ReviewsCard";
 const Reviews = () => {
  
   return (
-    <section className=" container mx-auto bg-gray-100  mt-20">
+    <section className=" container mx-auto   p-20">
       <HeadingDescription
         heading="Customer Reviews"
         text="Love by Food Enthisiasts"

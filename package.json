@@ -83,11 +83,9 @@
     "react-dom": "^19.2.1",
     "react-feather": "^2.0.10",
     "react-icons": "^5.5.0",
-<<<<<<< HEAD
     "sass": "^1.94.2",
     "swiper": "^12.0.3",
-    "tailwindcss": "^4.1.17"
-=======
+    "tailwindcss": "^4.1.17",
     "react-perfect-scrollbar": "^1.5.8",
     "react-select": "^5.10.2",
     "react-slick": "^0.31.0",
@@ -97,6 +95,5 @@
     "weather-icons-react": "^1.2.0",
     "yet-another-react-lightbox": "^3.27.0",
     "zustand": "^5.0.9"
->>>>>>> f279215d64a420e88d35cbe82801ecefb7ffada9
   }
 }

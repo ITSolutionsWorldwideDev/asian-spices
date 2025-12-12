@@ -5,12 +5,17 @@ import Image from "next/image";
 
 const RegisterOnApp: React.FC = () => {
   return (
-    <section className=" relative container mx-auto  bg-linear-to-r from-orange-600 to-orange-300 sm:p-12 rounded-2xl mt-20  ">
+    <section className=" relative container mx-auto  bg-linear-to-r from-orange-600 to-orange-300  rounded-2xl mt-20  w-full ">
+      
       <div className="absolute inset-0 z-0 ">
         <div className="absolute opacity-5 inset-0 left-[30%] -top-[15%] h-[650] transform bg-[url('/assets/register_on_app/e4eed2a3a2c9a2ea3fec21ad0e3ce66d0ca86b12.png')] bg-contain bg-no-repeat "></div>
       </div>
 
-      <div className=" relative z-10 mx-auto flex  flex-col items-center justify-between lg:flex-row ">
+
+<div className="grid grid-cols-2">
+
+</div>
+      <div className="  relative z-20 mx-auto flex  flex-col items-center justify-between lg:flex-row p-10">
         <div className="mb-10 text-center lg:mb-0  lg:text-left">
           <h1 className="text-4xl font-bold text-black md:text-5xl lg:text-7xl leading-tight mb-6">
             Be the First to <span className="text-white">Experience </span>
@@ -60,19 +65,23 @@ const RegisterOnApp: React.FC = () => {
           </button>
         </div>
 
-        <div className=" justify-center lg:w-1/2 lg:justify-end hidden lg:flex ">
-          <div className="absolute   2xl:top-[-60%] 2xl:right-[-10%] md:visible lg:-top-[10%] lg:right-[-30%] ">
-            <Image
-              src={`/assets/register_on_app/88fdffcdc0c5b90c8535fa35bc3156993880fd35.png`} // Use the combined image of the phone and the app
-              alt="Mr. Nana Mobile App Screenshot"
-              height={1000}
-              width={1000}
-              objectFit="contain"
-              priority
-              className="drop-shadow-2xl "
-            />
-          </div>
+        {/* */}
+
+        <div className=" justify-center  2xl:justify-end hidden 2xl:flex ">
+        <div className="absolute   2xl:top-[-30%] 2xl:right-[0%] md:visible lg:-top-[20%] lg:right-[-30%] ">
+          <Image
+            src={`/assets/register_on_app/88fdffcdc0c5b90c8535fa35bc3156993880fd35.png`}
+            alt="Mr. Nana Mobile App Screenshot"
+            height={900}
+            width={900}
+            objectFit="contain"
+            priority
+            className="drop-shadow-2xl "
+          />
         </div>
+      </div>
+
+        {/* </div> */}
       </div>
     </section>
   );
