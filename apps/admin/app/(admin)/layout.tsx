@@ -1,13 +1,15 @@
+// apps/admin/app/(admin)/layout.tsx
 "use client";
 
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
-import CommonFooter from "@/components/footer";
+import Footer from "@/components/footer";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import "../layout.css";
+// import "../globals.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
@@ -26,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Header />
       <Sidebar />
       <main>{children}</main>
-      <CommonFooter />
+      <Footer />
     </div>
   );
 }

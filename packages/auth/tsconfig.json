@@ -1,4 +1,15 @@
+// packages/auth/tsconfig.json
 {
   "extends": "../../tsconfig.json",
-  "include": ["./", "next-auth.d.ts"]
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"],
+  // "include": [
+  //   "src",
+  //   "types/**/*.d.ts"
+  // ]
+  // "include": ["./", "next-auth.d.ts"]
 }

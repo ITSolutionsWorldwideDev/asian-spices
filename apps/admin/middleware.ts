@@ -1,5 +1,27 @@
 // apps/admin/middleware.ts
-export { default } from "next-auth/middleware";
+
+import { withAuth } from "next-auth/middleware";
+
+export default withAuth({
+  pages: {
+    signIn: "/login",
+  },
+  callbacks: {
+    authorized({ token }) {
+      // block if no token
+      if (!token) return false;
+
+      // allow only admin
+      return token.role === "admin";
+    },
+  },
+});
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
+};
+
+
 // import { withAuth } from "next-auth/middleware";
 
 /* export default withAuth({
@@ -25,9 +47,6 @@ export { default } from "next-auth/middleware";
   ],
 }; */
 
-export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
-};
 
 /* import { withAuth } from "next-auth/middleware";
 

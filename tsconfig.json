@@ -10,5 +10,6 @@
       "@acme/utils": ["packages/utils"],
       "@acme/ui": ["packages/ui"]
     }
-  }
+  },
+  "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
 }
