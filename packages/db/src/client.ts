@@ -2,8 +2,8 @@
 
 import { Pool, QueryResult, QueryResultRow } from "pg";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is missing");
+if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is missing in production");
 }
 
 // Pool should also be a singleton for Next.js dev mode

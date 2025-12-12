@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "web": {
+      "rootDirectory": "apps/web"
+    },
+    "admin": {
+      "rootDirectory": "apps/admin"
+    }
+  }
+}
