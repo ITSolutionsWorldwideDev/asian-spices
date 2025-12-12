@@ -28,7 +28,7 @@ export async function runQuery<T extends QueryResultRow = any>(
   query: string,
   params: any[] = []
 ): Promise<QueryResult<T>> {
-  ensureEnv(); // <-- check only when running queries (runtime)
+  ensureEnv();
   
   const client = await pool.connect();
   try {
