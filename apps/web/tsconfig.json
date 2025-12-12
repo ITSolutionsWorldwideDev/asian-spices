@@ -13,12 +13,19 @@
       "@acme/db": ["../../packages/db"]
     }
   },
+  // "include": [
+  //   "**/*.ts",
+  //   "**/*.tsx",
+  //   "next-env.d.ts",
+  //   "next.config.js",
+  //   ".next/types/**/*.ts"
+  // ],
   "include": [
+    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "next-env.d.ts",
-    "next.config.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../packages/auth/types/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }

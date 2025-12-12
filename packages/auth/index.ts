@@ -3,9 +3,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { runQuery } from "@acme/db";
-// import bcrypt from "bcryptjs";
 import * as bcrypt from "bcryptjs";
-
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -34,7 +32,10 @@ export const authOptions: NextAuthOptions = {
         const user = result.rows[0];
 
         // Compare hash
-        const isValid = await bcrypt.compare(credentials.password, user.password_hash);
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.password_hash
+        );
 
         if (!isValid) {
           throw new Error("Invalid password");
@@ -57,17 +58,58 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        if ("role" in user && user.role) {
+          token.role = user.role;
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user = session.user ?? ({} as any);
+        const user = session.user as {
+          id: string;
+          role?: string;
+          name?: string | null;
+          email?: string | null;
+          image?: string | null;
+        };
+
+        user.id = token.id!;
+        user.role = token.role;
+        session.user = user;
       }
       return session;
     },
+
+    // async session({ session, token }) {
+    //   if (token) {
+    //     // Assert session.user is our extended type
+    //     const user = session.user as {
+    //       id: string;
+    //       role?: string;
+    //       name?: string | null;
+    //       email?: string | null;
+    //       image?: string | null;
+    //     };
+
+    //     user.id = token.id!;
+    //     user.role = token.role;
+
+    //     session.user = user;
+    //   }
+    //   return session;
+    // },
+    // async session({ session, token }) {
+    //   if (token) {
+    //     session.user =
+    //       session.user ||
+    //       ({} as { id: string; role?: string; name?: string; email?: string });
+    //     session.user.id = token.id!;
+    //     session.user.role = token.role;
+    //   }
+    //   return session;
+    // },
   },
 
   pages: {
@@ -79,4 +121,19 @@ import { getServerSession } from "next-auth";
 
 export const auth = () => getServerSession(authOptions);
 
-
+// callbacks: {
+//   async jwt({ token, user }) {
+//     if (user) {
+//       token.id = user.id;
+//       token.role = user.role;
+//     }
+//     return token;
+//   },
+//   async session({ session, token }) {
+//     if (token) {
+//       session.user.id = token.id as string;
+//       session.user.role = token.role as string;
+//     }
+//     return session;
+//   },
+// },
