@@ -2,8 +2,10 @@
 
 import { Pool, QueryResult, QueryResultRow } from "pg";
 
-if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is missing in production");
+function ensureEnv() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is missing");
+  }
 }
 
 // Pool should also be a singleton for Next.js dev mode
@@ -26,6 +28,19 @@ export async function runQuery<T extends QueryResultRow = any>(
   query: string,
   params: any[] = []
 ): Promise<QueryResult<T>> {
+  ensureEnv(); // <-- check only when running queries (runtime)
+  
+  const client = await pool.connect();
+  try {
+    return await client.query<T>(query, params);
+  } finally {
+    client.release();
+  }
+}
+/* export async function runQuery<T extends QueryResultRow = any>(
+  query: string,
+  params: any[] = []
+): Promise<QueryResult<T>> {
   const client = await pool.connect();
   try {
     const result = await client.query<T>(query, params);
@@ -36,7 +51,7 @@ export async function runQuery<T extends QueryResultRow = any>(
   } finally {
     client.release();
   }
-}
+} */
 
 /* import { Pool } from "pg";
 
