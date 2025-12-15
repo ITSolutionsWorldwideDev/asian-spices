@@ -12,7 +12,7 @@ import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
 
-const Home = () => {
+const Homei = () => {
   return (
     <div>
       <Header />
@@ -34,4 +34,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Homei;

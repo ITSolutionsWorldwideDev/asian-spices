@@ -38,7 +38,6 @@ const Nav: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  
   return (
     <div className="min-h-screen p-8 relative z-50">
       {/* Navbar */}
@@ -68,10 +67,27 @@ const Nav: React.FC = () => {
             {navLinks.map((link) => (
               <li key={link.name} className="relative">
                 {/* NON-DROPDOWN LINKS */}
-                {!link.children ? (
+
+                {link.name.toLocaleLowerCase() == "home" ? (
                   <a
-                    href={`/${link.name.toLowerCase()
-                      .replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`}
+                    href={`/`}
+                    onClick={() => handleClick(link.name)}
+                    className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200
+                     ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
+                  >
+                    {link.name}
+
+                    {activeLink === link.name && (
+                      <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-1/2 mx-auto rounded-full"></span>
+                    )}
+                  </a>
+                ) : !link.children ? (
+                  <a
+                    href={`/${link.name
+                      .toLowerCase()
+                      .replace(/[^a-z0-9\s-]/g, "")
+                      .trim()
+                      .replace(/\s+/g, "-")}`}
                     onClick={() => handleClick(link.name)}
                     className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200
                      ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
