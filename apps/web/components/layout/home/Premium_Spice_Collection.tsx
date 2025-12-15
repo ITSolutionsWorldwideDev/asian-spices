@@ -1,4 +1,5 @@
-import Premium_Spice_Collection_Product_Card from "./Premium_Spice_Collection_Product_Card";
+import ProductCard from "@/components/ui/ProductCard";
+
 import Image from "next/image";
 
 type Product = {
@@ -154,12 +155,9 @@ export default function Premium_Spice_Collection() {
         </p>
       </div>
 
-      {/* Products */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10">
-        {products.map((item) => (
-          <Premium_Spice_Collection_Product_Card key={item.id} item={item} />
-        ))}
-      </div>
+     
+          <ProductCard item={products} />
+      
     </div>
   );
 }
