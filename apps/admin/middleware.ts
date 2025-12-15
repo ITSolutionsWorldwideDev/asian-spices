@@ -12,13 +12,19 @@ export default withAuth({
       if (!token) return false;
 
       // allow only admin
-      return token.role === "admin";
+      return token.role === "super_admin";
     },
   },
 });
 
+// export const config = {
+//   matcher: ["/dashboard/:path*", "/admin/:path*"],
+// };
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/((?!api|login|_next|static|assets|favicon.ico).*)",
+  ],
 };
 
 
