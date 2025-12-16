@@ -20,8 +20,6 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  console.log("status === ", status);
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/login");
