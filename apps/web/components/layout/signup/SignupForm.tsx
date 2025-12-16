@@ -6,6 +6,17 @@ const SignupForm = () => {
     <div className=" flex items-center justify-center ">
           <div className="w-full max-w-md text-center">
             {/* Heading */}
+             <div>
+          <Link href={`/`}>
+            <Image
+              src={`/assets/logo/Group 87.png`}
+              alt="home"
+              height={60}
+              width={60}
+              className="mb-10 cursor-pointer"
+            />
+          </Link>
+        </div>
             <h1 className="text-2xl font-semibold text-gray-900 mb-8">
               Welcome Asian Spices 👋
             </h1>
@@ -70,12 +81,12 @@ const SignupForm = () => {
             {/* Divider */}
             <div className="flex items-center my-6">
               <div className="flex-1 h-px bg-gray-200" />
-              <span className="px-3 text-sm text-gray-400">Or</span>
+              {/* <span className="px-3 text-sm text-gray-400">Or</span> */}
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
             {/* Google Button */}
-            <button className="w-full flex items-center justify-center gap-2 bg-white py-3 rounded-lg hover:bg-gray-50 transition">
+            {/* <button className="w-full flex items-center justify-center gap-2 bg-white py-3 rounded-lg hover:bg-gray-50 transition">
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 alt="Google"
@@ -85,7 +96,7 @@ const SignupForm = () => {
               <span className="text-sm font-medium text-gray-700">
                 Sign in with Google
               </span>
-            </button>
+            </button> */}
 
             {/* Login link */}
             <p className="text-sm text-gray-500 mt-6 font-bold">
@@ -97,7 +108,7 @@ const SignupForm = () => {
 
             {/* Footer */}
             <p className="text-xs text-gray-400 mt-10">
-              © 2023 ALL RIGHTS RESERVED
+              © 2025 ALL RIGHTS RESERVED
             </p>
           </div>
         </div>

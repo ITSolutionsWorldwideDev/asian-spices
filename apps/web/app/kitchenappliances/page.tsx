@@ -1,8 +1,11 @@
 import HeadingDescription from "@/components/ui/HeadingDescription";
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
-import SpiceFilterSearch from "@/components/ui/ProductFilterSearch";
+import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductCard from "@/components/ui/ProductCard";
 import React from "react";
+import RegisterOnApp from "@/components/ui/RegisterOnApp";
+import Reviews from "@/components/ui/Reviews";
+import Footer from "@/components/ui/Footer";
 
 const KitchenAppliancesPage = () => {
   const products = [
@@ -114,9 +117,34 @@ const KitchenAppliancesPage = () => {
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
     },
+
+    {
+      id: 9,
+      title: "Whole Cumin Seeds",
+      image: "9b12b7606d96c119efaa1f5498f4718a68810063.jpg",
+      price: 7.99,
+      oldPrice: null,
+      tag: "premium",
+      off: "",
+      rating: 4,
+      reviews: 189,
+      left: 24,
+      description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+    },
   ];
 
+  const title = "Kitchen";
   const categoriesData = [
+    {
+      name: "Cooking Appliances",
+      children: [
+        "Ovens & Microwaves",
+        "Gas & Electric Stoves",
+        "Air Fryers",
+        "Pressure Cookers",
+        "Induction Cooktops",
+      ],
+    },
     "All Spices",
     "Indian Spices",
     "Chinese Spices",
@@ -134,6 +162,13 @@ const KitchenAppliancesPage = () => {
     "Zafrani Mehal",
     "Chili Fresh",
     "Good Spices",
+    "Good Spices",
+    "Good Spices",
+    "Good Spices",
+    "Good Spices",
+    "Good Spices",
+    "Good Spices",
+    "Good Spices",
   ];
   return (
     <div>
@@ -149,13 +184,18 @@ const KitchenAppliancesPage = () => {
         description="Discover authentic quality appliances from across Asia"
       />
 
-     < div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
-              <SpiceFilterSearch
-                categoriesData={categoriesData}
-                storesData={storesData}
-              />
-              <ProductCard item={products} />
-            </div>
+      <div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
+        <ProductFilterSearch
+          categoriesData={categoriesData}
+          storesData={storesData}
+          title1={"Kitchens Category"}
+          title2={"Stores"}
+        />
+        <ProductCard item={products} />
+      </div>
+      <RegisterOnApp />
+      <Reviews />
+      <Footer />
     </div>
   );
 };

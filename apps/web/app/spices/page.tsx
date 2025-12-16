@@ -1,7 +1,10 @@
+import Footer from "@/components/ui/Footer";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 import ProductCard from "@/components/ui/ProductCard";
-import SpiceFilterSearch from "@/components/ui/ProductFilterSearch";
+import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
+import RegisterOnApp from "@/components/ui/RegisterOnApp";
+import Reviews from "@/components/ui/Reviews";
 import React from "react";
 
 const SpicesPage = () => {
@@ -114,14 +117,63 @@ const SpicesPage = () => {
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
     },
-  ];
 
+    {
+      id: 8,
+      title: "Whole Cumin Seeds",
+      image: "9b12b7606d96c119efaa1f5498f4718a68810063.jpg",
+      price: 7.99,
+      oldPrice: null,
+      tag: "premium",
+      off: "",
+      rating: 4,
+      reviews: 189,
+      left: 24,
+      description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+    },
+
+    {
+      id: 8,
+      title: "Whole Cumin Seeds",
+      image: "9b12b7606d96c119efaa1f5498f4718a68810063.jpg",
+      price: 7.99,
+      oldPrice: null,
+      tag: "premium",
+      off: "",
+      rating: 4,
+      reviews: 189,
+      left: 24,
+      description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+    },
+
+    {
+      id: 8,
+      title: "Whole Cumin Seeds",
+      image: "9b12b7606d96c119efaa1f5498f4718a68810063.jpg",
+      price: 7.99,
+      oldPrice: null,
+      tag: "premium",
+      off: "",
+      rating: 4,
+      reviews: 189,
+      left: 24,
+      description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+    },
+  ];
+  const title = "Spices";
   const categoriesData = [
-    "All Spices",
-    "Indian Spices",
-    "Chinese Spices",
-    "Thai Spices",
-    "Blend Spices",
+    { name: "All Spices" },
+    {
+      name: "Indian Spices",
+      children: ["Garam Masala", "Turmeric", "Cumin", "Cardamom"],
+    },
+    {
+      name: "Chinese Spices",
+      children: ["Star Anise", "Szechuan Pepper", "Five Spice"],
+    },
+
+    { name: "Thai Spices" }, // No children
+    { name: "Blend Spices" },
   ];
 
   const storesData = [
@@ -150,12 +202,18 @@ const SpicesPage = () => {
         description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
       />
       <div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
-        <SpiceFilterSearch
+        <ProductFilterSearch
           categoriesData={categoriesData}
           storesData={storesData}
+          title1={"Spices Category"}
+          title2={"Stores"}
         />
         <ProductCard item={products} />
       </div>
+
+      <RegisterOnApp />
+      <Reviews />
+      <Footer />
     </div>
   );
 };
