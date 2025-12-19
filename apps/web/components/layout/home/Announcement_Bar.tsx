@@ -1,6 +1,6 @@
-import React from "react";
 
-// Sample announcement data
+
+
 const announcements = [
   "100% Organic Certified",
   "Free Shipping Over $50",

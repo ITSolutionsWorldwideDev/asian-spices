@@ -1,50 +1,51 @@
-
-
-
-import CollectionText from "../../ui/HeadingDescription";
 import CollectionLargeCard from "./Collection_Large_Card";
 import CollectionSmallCard from "./Collection_Small_Card";
 import CollectionAnimatedText from "./Collection_Animated_Text";
+import HeadingDescription from "../../ui/HeadingDescription";
 
 const categories = [
   {
     title: "Indian Spices",
     subtitle: "Aromatic and bold flavors",
     products: 45,
-    image: "51a25dd3ceed905ce38efab0118f616f234fbd37.jpg",
-    gradient: "from-black/70 to-black/20",
+    image: "51a25dd3ceed905ce38efab0118f616f234fbd37-min.webp",
+    gradient: "amber-300",
   },
   {
     title: "Chines Spices",
     subtitle: "Balanced and harmonious",
     products: 60,
-    image: "524531ab08204ddf1a7e11f44c85ef183cbf3159.jpg",
-    gradient: "from-red-900/70 to-red-500/20",
+    image: "524531ab08204ddf1a7e11f44c85ef183cbf3159-min.webp",
+    gradient: "red-500",
   },
   {
     title: "Thai Spices",
     subtitle: "Fresh and vibrant",
     products: 20,
-    image: "e01dc03bcc26642793fa084cbeeeb30acf275580.jpg",
-    gradient: "from-green-900/70 to-green-500/20",
+    image: "e01dc03bcc26642793fa084cbeeeb30acf275580-min.webp",
+    gradient: "green-600",
   },
   {
     title: "Blend Spices",
     subtitle: "Expert Combinations",
     products: 30,
-    image: "30ae0eaf7c426c1f8cd606e51796fc3d9a40c59d.jpg",
-    gradient: "from-black/70 to-black/20",
+    image: "30ae0eaf7c426c1f8cd606e51796fc3d9a40c59d-min.webp",
+    gradient: "white",
   },
 ];
 
 export default function Collections() {
   return (
-    <div className="bg-cover bg-center  bg-[url('/assets/home/collections/531683f465ac68a63e0eb661c769a19e4a41cb38-(1).png')] ">
+    <div className="bg-cover bg-center  bg-[url('/assets/home/collections/531683f465ac68a63e0eb661c769a19e4a41cb38-(1)-min.webp')] ">
       <div className="bg-white/80">
         <div className="container mx-auto   mt-20    ">
           {/* Top Section */}
 
-          <CollectionText heading="Explore Our Collection" text="Shop By Category" description={`Discover authentic spices from across Asia, each category carefully  for quality and flavor Indian Spices`}/>
+          <HeadingDescription
+            heading="Explore Our Collection"
+            text="Shop By Category"
+            description={`Discover authentic spices from across Asia, each category carefully  for quality and flavor Indian Spices`}
+          />
 
           {/* Grid Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

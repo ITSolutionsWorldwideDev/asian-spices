@@ -38,7 +38,7 @@ const Smart_Appliances: React.FC = () => {
 
           {/* Call to Action Button */}
           <div className="flex justify-center mt-8">
-            <button className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition duration-300">
+            <button className="px-8 py-3 bg-white text-gray-900 font-semibold rounded-lg shadow-lg hover:bg-black hover:text-white transition duration-300">
               Shop Appliances
             </button>
           </div>

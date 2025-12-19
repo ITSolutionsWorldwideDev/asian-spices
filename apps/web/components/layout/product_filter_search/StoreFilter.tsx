@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 
 interface Store {
   name: string;
@@ -14,54 +13,98 @@ interface StoreDataProp {
 }
 
 const StoreFilter = ({ storesData, title2 }: StoreDataProp) => {
-  const [selectedStores, setSelectedStores] = useState<string[]>(["Bvr Spices"]);
-  const [expandedStores, setExpandedStores] = useState<string[]>([]);
+  const firstItem = storesData[0];
+
+  const firstStore =
+    firstItem && typeof firstItem === "object"
+      ? firstItem.name
+      : typeof firstItem === "string"
+        ? firstItem
+        : "";
+
+  const firstStoreHasChildren =
+    firstItem &&
+    typeof firstItem === "object" &&
+    firstItem.children &&
+    firstItem.children.length > 0;
+
+  const [selectedStores, setSelectedStores] = useState<string[]>(
+    firstStore ? [firstStore] : []
+  );
+
+  const [expandedStores, setExpandedStores] = useState<string[]>(
+    firstStore && firstStoreHasChildren ? [firstStore] : []
+  );
+
   const [showAllStores, setShowAllStores] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handleStoreToggle = (store: string) => {
     if (selectedStores.includes(store)) {
-      const filtered = selectedStores.filter((s) => s !== store);
-      setSelectedStores(filtered.length === 0 ? [store] : filtered);
-      // Collapse when unchecking
-      setExpandedStores(expandedStores.filter((s) => s !== store));
+      setSelectedStores((prev) => prev.filter((s) => s !== store));
+      setExpandedStores((prev) => prev.filter((s) => s !== store));
     } else {
-      setSelectedStores([...selectedStores, store]);
-      // Auto-expand when checking if it has children
+      setSelectedStores((prev) => [...prev, store]);
+
       const storeObj = storesData.find(
         (st) => typeof st === "object" && st.name === store
       ) as Store | undefined;
-      if (storeObj?.children && storeObj.children.length > 0) {
-        setExpandedStores([...expandedStores, store]);
+
+      if (storeObj?.children?.length) {
+        setExpandedStores((prev) => [...prev, store]);
       }
     }
   };
 
-  const toggleExpand = (store: string) => {
-    if (expandedStores.includes(store)) {
-      setExpandedStores(expandedStores.filter((s) => s !== store));
-    } else {
-      setExpandedStores([...expandedStores, store]);
-    }
+  const toggleExpandStore = (store: string) => {
+    setExpandedStores((prev) =>
+      prev.includes(store) ? prev.filter((s) => s !== store) : [...prev, store]
+    );
   };
 
   const visibleStores = showAllStores ? storesData : storesData.slice(0, 8);
 
   return (
     <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{title2}</h2>
-      <div className="space-y-2">
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsMobileOpen((prev) => !prev)}
+        className="lg:hidden text-sm w-full flex justify-between items-center px-2 py-1 border rounded-lg font-semibold text-gray-900"
+      >
+        {title2}
+        <span
+          className={`transition-transform ${isMobileOpen ? "rotate-180" : ""}`}
+        >
+          ▼
+        </span>
+      </button>
+
+      {/* Desktop Title */}
+      <h2 className="hidden lg:block text-lg font-semibold text-gray-900 mb-4">
+        {title2}
+      </h2>
+
+      {/* Store List */}
+      <div
+        className={`space-y-2 mt-4 md:mt-0 ${
+          isMobileOpen ? "block" : "hidden"
+        } lg:block`}
+      >
         {visibleStores.map((store) => {
           const isObject = typeof store === "object";
           const storeName = isObject ? store.name : store;
-          const hasChildren = isObject && store.children && store.children.length > 0;
+          const hasChildren =
+            isObject && store.children && store.children.length > 0;
           const isExpanded = expandedStores.includes(storeName);
           const isSelected = selectedStores.includes(storeName);
 
           return (
             <div key={storeName}>
-              {/* Parent Store */}
               <div className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer group flex-1">
+                <label
+                  className="flex items-center cursor-pointer group flex-1"
+                  onClick={() => hasChildren && toggleExpandStore(storeName)}
+                >
                   <div className="relative">
                     <input
                       type="checkbox"
@@ -80,47 +123,38 @@ const StoreFilter = ({ storesData, title2 }: StoreDataProp) => {
                         <svg
                           className="w-3 h-3 text-white"
                           fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
                           strokeWidth="3"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path d="M5 13l4 4L19 7"></path>
+                          <path d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
                   </div>
+
                   <span className="ml-3 text-gray-600 text-sm group-hover:text-gray-900">
                     {storeName}
                   </span>
                 </label>
 
-                {/* Expand/Collapse Icon - only show when checked and has children */}
-                {hasChildren && isSelected && (
-                  <button
-                    onClick={() => toggleExpand(storeName)}
-                    className="p-1 hover:bg-gray-100 rounded transition-colors"
-                  >
-                    {isExpanded ? (
-                      <IoChevronUp className="w-4 h-4 text-gray-600" />
-                    ) : (
-                      <IoChevronDown className="w-4 h-4 text-gray-600" />
-                    )}
-                  </button>
+                {/* Expand icon for mobile */}
+                {hasChildren && (
+                  <span className="lg:hidden text-xs pr-1">
+                    {isExpanded ? "−" : "+"}
+                  </span>
                 )}
               </div>
 
-              {/* Child Stores - No checkboxes, just display */}
-              {hasChildren && isSelected && isExpanded && (
-                <div className="ml-8 mt-2 space-y-1.5 border-l-2 border-gray-200 pl-4">
+              {/* Child Stores */}
+              {hasChildren && isExpanded && (
+                <div className="ml-2 mt-2 space-y-1.5">
                   {store.children!.map((child) => (
                     <div
                       key={child}
-                      className="flex items-center text-gray-500 text-sm py-1"
+                      className="text-gray-500 text-sm py-1 ml-7"
                     >
-                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></span>
-                      <span>{child}</span>
+                      {child}
                     </div>
                   ))}
                 </div>
@@ -128,16 +162,17 @@ const StoreFilter = ({ storesData, title2 }: StoreDataProp) => {
             </div>
           );
         })}
-      </div>
 
-      {storesData.length > 8 && (
-        <button
-          onClick={() => setShowAllStores(!showAllStores)}
-          className="mt-3 text-orange-500 text-sm font-medium hover:text-orange-600"
-        >
-          {showAllStores ? "View less" : `View more (${storesData.length - 8} more)`}
-        </button>
-      )}
+        {/* View More / Less */}
+        {storesData.length > 8 && (
+          <button
+            onClick={() => setShowAllStores(!showAllStores)}
+            className="mt-3 text-orange-500 text-sm font-medium hover:text-orange-600"
+          >
+            {showAllStores ? "View less" : "View more"}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

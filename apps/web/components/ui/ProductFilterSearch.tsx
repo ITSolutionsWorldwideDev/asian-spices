@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import CategoryFilter from "../layout/product_filter_search/CategoryFilter";
 import StoreFilter from "../layout/product_filter_search/StoreFilter";
@@ -15,16 +15,16 @@ interface Stores {
 }
 interface ProductFilterSearchProps {
   categoriesData: (string | Category)[];
-  storesData: (string | Stores)[]
-  title1:string;
-  title2:string;
+  storesData: (string | Stores)[];
+  title1: string;
+  title2: string;
 }
 
 export default function ProductFilterSearch({
   categoriesData,
   storesData,
   title1,
-  title2
+  title2,
 }: ProductFilterSearchProps) {
   const handleSearch = () => {
     console.log({
@@ -36,23 +36,30 @@ export default function ProductFilterSearch({
   };
 
   return (
-    <div className="max-w-sm mx-auto  shadow-xl p-5">
-      <div className=" rounded-lg shadow-sm ">
+    <div className=" mx-auto  lg:shadow-xl p-5">
+      <div className=" rounded-lg flex justify-center lg:block  space-x-5">
         {/* Spices Category Section */}
 
-        <CategoryFilter categoriesData={categoriesData} title1={title1}/>
+        <CategoryFilter categoriesData={categoriesData} title1={title1} />
         {/* Stores Section */}
-        <StoreFilter storesData={storesData} title2={title2}/>
+        <StoreFilter storesData={storesData} title2={title2} />
 
         {/* Price Section */}
         <PriceFilter />
         <button
           // onClick={handleSearch}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors"
+          className="hidden lg:block  w-full bg-amber-400 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors"
         >
           Search
         </button>
       </div>
+
+      <button
+        // onClick={handleSearch}
+        className="lg:hidden w-full bg-amber-400 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors"
+      >
+        Search
+      </button>
     </div>
   );
 }

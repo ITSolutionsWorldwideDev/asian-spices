@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 
-const CollectionAnimatedText:FC = () => {
+const CollectionAnimatedText: FC = () => {
   return (
     <div className="text-center md:text-left">
       <h1 className=" leading-tight animate-color-cycle">

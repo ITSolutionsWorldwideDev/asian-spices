@@ -184,7 +184,7 @@ const KitchenAppliancesPage = () => {
         description="Discover authentic quality appliances from across Asia"
       />
 
-      <div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
+      <div className="lg:grid lg:grid-cols-[auto_1fr] lg:gap-4 container mx-auto p-5 lg:items-start ">
         <ProductFilterSearch
           categoriesData={categoriesData}
           storesData={storesData}

@@ -136,8 +136,10 @@ const ProductDisplay = () => {
                 <div className="flex justify-center mt-8 mb-10">
                   <button
                     onClick={() => setShowAllStores(!showAllStores)}
-                    className="flex items-center justify-center px-10 py-5 bg-black hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors cursor-pointer"
+                    className="relative flex items-center justify-center px-10 py-5 bg-black  text-white font-semibold rounded-lg transition-colors group cursor-pointer"
                   >
+                    <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
+                    
                     {showAllStores ? (
                       "See Less"
                     ) : (

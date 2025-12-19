@@ -189,7 +189,7 @@ const SpicesPage = () => {
   ];
 
   return (
-    <div>
+    <div className="category-animation">
       <ProductPageHeader
         heading="Every Grain, A Burst of Taste"
         text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
@@ -201,7 +201,7 @@ const SpicesPage = () => {
         text="Shop By All Spices"
         description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
       />
-      <div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
+      <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
         <ProductFilterSearch
           categoriesData={categoriesData}
           storesData={storesData}

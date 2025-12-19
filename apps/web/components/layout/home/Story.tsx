@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { FaArrowRight } from "react-icons/fa6";
 
 const Story = () => {
   return (
@@ -14,7 +15,7 @@ const Story = () => {
         <div className="space-y-6">
           <div className="relative  rounded-xl h-90 ">
             <img
-              src="/assets/home/our_story/d10f2c08d6ed5db2264f1e5628f7f832a2959af1 (1).png"
+              src="/assets/home/our_story/d10f2c08d6ed5db2264f1e5628f7f832a2959af1 (1)-min.webp"
               alt="A farmer proudly standing in a field"
               className="absolute inset-0 w-full h-full object-cover z-50 rounded-xl"
             />
@@ -32,7 +33,7 @@ const Story = () => {
                 }}
               >
                 <Image
-                  src={`/assets/home/our_story/59373efab59c6414e276ddc24d0285cf62ee6194.png`}
+                  src={`/assets/home/our_story/59373efab59c6414e276ddc24d0285cf62ee6194-min.webp`}
                   alt="our story"
                   height={300}
                   width={300}
@@ -45,7 +46,7 @@ const Story = () => {
           <div className="grid grid-cols-2 gap-6">
             <div className="overflow-hidden rounded-xl">
               <img
-                src="/assets/home/our_story/80f41a02c14b60f52f9d87428cd6ef6dde6cead5.jpg"
+                src="/assets/home/our_story/80f41a02c14b60f52f9d87428cd6ef6dde6cead5-min.webp"
                 alt="Farmer harvesting crops"
                 // fill
                 className="w-300 h-50 object-cover"
@@ -53,7 +54,7 @@ const Story = () => {
             </div>
             <div className=" rounded-xl">
               <img
-                src="/assets/home/our_story/17870f44ff1cbbbecb2ba957fe078f85d76a5f57.jpg"
+                src="/assets/home/our_story/17870f44ff1cbbbecb2ba957fe078f85d76a5f57-min.webp"
                 alt="Bowl of lentils, spices, and fresh vegetables"
                 // fill
                 className="w-300 h-50 object-cover rounded-xl"
@@ -160,12 +161,13 @@ const Story = () => {
             </div>
           </div>
 
-          <a
-            href="#"
-            className="inline-flex items-center justify-center px-8 py-3 mt-4 text-base font-medium text-white bg-orange-500 border border-transparent rounded-lg shadow-lg hover:bg-orange-600 transition-colors"
-          >
-            Learn More →
-          </a>
+          <button className="cursor-pointer relative px-6 py-3 font-bold text-white  bg-linear-to-r from-orange-300 to-amber-600 rounded-lg overflow-hidden group">
+            <span className="relative z-10 flex items-center justify-center">
+              Learn More <FaArrowRight className="ml-4" />
+            </span>
+            <span className="absolute inset-0 bg-linear-to-r  from-orange-500 to-amber-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
+            
+          </button>
         </div>
       </section>
     </div>

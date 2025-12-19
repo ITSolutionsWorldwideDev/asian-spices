@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Flash_Sale_Hover_product_Card from "./Flash_Sale_Hover_product_Card";
+import { TfiTimer } from "react-icons/tfi";
 
 interface FlashSaleProduct {
   id: number;
@@ -16,10 +17,7 @@ interface FlashSaleProduct {
   qualities: string[];
   rating: number;
   rating_percentage: string;
-  
 }
-
-
 
 const FlashSaleProductCard = () => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -45,7 +43,6 @@ const FlashSaleProductCard = () => {
       ],
       rating: 324,
       rating_percentage: "90%",
-      
     },
     {
       id: 2,
@@ -54,7 +51,7 @@ const FlashSaleProductCard = () => {
       price: 14.99,
       oldPrice: 24.99,
       off: "43% OFF",
-       left: 12,
+      left: 12,
       save: "$10.00",
       description:
         "Premium saffron, known as the “king of spices” or “red gold,” is a rare and valuable spice harvested from the Crocus sativus flower requiring about 75,000 blossoms for just one pound. Its rich aroma and vibrant color make it a prized ingredient in gourmet dishes, traditional remedies for mood and digestion, and luxury skincare for its soothing and brightening effects.",
@@ -76,7 +73,7 @@ const FlashSaleProductCard = () => {
       price: 11.99,
       oldPrice: 19.99,
       off: "43% OFF",
-       left: 12,
+      left: 12,
       save: "$8.00",
       description:
         "Premium saffron, known as the “king of spices” or “red gold,” is a rare and valuable spice harvested from the Crocus sativus flower requiring about 75,000 blossoms for just one pound. Its rich aroma and vibrant color make it a prized ingredient in gourmet dishes, traditional remedies for mood and digestion, and luxury skincare for its soothing and brightening effects.",
@@ -111,13 +108,12 @@ const FlashSaleProductCard = () => {
             <div
               className="relative h-48 w-full overflow-hidden rounded-xl  cursor-pointer"
               onMouseEnter={() => setHoveredId(item.id)}
-             
             >
               <Image
                 src={`/assets/home/hot_sale/${item.image}`}
                 alt={item.title}
                 fill
-                className="object-cover"
+                className="object-cover hover:scale-110"
               />
             </div>
           </div>
@@ -134,7 +130,10 @@ const FlashSaleProductCard = () => {
             </span>
           </div>
 
-          <p className="text-green-600 text-sm mt-1">✔ You save {item.save}</p>
+          <p className="text-green-600 text-sm mt-1 flex items-center ">
+            <TfiTimer className="mr-2" />
+            You save {item.save}
+          </p>
 
           <button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition cursor-pointer">
             Grab This Deal
@@ -145,7 +144,12 @@ const FlashSaleProductCard = () => {
               hoveredId === item.id ? "translate-x-0" : "hidden"
             } z-50`}
           >
-            {item &&  <Flash_Sale_Hover_product_Card item={item} setHoveredId={setHoveredId}/>}
+            {item && (
+              <Flash_Sale_Hover_product_Card
+                item={item}
+                setHoveredId={setHoveredId}
+              />
+            )}
           </div>
         </div>
       ))}

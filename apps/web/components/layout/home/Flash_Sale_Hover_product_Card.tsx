@@ -1,5 +1,3 @@
-// ProductCard.tsx
-import { serverHooks } from "next/dist/server/app-render/entry-base";
 import React from "react";
 
 interface FlashSaleProduct {
@@ -15,7 +13,6 @@ interface FlashSaleProduct {
   qualities: string[];
   rating: number;
   rating_percentage: string;
- 
 }
 
 interface HoverCardProps {
@@ -23,7 +20,7 @@ interface HoverCardProps {
   setHoveredId: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
- // Replace with your image path
+// Replace with your image path
 
 // Star icon component
 const StarIcon: React.FC<{ filled: boolean }> = ({ filled }) => (
@@ -37,12 +34,17 @@ const StarIcon: React.FC<{ filled: boolean }> = ({ filled }) => (
   </svg>
 );
 
-const Flash_Sale_Hover_product_Card: React.FC<HoverCardProps> = ({ item,setHoveredId }) => {
+const Flash_Sale_Hover_product_Card: React.FC<HoverCardProps> = ({
+  item,
+  setHoveredId,
+}) => {
   const stars = [1, 2, 3, 4, 5].map((i) => i <= item.rating);
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-xl rounded-xl p-4 border border-gray-100"  
-    onMouseLeave={() => setHoveredId(null)}>
+    <div
+      className="max-w-lg mx-auto bg-white shadow-xl rounded-xl p-4 border border-gray-100   hover-card"
+      onMouseLeave={() => setHoveredId(null)}
+    >
       {/* Header: Image, Title, Price, Rating */}
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="w-28  shrink-0">
@@ -53,8 +55,6 @@ const Flash_Sale_Hover_product_Card: React.FC<HoverCardProps> = ({ item,setHover
             style={{ aspectRatio: "1/1" }}
           />
         </div>
-
-        
 
         <div className="grow">
           <h2 className="text-xl font-serif font-semibold text-gray-800 ">

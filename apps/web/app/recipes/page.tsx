@@ -59,7 +59,7 @@ const RecipesPage = () => {
         description="Diverse  Collection But Taste So Yummy...!"
       />
 
-      <div className="grid grid-cols-[auto_1fr] gap-4 container mx-auto p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
         <ProductFilterSearch
           categoriesData={categoriesData}
           storesData={storesData}

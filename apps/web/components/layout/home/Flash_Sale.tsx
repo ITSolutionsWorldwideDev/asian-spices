@@ -17,8 +17,12 @@ export default function FlashSale() {
       </div>
 
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 bg-black px-12 py-5 rounded-full font-bold fire-icon-animated">
-          🔥 Flash Sale
+        <div className="inline-flex text-center justify-center items-center px-5 py-1 bg-black  rounded-full font-bold fire-icon-animated">
+          <img
+            className="h-15 w-20"
+            src={`/assets/home/hot_sale/af61c09c418181db6f7977fb75c765cfd193908e.gif`}
+          />{" "}
+          Flash Sale
         </div>
         <p className="mt-4 text-sm opacity-90">Limited Time Offer</p>
         <h2 className="text-lg font-medium mt-1">

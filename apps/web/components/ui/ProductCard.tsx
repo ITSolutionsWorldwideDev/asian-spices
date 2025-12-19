@@ -39,11 +39,11 @@ export default function ProductCard({ item }: ProductCardProps) {
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10 ">
         {visibleProducts.map((product) => (
           <div
             key={product.id}
-            className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative"
+            className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
           >
             {/* Tags */}
             {product.tag && (
@@ -84,7 +84,7 @@ export default function ProductCard({ item }: ProductCardProps) {
               alt={product.title}
               width={120}
               height={100}
-              className="h-70 w-full object-cover rounded-xl"
+              className="h-70 w-full object-cover rounded-xl hover:scale-110"
             />
 
             {/* Rating */}
@@ -112,7 +112,7 @@ export default function ProductCard({ item }: ProductCardProps) {
             </div>
 
             {/* Button */}
-            <button className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center">
+            <button className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 ">
               <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
             </button>
           </div>
@@ -125,8 +125,9 @@ export default function ProductCard({ item }: ProductCardProps) {
         <div className="flex justify-center mt-8 mb-10">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="flex items-center justify-center px-10 py-5 bg-black hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+            className="relative flex items-center justify-center px-10 py-5 bg-black  text-white font-semibold rounded-lg transition-colors group"
           >
+            <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
             {showAll ? (
               "See Less"
             ) : (

@@ -22,7 +22,7 @@ const ProductPageHeader = ({ heading, text, videoLink }: TextandImage) => {
         <div>
           <h1 className="lg:text-7xl font-bold lg:w-250 text-5xl">{heading}</h1>
           <div className="flex items-center justify-center">
-            <p className="text-white font-normal text-center lg:w-170">
+            <p className="text-white font-normal text-center lg:w-170 mt-5">
               {text}
             </p>
           </div>

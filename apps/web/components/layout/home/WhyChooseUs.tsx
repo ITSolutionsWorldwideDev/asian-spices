@@ -44,11 +44,11 @@ export default function WhyChooseUs() {
     <section className="container mx-auto overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         {/* Left Section */}
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-6 ">
           {features.map((item, index) => (
             <div
               key={index}
-              className="flex justify-center items-center gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl transition"
+              className="flex justify-center items-center gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl transition hover:scale-110"
             >
               <div
                 className={`w-50 h-20 ${item.iconBg} rounded-xl flex items-center justify-center text-white text-xl`}

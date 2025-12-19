@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   },
 };
 import "./globals.css";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body 
       // className={`${geistSans.variable} ${geistMono.variable}`}
+      className=""
       >
+        {/* <Nav/> */}
         {children}
       </body>
     </html>
