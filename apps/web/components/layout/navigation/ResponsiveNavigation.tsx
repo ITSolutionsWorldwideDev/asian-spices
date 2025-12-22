@@ -45,7 +45,7 @@ const ResponsiveNavigation = () => {
         },
       ],
     },
-    {name:"Contact Us"}
+    { name: "Contact Us" },
   ];
   return (
     <>
