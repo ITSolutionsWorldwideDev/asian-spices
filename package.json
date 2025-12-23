@@ -86,19 +86,18 @@
     "react-dom": "^19.2.1",
     "react-feather": "^2.0.10",
     "react-icons": "^5.5.0",
-    "sass": "^1.94.2",
-    "swiper": "^12.0.3",
-    "tailwindcss": "^4.1.17",
     "react-perfect-scrollbar": "^1.5.8",
     "react-select": "^5.10.2",
     "react-simple-wysiwyg": "^3.4.1",
     "react-slick": "^0.31.0",
+    "sass": "^1.94.2",
     "sweetalert2": "^11.26.4",
     "sweetalert2-react-content": "^5.1.0",
+    "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.17",
     "weather-icons-react": "^1.2.0",
     "yet-another-react-lightbox": "^3.27.0",
     "zustand": "^5.0.9"
-    
   }
 }

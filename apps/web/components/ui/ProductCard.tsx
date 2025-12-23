@@ -7,6 +7,7 @@ import { FaHeart } from "react-icons/fa";
 import { useState } from "react";
 import { BsCartPlus } from "react-icons/bs";
 import { FaArrowRight } from "react-icons/fa6";
+import { useCartStore } from "@/store/useCartStore";
 
 type Product = {
   id: number;
@@ -27,7 +28,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ item }: ProductCardProps) {
-  console.log(item);
+  const addToCart = useCartStore((state) => state.addToCart);
+
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [showAll, setShowAll] = useState(false);
 
@@ -112,7 +114,16 @@ export default function ProductCard({ item }: ProductCardProps) {
             </div>
 
             {/* Button */}
-            <button className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 ">
+            <button
+              className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
+              onClick={() =>
+                addToCart({
+                  id: product.id,
+                  title: product.title,
+                  price: product.price,
+                })
+              }
+            >
               <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
             </button>
           </div>

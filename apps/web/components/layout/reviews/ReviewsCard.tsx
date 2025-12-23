@@ -135,7 +135,7 @@ const ReviewsCard: React.FC = () => {
   return (
     <div className="relative overflow-hidden ">
       <div
-        className="flex "
+        className="flex  md:gap-3 container mx-auto transition-transform duration-500 ease-in-out"
         style={{
           transform: `translateX(-${(startIndex * 100) / visibleCount}%)`,
         }}
@@ -143,15 +143,15 @@ const ReviewsCard: React.FC = () => {
         {testimonials.map((item, idx) => (
           <div
             key={idx}
-            className={`relative overflow-hidden shrink-0 p-4 m-2 bg-cover rounded-2xl shadow-lg bg-[url('/assets/reviews/Subtract.png')]
-             hover:shadow-2xl ${visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"}
+            className={`relative overflow-hidden shrink-0 sm:p-4  bg-cover rounded-2xl  bg-[url('/assets/reviews/Subtract.png')]
+             hover:shadow-2xl   ${visibleCount === 1 ? "w-full" : visibleCount === 2 ? "w-1/2" : "w-1/3"}
             `}
           >
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center md:gap-4 md:mb-4">
               <img
                 src={`/assets/reviews/${item.image}`}
                 alt={item.name}
-                className="w-25 h-25 rounded-full object-cover border-8 border-white"
+                className="w-25 h-25 rounded-full  object-cover border-8 border-white"
               />
               <div className="ml-10">
                 <div className="flex justify-start space-x-1  text-yellow-500">
@@ -163,7 +163,7 @@ const ReviewsCard: React.FC = () => {
                 <p className="text-sm text-gray-500">{item.role}</p>
               </div>
             </div>
-            <div className="absolute right-0  top-20 h-full opacity-5">
+            <div className="absolute right-0  md:top-20 h-full opacity-5">
               <img src="/assets/reviews/Group95.png" alt="" className="" />
             </div>
 
@@ -176,46 +176,3 @@ const ReviewsCard: React.FC = () => {
 };
 
 export default ReviewsCard;
-
-//             className="   hover:shadow-2xl   rounded-3xl  relative  bg-[url('/assets/reviews/Subtract.png')] bg-cover overflow-hidden"
-//             key={idx}
-//           >
-//             <div
-//               key={idx}
-//               className=" grid grid-cols-2 relative overflow-hidden "
-//             >
-//               {/* Avatar */}
-
-//               {/* Stars */}
-
-//               <div className="flex flex-col items-start space-y-1 mt-6">
-
-//                 <div className="">
-//                   <h3 className=" text-lg font-semibold">{item.name}</h3>
-//                   <p className=" text-sm text-gray-500">{item.role}</p>
-//                 </div>
-//               </div>
-//               {/* Name */}
-
-//               {/* Text */}
-//             </div>
-
-//             <div className="absolute right-0  opacity-5 overflow-hidden">
-//               <img
-//                 src="/assets/reviews/Group95.png"
-//                 className="max-w-full h-auto"
-//               />
-//             </div>
-//             <div className="  bg-center   ">
-//               <p className="mt-5 text-gray-600 w-full leading-relaxed   xl:p-10 ">
-//                 "{item.text}"
-//               </p>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ReviewsCard;

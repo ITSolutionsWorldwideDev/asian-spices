@@ -17,7 +17,7 @@ export default function Redirect() {
         {/* Buttons */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            href="/"
+            href="/spices"
             className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-orange-500 transition hover:bg-orange-100"
           >
             Shop Now

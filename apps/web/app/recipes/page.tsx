@@ -7,6 +7,7 @@ import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
 import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductDisplay from "@/components/layout/recipes/ProductDisplay";
+import Cart from "@/components/ui/Cart";
 
 const RecipesPage = () => {
   const categoriesData = [
@@ -47,6 +48,7 @@ const RecipesPage = () => {
   //
   return (
     <div>
+      {/* <Cart/> */}
       <ProductPageHeader
         heading="A World of Recipes, One Pinch of Spice"
         text="Explore a diverse collection of recipes where every dish tells a flavorful story, from street‑style bites to homely classics, all elevated by the essence of spices."

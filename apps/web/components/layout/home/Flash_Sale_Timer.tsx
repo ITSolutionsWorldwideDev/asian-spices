@@ -1,5 +1,5 @@
 // components/FlashSaleTimer.tsx
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 
@@ -13,7 +13,9 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
   endDate,
 }) => {
   const start = startDate ? new Date(startDate) : new Date(); // default to now
+  console.log(start);
   const end = new Date(endDate);
+  console.log(end);
 
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
@@ -29,7 +31,8 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
     // Sale not started yet
     if (now < start) {
       setIsNotStarted(true);
-      const diff = +start - +now;
+      const diff = start.getTime() - now.getTime();
+      
       return {
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((diff / 1000 / 60) % 60),
@@ -70,9 +73,16 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
 
   if (isNotStarted) {
     return (
-      <div className="text-center text-3xl font-bold text-white p-6 rounded-lg shadow-2xl">
-        ⏳ Sale starts in {formatTime(timeLeft.hours)}:
-        {formatTime(timeLeft.minutes)}:{formatTime(timeLeft.seconds)}
+      <div className="flex justify-center items-center mt-8 rounded-lg">
+        <div className="flex flex-col items-center justify-center p-3 backdrop-blur-sm bg-white/30 rounded-lg">
+          <div className="text-5xl font-bold text-white">
+            ⏳ Sale starts in {formatTime(timeLeft.hours)}hours:
+          </div>
+          <div className="text-xs sm:text-sm font-semibold text-white mt-1 opacity-80 uppercase tracking-wider">
+            {formatTime(timeLeft.minutes)} minutes and{" "}
+            {formatTime(timeLeft.seconds)} secounds
+          </div>
+        </div>
       </div>
     );
   }
@@ -84,12 +94,14 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
           label === "HOURS"
             ? timeLeft.hours
             : label === "MINUTES"
-            ? timeLeft.minutes
-            : timeLeft.seconds;
+              ? timeLeft.minutes
+              : timeLeft.seconds;
         return (
           <React.Fragment key={label}>
             <div className="flex flex-col items-center justify-center p-3 backdrop-blur-sm bg-white/30 rounded-lg">
-              <div className="text-5xl font-bold text-white">{formatTime(value)}</div>
+              <div className="text-5xl font-bold text-white">
+                {formatTime(value)}
+              </div>
               <div className="text-xs sm:text-sm font-semibold text-white mt-1 opacity-80 uppercase tracking-wider">
                 {label}
               </div>
