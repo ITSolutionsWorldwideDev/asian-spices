@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
 interface RecipesDetailProps {
   // params: { slug: string };
@@ -8,7 +9,9 @@ interface RecipesDetailProps {
 
 const RecipesDetail = async ({ searchParams }: RecipesDetailProps) => {
   const { title, description, image } = await searchParams;
-  console.log(title, description);
+  if (!searchParams.title) {
+    notFound();
+  }
   return (
     <div className="container mx-auto bg-black rounded-4xl px-5 py-10">
       <div className=" flex  justify-center ">

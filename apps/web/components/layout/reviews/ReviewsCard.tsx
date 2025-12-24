@@ -101,16 +101,24 @@ const ReviewsCard: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1); // 1 = right, -1 = left
 
-  const getVisibleCount = () => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth >= 1024) return 3;
-      if (window.innerWidth >= 768) return 2;
-      return 1;
-    }
-    return 3;
+  const getVisibleCount = (width: number) => {
+    if (width >= 1024) return 3;
+    if (width >= 768) return 2;
+    return 1;
   };
 
-  const visibleCount = getVisibleCount();
+  const [visibleCount, setVisibleCount] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setVisibleCount(getVisibleCount(window.innerWidth));
+    };
+
+    handleResize(); // initial run
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

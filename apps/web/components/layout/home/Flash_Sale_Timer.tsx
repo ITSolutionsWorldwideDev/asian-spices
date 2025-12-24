@@ -13,9 +13,8 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
   endDate,
 }) => {
   const start = startDate ? new Date(startDate) : new Date(); // default to now
-  console.log(start);
+
   const end = new Date(endDate);
-  console.log(end);
 
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
@@ -32,7 +31,7 @@ export const FlashSaleTimer: React.FC<FlashSaleTimerProps> = ({
     if (now < start) {
       setIsNotStarted(true);
       const diff = start.getTime() - now.getTime();
-      
+
       return {
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((diff / 1000 / 60) % 60),

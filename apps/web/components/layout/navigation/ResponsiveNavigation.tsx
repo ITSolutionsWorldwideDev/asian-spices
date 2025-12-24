@@ -5,6 +5,11 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { RxCross1 } from "react-icons/rx";
 import { Menu } from "lucide-react";
+import { Heart } from "lucide-react";
+import { HiOutlineShoppingBag } from "react-icons/hi2";
+import Cart from "@/components/ui/Cart";
+import { createPortal } from "react-dom";
+import { FaL } from "react-icons/fa6";
 
 interface NavChildren {
   name: string;
@@ -47,6 +52,8 @@ const ResponsiveNavigation = () => {
     },
     { name: "Contact Us" },
   ];
+
+  const [isCartOpen, setCartOpen] = useState<boolean>(false);
   return (
     <>
       {/* mobilemenubtn */}
@@ -229,10 +236,6 @@ const ResponsiveNavigation = () => {
             className="p-4 flex flex-col space-y-2"
             onClick={() => setMobileMenu(!mobileMenu)}
           >
-            <button className="px-4 py-2 bg-white text-black font-bold rounded-full">
-              <Link href={"/contactus"}>Contact US</Link>
-            </button>
-
             <div className=" bg-white rounded-full   ">
               <div className=" px-6 py-3 rounded-full flex justify-center">
                 <button className="  font-bold   hover:shadow-xl transform cursor-pointer hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 ">
@@ -245,8 +248,45 @@ const ResponsiveNavigation = () => {
               </div>
             </div>
           </div>
+
+          {/* cart and wish button */}
+          <div className="flex items-center space-x-3 justify-center mb-4">
+            <div
+              className="bg-white rounded-full cursor-pointer "
+              onClick={() => setCartOpen(!isCartOpen)}
+            >
+              <button className="px-2 py-2    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+                <Heart />
+              </button>
+            </div>
+
+            <div
+              className="bg-white rounded-full cursor-pointer "
+              onClick={() => setCartOpen(!isCartOpen)}
+            >
+              <button className="px-3 py-3    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+                <HiOutlineShoppingBag />
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      {isCartOpen &&
+        createPortal(
+          <div className="absolute top-10 h-full w-full z-9999 ">
+            <Cart />
+            <div className="bg-white rounded-2xl p-2  text-center   shadow-lg hover:shadow-xl cursor-pointer">
+              <button
+                className="bg-red-500 w-full text-white rounded-xl font-bold p-2"
+                onClick={() => setCartOpen(false)}
+              >
+                Close cart
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 };

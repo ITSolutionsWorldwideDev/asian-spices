@@ -6,12 +6,10 @@ import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import Redirect from "@/components/layout/about_us/Redirect";
 import React from "react";
 import Footer from "@/components/ui/Footer";
-import Cart from "@/components/ui/Cart";
 
 const AboutUs = () => {
   return (
     <div>
-      <Cart/>
       <ProductPageHeader
         heading="Bringing Authentic Asian Flavors to Your Kitchen"
         text="Asian Spices was founded with a simple mission to source the finest Asian spices directly from theirregions of origin and bring them to passionate home cooks and professional chefs around the world."
@@ -22,10 +20,10 @@ const AboutUs = () => {
       </div>
 
       <div className="bg-gray-50 mt-10">
-        <Story />
-        <OurValues />
-        <OurTeam />
-        <Redirect />
+        <Story/>
+        <OurValues/>
+        <OurTeam/>
+        <Redirect/>
       </div>
       <Footer />
     </div>

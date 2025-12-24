@@ -10,7 +10,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="border rounded-xl p-4 space-y-3">
+    <div className="border rounded-xl p-4 space-y-3 bg-white ">
       <h2 className="text-xl font-bold">Your Cart</h2>
 
       {cart.map((item) => (

@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import ButtonsNavigation from "../layout/navigation/ButtonsNavigation";
 import ResponsiveNavigation from "../layout/navigation/ResponsiveNavigation";
+import CartandWhishBtn from "../layout/navigation/CartandWhishBtn";
 
 const Nav: React.FC = () => {
   return (
@@ -20,6 +21,8 @@ const Nav: React.FC = () => {
 
         {/* Desktop Navigation */}
         <ResponsiveNavigation />
+         <CartandWhishBtn />
+                
         <ButtonsNavigation />
       </nav>
     </div>
