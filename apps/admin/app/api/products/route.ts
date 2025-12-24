@@ -12,7 +12,15 @@ export async function GET(req: NextRequest) {
   try {
     const [items, count] = await Promise.all([
       pool.query(
-        `SELECT * FROM products ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+        ` SELECT p.product_id,p.name,p.sku,p.item_code,p.country_of_origin,p.price,p.quantity,
+            p.status,c.category,b.name as brand,sub.title as subcategory,pi.media_id
+          FROM products as p
+          left join categories as c ON c.category_id = p.category_id
+          left join subcategories as sub ON sub.category_id = p.subcategory_id
+          left join brand as b ON b.brand_id = p.brand_id
+          left join product_images as pi ON pi.product_id = p.product_id AND is_primary = true
+          ORDER BY p.created_at DESC
+          LIMIT $1 OFFSET $2`,
         [limit, offset]
       ),
       pool.query(`SELECT COUNT(*) FROM products`)
@@ -40,10 +48,10 @@ export async function POST(req: NextRequest) {
     const result = await pool.query(
       `INSERT INTO products
       (name, slug, sku, item_code, category_id, subcategory_id, brand_id,
-       description, price, quantity, discount_type_id, discount_value,
+       country_of_origin, description, price, quantity, discount_type_id, discount_value,
        created_at, updated_at)
       VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),NOW())
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),NOW())
       RETURNING *`,
       [
         body.name,
@@ -53,6 +61,7 @@ export async function POST(req: NextRequest) {
         body.category_id,
         body.subcategory_id,
         body.brand_id,
+        body.country_of_origin,
         body.description,
         body.price,
         body.quantity,

@@ -1,16 +1,20 @@
 // apps/admin/components/products/addproduct.tsx
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Select, { SingleValue } from "react-select";
 import { Info, LifeBuoy, Figma, PlusCircle, X } from "react-feather";
-import TextEditor from "@/core/common/texteditor/texteditor";
+import TextEditorNew from "@/core/common/texteditor/texteditor";
+import { memo } from "react";
+
+const MemoTextEditor = memo(TextEditorNew);
 
 import Image from "next/image";
 import Link from "next/link";
 
 import { all_routes } from "@/data/all_routes";
 import { useToast } from "@repo/ui";
+import { useRouter } from "next/navigation";
 
 /* ------------------ Types ------------------ */
 
@@ -54,6 +58,15 @@ export function getThumb(url: string, size = 300) {
   return `${url}?w=${size}&h=${size}&fit=crop`;
 }
 
+export function generateSlug(text: string) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "") // remove symbols
+    .replace(/\s+/g, "-") // spaces → hyphens
+    .replace(/-+/g, "-"); // collapse hyphens
+}
+
 const generateSKU = (name: string, categoryId?: number | null) => {
   if (!name) return "";
   return `SKU-${categoryId ?? "X"}-${name
@@ -66,13 +79,58 @@ const generateItemCode = (brandId?: number | null) => {
   return `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
 };
 
+// ⬆️ OUTSIDE AddProductComponent
+const Accordion = memo(function Accordion({
+  title,
+  icon: Icon,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  icon?: any;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border rounded-md bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3"
+      >
+        <div className="flex items-center gap-2 font-medium text-gray-700">
+          {Icon && <Icon size={18} />}
+          {title}
+        </div>
+        <span>{open ? "−" : "+"}</span>
+      </button>
+
+      {open && <div className="border-t p-4">{children}</div>}
+    </div>
+  );
+});
+
 // ------------------ Component ------------------
+
+function useDebounce<T>(value: T, delay = 400) {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+
+  return debounced;
+}
 
 export default function AddProductComponent({
   mode = "create",
   productId,
 }: ProductFormProps) {
   const route = all_routes;
+  const router = useRouter();
 
   const { showToast } = useToast();
 
@@ -102,8 +160,14 @@ export default function AddProductComponent({
     discount_value: "",
   });
 
+  const [name, setName] = useState(formData.name);
+  // const [price, setPrice] = useState(formData.price);
+  // const [quantity, setQuantity] = useState(formData.quantity);
+
   const [selectedMedia, setSelectedMedia] = useState<number[]>([]);
   const [primaryMedia, setPrimaryMedia] = useState<number | null>(null);
+
+  const [slugTouched, setSlugTouched] = useState(false);
 
   /* ------------------ Fetch Data ------------------ */
   useEffect(() => {
@@ -125,9 +189,8 @@ export default function AddProductComponent({
   }, []);
 
   const discounttype = [
-    { value: "choose", label: "Choose" },
-    { value: "percentage", label: "Percentage" },
-    { value: "cash", label: "Cash" },
+    { value: 1, label: "Percentage" },
+    { value: 2, label: "Cash" },
   ];
 
   const [accordionOpen, setAccordionOpen] = useState(true);
@@ -135,12 +198,25 @@ export default function AddProductComponent({
   const [imagesOpen, setImagesOpen] = useState(true);
 
   /* ------------------ Auto Generate ------------------ */
+  const debouncedName = useDebounce(formData.name, 400);
+
   useEffect(() => {
+    if (!debouncedName) return;
+
     setFormData((prev) => ({
       ...prev,
-      sku: generateSKU(prev.name, prev.category_id),
+      sku: generateSKU(debouncedName, prev.category_id),
     }));
-  }, [formData.name, formData.category_id]);
+  }, [debouncedName, formData.category_id]);
+
+  useEffect(() => {
+    if (!debouncedName || slugTouched) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      slug: generateSlug(debouncedName),
+    }));
+  }, [debouncedName, slugTouched]);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -148,6 +224,12 @@ export default function AddProductComponent({
       item_code: generateItemCode(prev.brand_id),
     }));
   }, [formData.brand_id]);
+
+  useEffect(() => {
+    if (mode === "create") {
+      setSlugTouched(false);
+    }
+  }, [mode]);
 
   /* ------------------ Select Options ------------------ */
   const categoryOptions: Option[] = categories.map((c) => ({
@@ -179,11 +261,13 @@ export default function AddProductComponent({
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
+    console.log("formData === ", formData);
+
     if (!formData.name.trim()) newErrors.name = "Product name is required";
     if (!formData.slug.trim()) newErrors.slug = "Slug is required";
     if (!formData.sku) newErrors.sku = "SKU is required";
     if (!formData.category_id) newErrors.category_id = "Category is required";
-    
+
     if (!formData.subcategory_id)
       newErrors.subcategory_id = "Subcategory is required";
 
@@ -203,7 +287,6 @@ export default function AddProductComponent({
   //   Submit
   // ------------------------------------
   const handleSubmit = async () => {
-
     if (mode !== "view" && !validateForm()) {
       showToast("error", "Please fix validation errors");
       return;
@@ -228,21 +311,26 @@ export default function AddProductComponent({
       const product = await res.json();
 
       // 2️⃣ Attach images
-      if (selectedMedia.length > 0) {
-        await fetch(`/api/products/${product.product_id}/images`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mediaIds: selectedMedia,
-            primaryMediaId: primaryMedia,
-          }),
-        });
-      }
+      // if (selectedMedia.length > 0) {
+      await fetch(`/api/products/${product.product_id}/images`, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mediaIds: selectedMedia,
+          primaryMediaId: primaryMedia,
+        }),
+      });
+      // }
 
       showToast(
         "success",
         mode === "edit" ? "Product updated" : "Product created"
       );
+
+      setTimeout(() => {
+        router.push("/products");
+      }, 3000);
+
     } catch (err) {
       console.error(err);
       showToast("error", "Action failed");
@@ -251,37 +339,47 @@ export default function AddProductComponent({
     }
   };
 
-  function Accordion({
-    title,
-    icon: Icon,
-    open,
-    onToggle,
-    children,
-  }: {
-    title: string;
-    icon?: any;
-    open: boolean;
-    onToggle: () => void;
-    children: React.ReactNode;
-  }) {
-    return (
-      <div className="border rounded-md bg-white">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="w-full flex items-center justify-between px-4 py-3"
-        >
-          <div className="flex items-center gap-2 font-medium text-gray-700">
-            {Icon && <Icon className="text-primary" size={18} />}
-            {title}
-          </div>
-          <span>{open ? "−" : "+"}</span>
-        </button>
+  const mediaGrid = useMemo(() => {
+    return media.map((item) => {
+      const isSelected = selectedMedia.includes(item.media_id);
+      const isPrimary = primaryMedia === item.media_id;
 
-        {open && <div className="border-t p-4">{children}</div>}
-      </div>
-    );
-  }
+      return (
+        <div
+          key={item.media_id}
+          onClick={() => {
+            setSelectedMedia((prev) =>
+              isSelected
+                ? prev.filter((id) => id !== item.media_id)
+                : [...prev, item.media_id]
+            );
+            if (!primaryMedia) setPrimaryMedia(item.media_id);
+          }}
+          className={`relative cursor-pointer rounded border bg-white p-1 transition ${isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"} `}
+        >
+          <Image
+            src={getThumb(item.file_url, 200)}
+            alt={item.file_name}
+            width={200}
+            height={200}
+            className="rounded object-cover"
+          />
+
+          {/* Primary Badge */}
+          {isPrimary && (
+            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+              Primary
+            </span>
+          )}
+
+          {/* Selection Overlay */}
+          {isSelected && (
+            <div className="absolute inset-0 rounded bg-blue-500/10" />
+          )}
+        </div>
+      );
+    });
+  }, [media, selectedMedia, primaryMedia]);
 
   useEffect(() => {
     if (!productId || mode === "create") return;
@@ -302,7 +400,7 @@ export default function AddProductComponent({
           country_of_origin: data.country_of_origin,
           description: data.description,
           price: String(data.price),
-          quantity: String(data.quantity),          
+          quantity: String(data.quantity),
           discount_type_id: data.discount_type_id,
           discount_value: data.discount_value,
         });
@@ -324,8 +422,7 @@ export default function AddProductComponent({
       <div className="content max-w-6xl mx-auto">
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
-            <h4 className="text-2xl font-semibold">Create Product</h4>
-            {/* <h6 className="text-gray-500">Create new product</h6> */}
+            <h4 className="text-2xl font-semibold">{mode === "edit" ? "Update/View" : "Create"} Product</h4>
           </div>
         </div>
 
@@ -352,9 +449,9 @@ export default function AddProductComponent({
                     <input
                       type="text"
                       disabled={isView}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      value={formData.name || ""}
+                      onChange={(e) => setName(e.target.value)}
+                      onBlur={() => setFormData((prev) => ({ ...prev, name }))}
                       className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
                     />
                     {errors.name && (
@@ -368,10 +465,14 @@ export default function AddProductComponent({
                     <input
                       type="text"
                       disabled={isView}
-                      value={formData.slug}
-                      onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                      }
+                      value={formData.slug || ""}
+                      onChange={(e) => {
+                        setSlugTouched(true);
+                        setFormData((prev) => ({
+                          ...prev,
+                          slug: generateSlug(e.target.value),
+                        }));
+                      }}
                       className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
                     />
                     {errors.slug && (
@@ -388,7 +489,7 @@ export default function AddProductComponent({
                     <input
                       type="text"
                       disabled={isView}
-                      value={formData.sku}
+                      value={formData.sku || ""}
                       readOnly
                       className="w-full border rounded p-2 pr-20 bg-gray-100"
                     />
@@ -396,7 +497,7 @@ export default function AddProductComponent({
                       <p className="text-red-600 text-sm">{errors.sku}</p>
                     )}
                   </div>
-                  
+
                   <div className="relative">
                     <label className="block mb-1 font-medium">
                       Item Code <span className="text-red-500">*</span>
@@ -404,7 +505,7 @@ export default function AddProductComponent({
                     <input
                       type="text"
                       disabled={isView}
-                      value={formData.item_code}
+                      value={formData.item_code || ""}
                       readOnly
                       className="w-full border rounded p-2 pr-20 bg-gray-100"
                     />
@@ -492,7 +593,7 @@ export default function AddProductComponent({
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="relative">
                     <label className="block mb-1 font-medium">
                       Country of Origin
@@ -500,18 +601,32 @@ export default function AddProductComponent({
                     <input
                       type="text"
                       disabled={isView}
-                      defaultValue={formData.country_of_origin}                      
+                      value={formData.country_of_origin || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          country_of_origin: e.target.value,
+                        }))
+                      }
                       className="w-full border rounded p-2 pr-20"
                     />
                   </div>
                 </div>
 
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                </div> */}
-
                 <div>
                   <label className="block mb-1 font-medium">Description</label>
-                  <TextEditor />
+
+                  <MemoTextEditor
+                    value={formData.description}
+                    readOnly={isView}
+                    onChange={(val: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        description: val,
+                      }))
+                    }
+                  />
+
                   <p className="text-gray-500 text-sm mt-1">Maximum 60 Words</p>
                 </div>
               </div>
@@ -523,19 +638,27 @@ export default function AddProductComponent({
               open={pricingOpen}
               onToggle={() => setPricingOpen(!pricingOpen)}
             >
-              {/* Pricing Fields */}
               <div className="p-4 border-t space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 text-sm font-medium">
                       Quantity <span className="text-red-500">*</span>
                     </label>
+
                     <input
                       type="number"
                       disabled={isView}
-                      defaultValue={formData.quantity}
+                      value={formData.quantity || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          quantity: e.target.value,
+                        }))
+                      }
                       className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                       placeholder="0"
+                      min={0}
+                      step="1"
                     />
                     {errors.quantity && (
                       <p className="text-red-600 text-sm">{errors.quantity}</p>
@@ -549,9 +672,17 @@ export default function AddProductComponent({
                     <input
                       type="number"
                       disabled={isView}
-                      defaultValue={formData.price}
+                      value={formData.price || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          price: e.target.value,
+                        }))
+                      }
                       className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                       placeholder="0.00"
+                      min={0}
+                      step="0.01"
                     />
                     {errors.price && (
                       <p className="text-red-600 text-sm">{errors.price}</p>
@@ -564,11 +695,19 @@ export default function AddProductComponent({
                     <label className="block mb-1 text-sm font-medium">
                       Discount Type
                     </label>
-                    {/* discount_type_id */}
                     <Select
                       classNamePrefix="react-select"
                       isDisabled={isView}
                       options={discounttype}
+                      value={discounttype.find(
+                        (d) => d.value === formData.discount_type_id
+                      )}
+                      onChange={(opt) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          discount_type_id: opt?.value ?? null,
+                        }))
+                      }
                       placeholder="Choose"
                     />
                   </div>
@@ -580,9 +719,17 @@ export default function AddProductComponent({
                     <input
                       type="number"
                       disabled={isView}
-                      defaultValue={formData.discount_value}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                      placeholder="0"
+                      value={formData.discount_value || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          discount_value: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                      min={0}
+                      step="0.01"
                     />
                   </div>
                 </div>
@@ -595,45 +742,7 @@ export default function AddProductComponent({
               onToggle={() => setImagesOpen(!imagesOpen)}
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {media.map((item) => {
-                  const isSelected = selectedMedia.includes(item.media_id);
-                  const isPrimary = primaryMedia === item.media_id;
-
-                  return (
-                    <div
-                      key={item.media_id}
-                      onClick={() => {
-                        setSelectedMedia((prev) =>
-                          isSelected
-                            ? prev.filter((id) => id !== item.media_id)
-                            : [...prev, item.media_id]
-                        );
-                        if (!primaryMedia) setPrimaryMedia(item.media_id);
-                      }}
-                      className={`relative cursor-pointer rounded border bg-white p-1 transition ${isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"} `}
-                    >
-                      <Image
-                        src={getThumb(item.file_url, 200)}
-                        alt={item.file_name}
-                        width={200}
-                        height={200}
-                        className="rounded object-cover"
-                      />
-
-                      {/* Primary Badge */}
-                      {isPrimary && (
-                        <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
-                          Primary
-                        </span>
-                      )}
-
-                      {/* Selection Overlay */}
-                      {isSelected && (
-                        <div className="absolute inset-0 rounded bg-blue-500/10" />
-                      )}
-                    </div>
-                  );
-                })}
+                {mediaGrid}
               </div>
 
               {selectedMedia.length === 0 && (
@@ -645,22 +754,9 @@ export default function AddProductComponent({
           </div>
 
           <div className="flex justify-end gap-3">
-            {/* <button
-              type="button"
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              href='{route.profitloss}'
-            >
+            <Link href="/products" className="btn btn-secondary">
               Cancel
-            </button> */}
-
-            <Link href={route.productlist} className="btn btn-secondary">Cancel</Link>
-            {/* <button
-              // type="submit"
-              disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              {saving ? "Saving..." : "Add Product"}
-            </button> */}
+            </Link>
             {mode !== "view" && (
               <button
                 disabled={saving}

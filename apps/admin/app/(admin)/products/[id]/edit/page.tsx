@@ -1,15 +1,12 @@
-// apps/admin/app/(admin)/products/[id]/edit/page.tsx
+// app/(admin)/products/[id]/edit/page.tsx
 import AddProductComponent from "@/components/products/addproduct";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function EditProduct({ params }: PageProps) {
-  return (
-    <AddProductComponent
-      mode="edit"
-      productId={params.id}
-    />
-  );
+export default async function EditProduct({ params }: PageProps) {
+  const { id } = await params;
+
+  return <AddProductComponent mode="edit" productId={id} />;
 }

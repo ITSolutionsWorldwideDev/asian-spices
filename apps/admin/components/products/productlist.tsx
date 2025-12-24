@@ -2,27 +2,85 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "@/core/common/pagination/datatable";
-// import CollapesIcon from "@/core/common/tooltip-content/collapes";
-// import RefreshIcon from "@/core/common/tooltip-content/refresh";
-// import TooltipIcons from "@/core/common/tooltip-content/tooltipIcons";
-import { productlistdata } from "@/core/json/productlistdata";
+// import { productlistdata } from "@/core/json/productlistdata";
 import Brand from "@/core/modals/inventory/brand";
 import { all_routes } from "@/data/all_routes";
 
 import Link from "next/link";
 import { Download, Edit, Eye, Trash2 } from "react-feather";
 import { TbCirclePlus, TbTrash } from "react-icons/tb";
-import FilterBar from "./FilterBar";
+// import FilterBar from "./FilterBar";
+import { useToast } from "@repo/ui";
+
+/* ------------------------------------
+   Types
+------------------------------------ */
+type Product = {
+  product_id: number;
+  name: string;
+  sku: string;
+  item_code: string;
+  category: string;
+  subcategory: string;
+  brand: string;
+  price: string;
+  quantity: string;
+  status: number;
+};
 
 export default function ProductListComponent() {
-  const dataSource = productlistdata;
+  // const dataSource = productlistdata;
   const route = all_routes;
 
-  // Tailwind Modals state
+  const [dataSource, setProducts] = useState<Product[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
+  /* ------------------------------------
+       Fetch Products
+    ------------------------------------ */
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      setProducts(data.items || []);
+    } catch (err) {
+      console.error("Failed to load Products", err);
+      showToast("error", "Failed to load Products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  /* ------------------------------------
+     Delete
+  ------------------------------------ */
+  const handleDelete = async () => {
+    if (!selectedId) return;
+
+    try {
+      await fetch(`/api/products?id=${selectedId}`, {
+        method: "DELETE",
+      });
+
+      setShowDeleteModal(false);
+      setSelectedId(null);
+      fetchProducts();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
 
   const columns = [
     {
@@ -32,13 +90,13 @@ export default function ProductListComponent() {
     },
     {
       title: "Product",
-      dataIndex: "product",
+      dataIndex: "name",
       render: (text: string, record: any) => (
         <div className="flex items-center">
-          <Link href="#" className="avatar avatar-md mr-2">
+          {/* <Link href="#" className="avatar avatar-md mr-2">
             <img src={record.productImage} alt="product" />
-          </Link>
-          <Link href="#">{text}</Link>
+          </Link> */}
+          <Link href={`products/${record.product_id}`}>{text}</Link>
         </div>
       ),
       sorter: (a: any, b: any) => a.product.localeCompare(b.product),
@@ -59,41 +117,26 @@ export default function ProductListComponent() {
       sorter: (a: any, b: any) => a.price - b.price,
     },
     {
-      title: "Unit",
-      dataIndex: "unit",
-      sorter: (a: any, b: any) => a.unit.localeCompare(b.unit),
-    },
-    {
       title: "Qty",
-      dataIndex: "qty",
-      sorter: (a: any, b: any) => a.qty - b.qty,
-    },
-    {
-      title: "Created By",
-      dataIndex: "createdby",
-      render: (text: string, record: any) => (
-        <span className="flex items-center">
-          <Link href="/profile" className="mr-2">
-            <img src={record.img} alt="creator" className="w-6 h-6 rounded-full" />
-          </Link>
-          <Link href="/profile">{text}</Link>
-        </span>
-      ),
-      sorter: (a: any, b: any) => a.createdby.localeCompare(b.createdby),
+      dataIndex: "quantity",
+      sorter: (a: any, b: any) => a.quantity - b.quantity,
     },
     {
       title: "Action",
       dataIndex: "action",
       render: (text: any, record: any) => (
         <div className="flex gap-2">
-          <Link href={route.productdetails} className="p-2">
+          <Link href={`products/${record.product_id}`} className="p-2">
             <Eye size={16} />
           </Link>
-          <Link href={route.editproduct} className="p-2">
+          <Link href={`products/${record.product_id}/edit`} className="p-2">
             <Edit size={16} />
           </Link>
           <button
-            onClick={() => setShowDeleteModal(true)}
+            onClick={() => {
+              setSelectedId(record.category_id);
+              setShowDeleteModal(true);
+            }}
             className="p-2 text-red-500 hover:text-red-700"
           >
             <Trash2 size={16} />
@@ -114,15 +157,8 @@ export default function ProductListComponent() {
               <h6 className="text-gray-500">Manage your products</h6>
             </div>
 
-            {/* <ul className="flex gap-2">
-              <TooltipIcons />
-              <RefreshIcon />
-              <CollapesIcon />
-            </ul> */}
-
             <div className="flex flex-wrap gap-2">
               <Link
-                // href={route.addproduct}
                 href="/products/new"
                 className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
@@ -143,18 +179,20 @@ export default function ProductListComponent() {
           {/* ------------------------- FILTER BAR ------------------------- */}
           <div className="card table-list-card mb-4">
             <div className="card-header flex flex-wrap justify-between items-center gap-3">
-              <div className="search-set"></div>
-              <FilterBar />
+              {/* <div className="search-set"></div>
+              <FilterBar /> */}
             </div>
             {/* ------------------------- TABLE ------------------------- */}
             <div className="card-body">
               <div className="overflow-x-auto">
-                <Table columns={columns} dataSource={dataSource} />
+                {loading ? (
+                  <p className="text-center py-6">Loading...</p>
+                ) : (
+                  <Table columns={columns} dataSource={dataSource} rowKey="product_id" />
+                )}
               </div>
             </div>
           </div>
-
-          {/* <Brand /> */}
         </div>
       </div>
 
@@ -177,7 +215,7 @@ export default function ProductListComponent() {
                 Cancel
               </button>
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={handleDelete}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Yes, Delete
@@ -190,7 +228,7 @@ export default function ProductListComponent() {
       {/* ------------------------- IMPORT MODAL ------------------------- */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-         <Brand />
+          <Brand />
           {/* <div className="bg-white rounded-lg p-6 max-w-lg w-full">
             <h4 className="text-lg font-bold mb-4">Import Products</h4>
             <p className="text-gray-600 mb-4">Upload CSV or Excel file to import products.</p>
@@ -216,190 +254,3 @@ export default function ProductListComponent() {
   );
 }
 
-
-/* import Table from "@/core/common/pagination/datatable";
-import CollapesIcon from "@/core/common/tooltip-content/collapes";
-import RefreshIcon from "@/core/common/tooltip-content/refresh";
-import TooltipIcons from "@/core/common/tooltip-content/tooltipIcons";
-import { productlistdata } from "@/core/json/productlistdata";
-import Brand from "@/core/modals/inventory/brand";
-import { all_routes } from "@/data/all_routes";
-
-import Link from "next/link";
-import { Download, Edit, Eye, Trash2 } from "react-feather";
-import { TbCirclePlus, TbTrash } from "react-icons/tb";
-import FilterBar from "./FilterBar";
-
-export default function ProductListComponent() {
-  const dataSource = productlistdata;
-  const route = all_routes;
-
-  const columns = [
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      sorter: (a: any, b: any) => a.sku.localeCompare(b.sku),
-    },
-    {
-      title: "Product",
-      dataIndex: "product",
-      render: (text: string, record: any) => (
-        <div className="flex align-items-center">
-          <Link href="#" className="avatar avatar-md me-2">
-            <img src={record.productImage} alt="product" />
-          </Link>
-          <Link href="#">{text}</Link>
-        </div>
-      ),
-      sorter: (a: any, b: any) => a.product.localeCompare(b.product),
-    },
-
-    {
-      title: "Category",
-      dataIndex: "category",
-      sorter: (a: any, b: any) => a.category.localeCompare(b.category),
-    },
-    {
-      title: "Brand",
-      dataIndex: "brand",
-      sorter: (a: any, b: any) => a.brand.localeCompare(b.brand),
-    },
-    {
-      title: "Price",
-      dataIndex: "price",
-      sorter: (a: any, b: any) => a.price - b.price,
-    },
-    {
-      title: "Unit",
-      dataIndex: "unit",
-      sorter: (a: any, b: any) => a.unit.localeCompare(b.unit),
-    },
-    {
-      title: "Qty",
-      dataIndex: "qty",
-      sorter: (a: any, b: any) => a.qty - b.qty,
-    },
-    {
-      title: "Created By",
-      dataIndex: "createdby",
-      render: (text: string, record: any) => (
-        <span className="userimgname flex align-items-center">
-          <Link href="/profile" className="product-img me-2">
-            <img src={record.img} alt="creator" />
-          </Link>
-          <Link href="/profile">{text}</Link>
-        </span>
-      ),
-      sorter: (a: any, b: any) => a.createdby.localeCompare(b.createdby),
-    },
-    {
-      title: "Action",
-      dataIndex: "action",
-      render: () => (
-        <div className="action-table-data">
-          <div className="edit-delete-action flex">
-            <Link className="me-2 p-2" href={route.productdetails}>
-              <Eye className="feather-view" />
-            </Link>
-            <Link className="me-2 p-2" href={route.editproduct}>
-              <Edit className="feather-edit" />
-            </Link>
-            <Link
-              className="confirm-text p-2"
-              href="#"
-              data-bs-toggle="modal"
-              data-bs-target="#delete-modal"
-            >
-              <Trash2 className="feather-trash-2" />
-            </Link>
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <>
-      <div className="page-wrapper">
-        <div className="content">
-          <div className="page-header flex flex-wrap justify-content-between align-items-center gap-3">
-            <div>
-              <h4>Product List</h4>
-              <h6>Manage your products</h6>
-            </div>
-
-            <ul className="table-top-head flex gap-2">
-              <TooltipIcons />
-              <RefreshIcon />
-              <CollapesIcon />
-            </ul>
-
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={route.addproduct}
-                className="btn btn-primary flex align-items-center"
-              >
-                <TbCirclePlus className="me-1" size={18} />
-                Add Product
-              </Link>
-
-              <Link
-                href="#"
-                className="btn btn-secondary flex align-items-center"
-                data-bs-toggle="modal"
-                data-bs-target="#view-notes"
-              >
-                <Download className="me-2" />
-                Import Product
-              </Link>
-            </div>
-          </div>
-
-          
-          <div className="card table-list-card">
-            <div className="card-header flex flex-wrap justify-content-between align-items-center gap-3">
-              <div className="search-set"></div>
-              <FilterBar />
-            </div>
-            
-            <div className="card-body">
-              <div className="table-responsive">
-                <Table columns={columns} dataSource={dataSource} />
-              </div>
-            </div>
-          </div>
-
-          <Brand />
-        </div>
-      </div>
-
-      
-      <div className="modal fade" id="delete-modal">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content text-center p-3">
-            <span className="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2">
-              <TbTrash size={28} className="text-danger" />
-            </span>
-
-            <h4 className="fw-bold mb-2">Delete Product</h4>
-            <p className="text-gray-6">
-              Are you sure you want to delete product?
-            </p>
-
-            <div className="flex justify-content-center gap-2 mt-3">
-              <button
-                className="btn btn-secondary px-3"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
-              <button className="btn btn-primary px-3" data-bs-dismiss="modal">
-                Yes, Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-} */

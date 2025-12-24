@@ -7,11 +7,17 @@ interface Params {
 }
 
 /* ------------------ GET (Single Product) ------------------ */
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+
+  const { id } = await params;
+
   try {
     const product = await pool.query(
       `SELECT * FROM products WHERE product_id = $1`,
-      [params.id]
+      [id]
     );
 
     if (!product.rows.length) {
@@ -20,7 +26,7 @@ export async function GET(_: NextRequest, { params }: Params) {
 
     const images = await pool.query(
       `SELECT media_id FROM product_images WHERE product_id = $1`,
-      [params.id]
+      [id]
     );
 
     return NextResponse.json({
@@ -36,8 +42,12 @@ export async function GET(_: NextRequest, { params }: Params) {
 }
 
 /* ------------------ PUT (Update Product) ------------------ */
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
     const result = await pool.query(
@@ -49,13 +59,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
         category_id=$5,
         subcategory_id=$6,
         brand_id=$7,
-        description=$8,
-        price=$9,
-        quantity=$10,
-        discount_type_id=$11,
-        discount_value=$12,
+        country_of_origin=$8,
+        description=$9,
+        price=$10,
+        quantity=$11,
+        discount_type_id=$12,
+        discount_value=$13,
         updated_at=NOW()
-       WHERE product_id=$13
+       WHERE product_id=$14
        RETURNING *`,
       [
         body.name,
@@ -65,16 +76,24 @@ export async function PUT(req: NextRequest, { params }: Params) {
         body.category_id,
         body.subcategory_id,
         body.brand_id,
+        body.country_of_origin,
         body.description,
         body.price,
         body.quantity,
         body.discount_type_id,
         body.discount_value,
-        params.id,
+        id,
       ]
     );
 
-    return NextResponse.json(result.rows[0]);
+    if (result.rowCount === 0) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(result.rows[0], { status: 201 });
   } catch (e: any) {
     return NextResponse.json(
       { error: "Failed to update product", detail: e.message },
@@ -82,3 +101,15 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  await pool.query("DELETE FROM products WHERE product_id=$1", [id]);
+
+  return NextResponse.json({ success: true });
+}
+
