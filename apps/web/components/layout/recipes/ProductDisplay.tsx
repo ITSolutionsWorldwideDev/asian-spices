@@ -37,7 +37,7 @@ const ProductDisplay = () => {
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
     },
 
-     {
+    {
       title: "Chicken Pizza Recipe",
       image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
 
@@ -45,39 +45,7 @@ const ProductDisplay = () => {
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
     },
 
-     {
-      title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
-
-      description:
-        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
-    },
-
-     {
-      title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
-
-      description:
-        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
-    },
-
-     {
-      title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
-
-      description:
-        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
-    },
-
-     {
-      title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
-
-      description:
-        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
-    },
-
-     {
+    {
       title: "Chicken Pizza Recipe",
       image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
 
@@ -101,6 +69,37 @@ const ProductDisplay = () => {
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
     },
 
+    {
+      title: "Chicken Pizza Recipe",
+      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+
+      description:
+        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
+    },
+
+    {
+      title: "Chicken Pizza Recipe",
+      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+
+      description:
+        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
+    },
+
+    {
+      title: "Chicken Pizza Recipe",
+      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+
+      description:
+        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
+    },
+
+    {
+      title: "Chicken Pizza Recipe",
+      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+
+      description:
+        "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
+    },
 
     {
       title: "Chicken Pizza Recipe",
@@ -126,31 +125,31 @@ const ProductDisplay = () => {
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-3 gap-8 mt-10">
         {visibleStores.map((card, idx) => (
-          <div className="shadow-2xl rounded-2xl">
+          <div className="shadow-2xl rounded-2xl " key={idx}>
             <RecipesProductCard card={card} />
           </div>
         ))}
       </div>
       <div>
         {recipes_product_data.length > 12 && (
-                <div className="flex justify-center mt-8 mb-10">
-                  <button
-                    onClick={() => setShowAllStores(!showAllStores)}
-                    className="relative flex items-center justify-center px-10 py-5 bg-black  text-white font-semibold rounded-lg transition-colors group cursor-pointer"
-                  >
-                    <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
-                    
-                    {showAllStores ? (
-                      "See Less"
-                    ) : (
-                      <>
-                        See More
-                        <FaArrowRight className="ml-5" />
-                      </>
-                    )}
-                  </button>
-                </div>
+          <div className="flex justify-center mt-8 mb-10">
+            <button
+              onClick={() => setShowAllStores(!showAllStores)}
+              className="relative flex items-center justify-center px-10 py-5 bg-black  text-white font-semibold rounded-lg transition-colors group cursor-pointer"
+            >
+              <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
+
+              {showAllStores ? (
+                "See Less"
+              ) : (
+                <>
+                  See More
+                  <FaArrowRight className="ml-5" />
+                </>
               )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

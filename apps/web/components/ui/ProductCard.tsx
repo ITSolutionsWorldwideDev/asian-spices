@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import { GoTag } from "react-icons/go";
-import { CiHeart } from "react-icons/ci";
-import { FaHeart } from "react-icons/fa";
 import { useState } from "react";
 import { BsCartPlus } from "react-icons/bs";
 import { FaArrowRight } from "react-icons/fa6";
+import { useCartStore } from "@/store/useCartStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
+import { Heart } from "lucide-react";
+import { useEffect } from "react";
 
 type Product = {
   id: number;
@@ -27,15 +29,23 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ item }: ProductCardProps) {
-  console.log(item);
-  const [liked, setLiked] = useState<Record<number, boolean>>({});
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+
+  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+
+  const [mounted, setMounted] = useState(false);
+
+  // Wait for component to mount on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const addToCart = useCartStore((state) => state.addToCart);
+  const items = useWishlistStore((state) => state.items);
+  console.log(items);
+
   const [showAll, setShowAll] = useState(false);
 
   const visibleProducts = showAll ? item : item.slice(0, 8);
-
-  const toggleLike = (id: number) => {
-    setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   return (
     <div>
@@ -61,14 +71,15 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Like button */}
             <button
-              onClick={() => toggleLike(product.id)}
+              onClick={() => {
+                toggleWishlist(product);
+                // isInWishlist(product.id);
+              }}
               className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
             >
-              {liked[product.id] ? (
-                <FaHeart className="w-5 h-5 text-red-500" />
-              ) : (
-                <CiHeart className="w-5 h-5 text-gray-700" />
-              )}
+              <Heart
+                className={`w-5 h-5  transition ${mounted && isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-500 "}`}
+              />
             </button>
 
             {/* Product left in stock */}
@@ -84,7 +95,7 @@ export default function ProductCard({ item }: ProductCardProps) {
               alt={product.title}
               width={120}
               height={100}
-              className="h-70 w-full object-cover rounded-xl hover:scale-110"
+              className="h-70 w-full object-cover rounded-xl "
             />
 
             {/* Rating */}
@@ -112,7 +123,16 @@ export default function ProductCard({ item }: ProductCardProps) {
             </div>
 
             {/* Button */}
-            <button className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 ">
+            <button
+              className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
+              onClick={() =>
+                addToCart({
+                  id: product.id,
+                  title: product.title,
+                  price: product.price,
+                })
+              }
+            >
               <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
             </button>
           </div>

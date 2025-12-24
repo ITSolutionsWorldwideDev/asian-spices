@@ -1,23 +1,21 @@
 import React from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-interface RecipeCard{
-  title:string;
-  image:string;
-  description:string;
+import Link from "next/link";
+interface RecipeCard {
+  title: string;
+  image: string;
+  description: string;
 }
 
 interface RecipesProductCardProps {
   card: RecipeCard;
 }
 
-const RecipesProductCard = ({card}:RecipesProductCardProps) => {
+const RecipesProductCard = ({ card }: RecipesProductCardProps) => {
+  const navigationLink = card.title.toLowerCase().replace(/\s+/g, "");
 
-  
- 
   return (
-   
-
     <div className="h-auto cursor-pointer">
       <div className="relative  h-64 rounded-2xl overflow-hidden m-5">
         <Image
@@ -26,9 +24,6 @@ const RecipesProductCard = ({card}:RecipesProductCardProps) => {
           fill
           className=" object-cover"
         />
-
-       
-
       </div>
 
       {/* Content */}
@@ -40,8 +35,20 @@ const RecipesProductCard = ({card}:RecipesProductCardProps) => {
         </p>
 
         <button className="w-full flex items-center justify-end  gap-2 text-sm font-semibold text-black  transition cursor-pointer">
-          
-          Explore <ArrowRight size={16} className="hover:translate-x-20" />
+          <Link
+            href={{
+              pathname: `/recipes/${navigationLink}`,
+              query: {
+                title: card.title,
+                description: card.description,
+                image:card.image,
+              },
+            }}
+            className="flex items-center justify-center "
+          >
+            Explore{" "}
+            <ArrowRight size={16} className="hover:translate-x-20 mt-1 ml-1" />
+          </Link>
         </button>
       </div>
     </div>
