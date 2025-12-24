@@ -4,9 +4,9 @@
 
 import { useState } from "react";
 import Table from "@/core/common/pagination/datatable";
-import CollapesIcon from "@/core/common/tooltip-content/collapes";
-import RefreshIcon from "@/core/common/tooltip-content/refresh";
-import TooltipIcons from "@/core/common/tooltip-content/tooltipIcons";
+// import CollapesIcon from "@/core/common/tooltip-content/collapes";
+// import RefreshIcon from "@/core/common/tooltip-content/refresh";
+// import TooltipIcons from "@/core/common/tooltip-content/tooltipIcons";
 import { productlistdata } from "@/core/json/productlistdata";
 import Brand from "@/core/modals/inventory/brand";
 import { all_routes } from "@/data/all_routes";
@@ -105,7 +105,7 @@ export default function ProductListComponent() {
 
   return (
     <>
-      <div className="page-wrapper">
+      <div className="pt-0 page-wrapper">
         <div className="content">
           {/* ------------------------- PAGE HEADER ------------------------- */}
           <div className="page-header flex flex-wrap justify-between items-center gap-3 mb-4">
@@ -114,11 +114,11 @@ export default function ProductListComponent() {
               <h6 className="text-gray-500">Manage your products</h6>
             </div>
 
-            <ul className="flex gap-2">
+            {/* <ul className="flex gap-2">
               <TooltipIcons />
               <RefreshIcon />
               <CollapesIcon />
-            </ul>
+            </ul> */}
 
             <div className="flex flex-wrap gap-2">
               <Link

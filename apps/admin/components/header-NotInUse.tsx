@@ -81,10 +81,10 @@ export default function Header() {
               <img src="assets/img/logo.svg" alt="Img" />
             </a>
             <a href="index.html" className="logo logo-white">
-              <img src="assets/img/logo-white.svg" alt="Img" />
+              <img src="assets/img/logo.svg" alt="Img" />
             </a>
             <a href="index.html" className="logo-small">
-              <img src="assets/img/logo-small.png" alt="Img" />
+              <img src="assets/img/logo.svg" alt="Img" />
             </a>
           </div>
           {/* <!-- /Logo --> */}

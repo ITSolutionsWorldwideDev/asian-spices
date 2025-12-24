@@ -1,11 +1,15 @@
 // apps/admin/app/(admin)/products/[id]/page.tsx
-
 import AddProductComponent from "@/components/products/addproduct";
 
-export default function ViewProduct() {
+interface PageProps {
+  params: { id: string };
+}
+
+export default function ViewProduct({ params }: PageProps) {
   return (
-    <>
-      <AddProductComponent />
-    </>
+    <AddProductComponent
+      mode="view"
+      productId={params.id}
+    />
   );
 }

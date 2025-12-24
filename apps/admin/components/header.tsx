@@ -82,14 +82,14 @@ export default function Header() {
 
         {/* Search input (desktop only) */}
         <div className="hidden md:flex flex-1 mx-4 relative max-w-md">
-          <input
+          {/* <input
             type="text"
             placeholder="Search"
             className="w-full border border-gray-300 rounded-md py-1 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
             <Search />
-          </span>
+          </span> */}
         </div>
 
         {/* Right menu */}

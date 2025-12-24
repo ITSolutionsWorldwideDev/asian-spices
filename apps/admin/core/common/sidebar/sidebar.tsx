@@ -75,10 +75,10 @@ export default function Sidebar() {
               <img src="assets/img/logo.svg" alt="Img" />
             </Link>
             <Link href={route.newdashboard} className="logo logo-white">
-              <img src="assets/img/logo-white.svg" alt="Img" />
+              <img src="assets/img/logo.svg" alt="Img" />
             </Link>
             <Link href={route.newdashboard} className="logo-small">
-              <img src="assets/img/logo-small.png" alt="Img" />
+              <img src="assets/img/logo.svg" alt="Img" />
             </Link>
             <Link id="toggle_btn" href="#" onClick={handlesidebar}>
               <i data-feather="chevrons-left" />

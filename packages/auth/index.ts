@@ -81,35 +81,6 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-
-    // async session({ session, token }) {
-    //   if (token) {
-    //     // Assert session.user is our extended type
-    //     const user = session.user as {
-    //       id: string;
-    //       role?: string;
-    //       name?: string | null;
-    //       email?: string | null;
-    //       image?: string | null;
-    //     };
-
-    //     user.id = token.id!;
-    //     user.role = token.role;
-
-    //     session.user = user;
-    //   }
-    //   return session;
-    // },
-    // async session({ session, token }) {
-    //   if (token) {
-    //     session.user =
-    //       session.user ||
-    //       ({} as { id: string; role?: string; name?: string; email?: string });
-    //     session.user.id = token.id!;
-    //     session.user.role = token.role;
-    //   }
-    //   return session;
-    // },
   },
 
   pages: {
@@ -120,20 +91,3 @@ export const authOptions: NextAuthOptions = {
 import { getServerSession } from "next-auth";
 
 export const auth = () => getServerSession(authOptions);
-
-// callbacks: {
-//   async jwt({ token, user }) {
-//     if (user) {
-//       token.id = user.id;
-//       token.role = user.role;
-//     }
-//     return token;
-//   },
-//   async session({ session, token }) {
-//     if (token) {
-//       session.user.id = token.id as string;
-//       session.user.role = token.role as string;
-//     }
-//     return session;
-//   },
-// },

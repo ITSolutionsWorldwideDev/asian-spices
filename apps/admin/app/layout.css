@@ -146,6 +146,10 @@ ul .btn-primary:not(:disabled):not(.disabled):active:focus, ul .btn-primary:not(
   background-color: #FF0000 !important;
 }
 
+.bg-error {
+  background-color: #FF0000 !important;
+}
+
 .bg-dark {
   background-color: #1B2850 !important;
 }
@@ -288,6 +292,25 @@ ul .btn-primary:not(:disabled):not(.disabled):active:focus, ul .btn-primary:not(
   background-color: red !important;
 }
 
+.bg-error {
+  background-color: #FF0000 !important;
+}
+.bg-error.bg-opacity-10 {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+}
+.bg-error.bg-opacity-25 {
+  background-color: rgba(255, 0, 0, 0.25) !important;
+}
+.bg-error.bg-opacity-50 {
+  background-color: rgba(255, 0, 0, 0.5) !important;
+}
+.bg-error.bg-opacity-75 {
+  background-color: rgba(255, 0, 0, 0.75) !important;
+}
+.bg-error.bg-opacity-100 {
+  background-color: red !important;
+}
+
 .bg-dark {
   background-color: #1B2850 !important;
 }
@@ -352,6 +375,11 @@ ul .btn-primary:not(:disabled):not(.disabled):active:focus, ul .btn-primary:not(
 }
 
 .bg-danger {
+  background-color: #FF0000 !important;
+  color: #ffffff;
+}
+
+.bg-error {
   background-color: #FF0000 !important;
   color: #ffffff;
 }
@@ -495,6 +523,11 @@ ul .btn-primary:not(:disabled):not(.disabled):active:focus, ul .btn-primary:not(
   color: #ffffff;
 }
 
+.bg-error-gradient {
+  background: linear-gradient(to right, #FF0000 0%, #fd4a68 100%) !important;
+  color: #ffffff;
+}
+
 .bg-orange-gradient {
   background: linear-gradient(to right, #E04F16 0%, #FBB034 100%) !important;
   color: #ffffff;
@@ -613,6 +646,15 @@ ul .btn-primary:not(:disabled):not(.disabled):active:focus, ul .btn-primary:not(
   color: #FF0000 !important;
 }
 .bg-danger-transparent:hover {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  color: #FF0000 !important;
+}
+
+.bg-error-transparent {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  color: #FF0000 !important;
+}
+.bg-error-transparent:hover {
   background-color: rgba(255, 0, 0, 0.1) !important;
   color: #FF0000 !important;
 }

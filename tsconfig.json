@@ -8,8 +8,20 @@
       "@acme/db": ["packages/db/src/index.ts"],
       "@acme/auth": ["packages/auth/index.ts"],
       "@acme/utils": ["packages/utils"],
-      "@acme/ui": ["packages/ui"]
+      "@acme/types": ["packages/types"],
+      "@acme/ui": ["packages/ui"],
+      "@repo/ui": ["packages/ui/src/index.ts"]
     }
   },
   "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
 }
+
+/* 
+"paths": {
+  "@acme/db": ["packages/db/src/index.ts"],
+  "@acme/auth": ["packages/auth/index.ts"],
+  "@acme/utils": ["packages/utils/index.ts"],
+  "@acme/types": ["packages/types/index.ts"],
+  "@acme/ui": ["packages/ui/index.ts"]
+}
+*/

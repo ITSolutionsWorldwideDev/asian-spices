@@ -8,7 +8,9 @@ import Footer from "@/components/footer";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
 import "../layout.css";
+import { ToastProvider } from "@repo/ui";
 // import "../globals.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -24,11 +26,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (status === "unauthenticated") return null;
 
   return (
+    <ToastProvider>
     <div className="main-wrapper">
       <Header />
       <Sidebar />
       <main>{children}</main>
       <Footer />
     </div>
+    </ToastProvider>
   );
 }

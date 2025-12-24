@@ -22,6 +22,7 @@
     "paths": {
       "@/*": ["./*"],
       "@acme/ui": ["../../packages/ui"],
+      "@repo/ui": ["../../packages/ui/src"],
       "@acme/utils": ["../../packages/utils"],
       "@acme/db": ["../../packages/db"]
     }

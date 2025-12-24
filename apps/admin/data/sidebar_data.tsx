@@ -38,6 +38,20 @@ export const SidebarData = [
         submenu: false,
       },
       {
+        label: "Sub Category",
+        link: "/sub-categories",
+        icon: "carousel-vertical",
+        showSubRoute: false,
+        submenu: false,
+      },
+      {
+        label: "Brands",
+        link: "/brand",
+        icon: "triangles",
+        showSubRoute: false,
+        submenu: false,
+      },
+      {
         label: "Products",
         link: "/products",
         icon: "box",
@@ -46,7 +60,14 @@ export const SidebarData = [
       },
       {
         label: "Create Product",
-        link: "/add-product",
+        link: "/products/new",
+        icon: "table-plus",
+        showSubRoute: false,
+        submenu: false,
+      },
+      {
+        label: "Media",
+        link: "/media",
         icon: "table-plus",
         showSubRoute: false,
         submenu: false,
@@ -75,6 +96,13 @@ export const SidebarData = [
       //     { label: "POS Orders", link: route.posorder, showSubRoute: false },
       //   ],
       // },
+      {
+        label: "Orders",
+        link: route.onlineorder,
+        icon: "file-invoice",
+        showSubRoute: false,
+        submenu: false,
+      },
       {
         label: "Invoices",
         link: route.invoice,

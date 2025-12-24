@@ -2557,6 +2557,28 @@ body {
       );
     }
   }
+  .bg-error {
+    background-color: var(--color-danger);
+  }
+  .bg-error-100 {
+    background-color: var(--color-danger-100);
+  }
+  .bg-error-300 {
+    background-color: var(--color-danger-300);
+  }
+  .bg-error-transparent {
+    background-color: var(--color-danger-transparent);
+  }
+  .bg-error\/10 {
+    background-color: color-mix(in srgb, #ff0000 10%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(
+        in oklab,
+        var(--color-danger) 10%,
+        transparent
+      );
+    }
+  }
   .bg-dark {
     background-color: var(--color-dark);
   }
@@ -4238,6 +4260,12 @@ body {
       background-color: var(--color-danger-700);
     }
   }
+  .before\:bg-error-700 {
+    &::before {
+      content: var(--tw-content);
+      background-color: var(--color-danger-700);
+    }
+  }
   .before\:bg-orange {
     &::before {
       content: var(--tw-content);
@@ -4534,6 +4562,20 @@ body {
     }
   }
   .hover\:bg-danger-900 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-danger-900);
+      }
+    }
+  }
+  .hover\:bg-error {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-danger);
+      }
+    }
+  }
+  .hover\:bg-error-900 {
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-danger-900);

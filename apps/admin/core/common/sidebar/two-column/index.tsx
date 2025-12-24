@@ -160,10 +160,10 @@ const TwoColumnSidebar = () => {
                                     <img src="assets/img/logo.svg" alt="Img" />
                                 </Link>
                                 <Link href={route.newdashboard} className="logo logo-white">
-                                    <img src="assets/img/logo-white.svg" alt="Img" />
+                                    <img src="assets/img/logo.svg" alt="Img" />
                                 </Link>
                                 <Link href={route.newdashboard} className="logo-small">
-                                    <img src="assets/img/logo-small.png" alt="Img" />
+                                    <img src="assets/img/logo.svg" alt="Img" />
                                 </Link>
                             </div>
                             {/* /Logo */}
