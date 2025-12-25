@@ -2,23 +2,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
-interface Params {
-  params: { id: string };
-}
+// interface Params {
+//   params: { id: string };
+// }
 
-export async function POST(req: NextRequest, { params }: Params) {
+// export async function POST(req: NextRequest, { params }: Params) {
+//   try {
+//     const { mediaIds, primaryMediaId } = await req.json();
+
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
   try {
     const { mediaIds, primaryMediaId } = await req.json();
 
+
     await pool.query(`DELETE FROM product_images WHERE product_id=$1`, [
-      params.id,
+      id,
     ]);
 
     for (const mediaId of mediaIds) {
       await pool.query(
         `INSERT INTO product_images(product_id, media_id, is_primary)
          VALUES ($1, $2, $3)`,
-        [params.id, mediaId, mediaId === primaryMediaId]
+        [id, mediaId, mediaId === primaryMediaId]
       );
     }
 

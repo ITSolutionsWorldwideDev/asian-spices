@@ -140,7 +140,7 @@ const AddCoupons = () => {
                       </div>
                       <div className="mb-3 summer-description-box">
                         <label className="form-label">Description</label>
-                        <TextEditor />
+                        {/* <TextEditor /> */}
                         <p>Maximum 60 Words</p>
                       </div>
 

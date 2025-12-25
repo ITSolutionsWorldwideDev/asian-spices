@@ -155,7 +155,7 @@ const AddLeaveEmployee = () => {
                                         <div className="col-lg-12">
                                             <div className="summer-description-box mb-0">
                                                 <label className="form-label">Reason</label>
-                                                <TextEditor />
+                                                {/* <TextEditor /> */}
                                             </div>
                                         </div>
                                     </div>

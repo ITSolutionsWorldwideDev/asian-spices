@@ -632,7 +632,7 @@ const AddShift = () => {
                                                 <div className="input-blocks summer-description-box">
                                                     <label>Description</label>
                                                     <div id="summernote" />
-                                                    <TextEditor />
+                                                    {/* <TextEditor /> */}
                                                 </div>
                                             </div>
                                         </div>

@@ -118,7 +118,7 @@ const TodoModal = () => {
                     <div className="col-lg-12">
                       <div className="mb-3 summer-description-box notes-summernote">
                         <label className="form-label">Descriptions</label>
-                        <TextEditor />
+                        {/* <TextEditor /> */}
                         <p>Maximum 60 Characters</p>
                       </div>
                     </div>
@@ -243,7 +243,7 @@ const TodoModal = () => {
                     <div className="col-lg-12">
                       <div className="input-blocks summer-description-box notes-summernote">
                         <label className="form-label">Descriptions</label>
-                        <TextEditor />
+                        {/* <TextEditor /> */}
                         <p>Maximum 60 Characters</p>
                       </div>
                     </div>
@@ -530,7 +530,7 @@ const TodoModal = () => {
                           <label className="form-label">
                             Descriptions<span className="text-danger ms-1">*</span>
                           </label>
-                          <TextEditor />
+                          {/* <TextEditor /> */}
                         </div>
                       </div>
                       <div className="col-12">

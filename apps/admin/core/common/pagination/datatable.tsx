@@ -40,7 +40,7 @@ const Datatable = ({ columns, dataSource, rowKey = "id" }: DatatableProps) => {
 
   return (
     <>
-      <div className="search-set table-search-set">
+      {/* <div className="search-set table-search-set">
         <div className="search-input">
           <div className="dataTables_filter">
             <input
@@ -51,7 +51,7 @@ const Datatable = ({ columns, dataSource, rowKey = "id" }: DatatableProps) => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       <Table
         className="table datanew dataTable no-footer w-full"

@@ -1,18 +1,14 @@
 // apps/admin/components/products/productlist.tsx
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 import Table from "@/core/common/pagination/datatable";
-// import { productlistdata } from "@/core/json/productlistdata";
-import Brand from "@/core/modals/inventory/brand";
-import { all_routes } from "@/data/all_routes";
-
 import Link from "next/link";
 import { Download, Edit, Eye, Trash2 } from "react-feather";
 import { TbCirclePlus, TbTrash } from "react-icons/tb";
-// import FilterBar from "./FilterBar";
+import FilterBar from "./FilterBar";
 import { useToast } from "@repo/ui";
+import ProductImportModal from "./ProductImportModal";
 
 /* ------------------------------------
    Types
@@ -30,27 +26,41 @@ type Product = {
   status: number;
 };
 
-export default function ProductListComponent() {
-  // const dataSource = productlistdata;
-  const route = all_routes;
+type Filters = {
+  search?: string;
+  category?: string;
+  brand?: string;
+  status?: string;
+  sort?: string;
+};
 
-  const [dataSource, setProducts] = useState<Product[]>([]);
+export default function ProductListComponent() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+
   /* ------------------------------------
        Fetch Products
     ------------------------------------ */
-  const fetchProducts = async () => {
+
+  const fetchProducts = async (filters: Filters = {}) => {
     try {
       setLoading(true);
-      const res = await fetch("/api/products");
+
+      const params = new URLSearchParams(
+        Object.entries(filters).filter(([_, v]) => v) as any
+      );
+
+      const res = await fetch(`/api/products?${params.toString()}`);
       const data = await res.json();
+
       setProducts(data.items || []);
-    } catch (err) {
-      console.error("Failed to load Products", err);
-      showToast("error", "Failed to load Products");
+    } catch {
+      showToast("error", "Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -59,9 +69,6 @@ export default function ProductListComponent() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
 
   /* ------------------------------------
      Delete
@@ -122,6 +129,15 @@ export default function ProductListComponent() {
       sorter: (a: any, b: any) => a.quantity - b.quantity,
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      render: (s: number) => (
+        <span className={`badge ${s ? "badge-success" : "badge-danger"}`}>
+          {s ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
       title: "Action",
       dataIndex: "action",
       render: (text: any, record: any) => (
@@ -179,8 +195,8 @@ export default function ProductListComponent() {
           {/* ------------------------- FILTER BAR ------------------------- */}
           <div className="card table-list-card mb-4">
             <div className="card-header flex flex-wrap justify-between items-center gap-3">
-              {/* <div className="search-set"></div>
-              <FilterBar /> */}
+              {/* <div className="search-set"></div> */}
+              <FilterBar onApply={fetchProducts} />
             </div>
             {/* ------------------------- TABLE ------------------------- */}
             <div className="card-body">
@@ -188,7 +204,11 @@ export default function ProductListComponent() {
                 {loading ? (
                   <p className="text-center py-6">Loading...</p>
                 ) : (
-                  <Table columns={columns} dataSource={dataSource} rowKey="product_id" />
+                  <Table
+                    columns={columns}
+                    dataSource={products}
+                    rowKey="product_id"
+                  />
                 )}
               </div>
             </div>
@@ -228,8 +248,21 @@ export default function ProductListComponent() {
       {/* ------------------------- IMPORT MODAL ------------------------- */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <Brand />
-          {/* <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+          <ProductImportModal
+            onClose={() => setShowImportModal(false)}
+            onSuccess={() => {
+              fetchProducts(); // refresh list after import
+              showToast("success", "Products imported successfully");
+            }}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+{
+  /* <div className="bg-white rounded-lg p-6 max-w-lg w-full">
             <h4 className="text-lg font-bold mb-4">Import Products</h4>
             <p className="text-gray-600 mb-4">Upload CSV or Excel file to import products.</p>
             <input type="file" className="w-full border rounded p-2 mb-4" />
@@ -247,10 +280,5 @@ export default function ProductListComponent() {
                 Import
               </button>
             </div>
-          </div> */}
-        </div>
-      )}
-    </>
-  );
+          </div> */
 }
-

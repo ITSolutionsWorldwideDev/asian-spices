@@ -226,7 +226,7 @@ const AddPurchaseReturn = () => {
                               <label className="form-label">Description</label>
                               <div id="summernote">
                                 {" "}
-                                <TextEditor />
+                                {/* <TextEditor /> */}
                               </div>
                               <p className="mt-1">Maximum 60 Words</p>
                             </div>

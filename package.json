@@ -100,6 +100,7 @@
     "tailwindcss": "^4.1.17",
     "uploadthing": "^7.7.4",
     "weather-icons-react": "^1.2.0",
+    "xlsx": "^0.18.5",
     "yet-another-react-lightbox": "^3.27.0",
     "zustand": "^5.0.9"
   }

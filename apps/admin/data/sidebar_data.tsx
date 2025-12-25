@@ -1,5 +1,4 @@
 import { all_routes } from "@/data/all_routes";
-
 const route = all_routes;
 
 export const SidebarData = [
@@ -13,14 +12,6 @@ export const SidebarData = [
         label: "Dashboard",
         icon: "layout-grid",
         link: "/dashboard",
-        // submenu: true,
-        // showSubRoute: false,
-
-        // submenuItems: [
-        //   { label: "Admin Dashboard", link: "/dashboard" },
-        //   // { label: "Admin Dashboard 2", link: "/admin-dashboard" },
-        //   // { label: "Sales Dashboard", link: "/sales-dashboard" },
-        // ],
       },
     ],
   },
@@ -74,7 +65,6 @@ export const SidebarData = [
       },
     ],
   },
-
   {
     label: "Sales",
     submenuOpen: true,
@@ -82,23 +72,9 @@ export const SidebarData = [
     submenu: false,
     showSubRoute: false,
     submenuItems: [
-      // {
-      //   label: "Sales",
-      //   icon: "layout-grid",
-      //   showSubRoute: false,
-      //   submenu: true,
-      //   submenuItems: [
-      //     {
-      //       label: "Online Orders",
-      //       link: route.onlineorder,
-      //       showSubRoute: false,
-      //     },
-      //     { label: "POS Orders", link: route.posorder, showSubRoute: false },
-      //   ],
-      // },
       {
         label: "Orders",
-        link: route.onlineorder,
+        link: "/orders",
         icon: "file-invoice",
         showSubRoute: false,
         submenu: false,
@@ -110,36 +86,8 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
-      // {
-      //   label: "Sales Return",
-      //   link: "/sales-returns",
-      //   icon: "receipt-refund",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
-      // {
-      //   label: "Quotation",
-      //   link: "/quotation-list",
-      //   icon: "files",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
-      // {
-      //   label: "POS",
-      //   icon: "device-laptop",
-      //   showSubRoute: false,
-      //   submenu: true,
-      //   submenuItems: [
-      //     { label: "POS 1", link: "/pos", showSubRoute: false },
-      //     { label: "POS 2", link: "/pos-2", showSubRoute: false },
-      //     { label: "POS 3", link: "/pos-3", showSubRoute: false },
-      //     { label: "POS 4", link: "/pos-4", showSubRoute: false },
-      //     { label: "POS 5", link: "/pos-5", showSubRoute: false },
-      //   ],
-      // },
     ],
   },
-
   {
     label: "People",
     submenuOpen: true,
@@ -154,37 +102,8 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
-      // {
-      //   label: "Billers",
-      //   link: "/billers",
-      //   icon: "user-up",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
-      // {
-      //   label: "Suppliers",
-      //   link: "/suppliers",
-      //   icon: "user-dollar",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
-      // {
-      //   label: "Stores",
-      //   link: "/store-list",
-      //   icon: "home-bolt",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
-      // {
-      //   label: "Warehouses",
-      //   link: "/warehouse",
-      //   icon: "archive",
-      //   showSubRoute: false,
-      //   submenu: false,
-      // },
     ],
   },
-
   {
     label: "User Management",
     submenuOpen: true,
@@ -203,12 +122,6 @@ export const SidebarData = [
         icon: "jump-rope",
         showSubRoute: false,
       },
-      // {
-      //   label: "Delete Account Request",
-      //   link: "/delete-account",
-      //   icon: "trash-x",
-      //   showSubRoute: false,
-      // },
     ],
   },
   {

@@ -698,7 +698,7 @@ const EditShift = () => {
                                                 <div className="input-blocks summer-description-box">
                                                     <label>Description</label>
                                                     <div id="summernote2" />
-                                                    <TextEditor/>
+                                                    {/* <TextEditor/> */}
                                                 </div>
                                             </div>
                                         </div>

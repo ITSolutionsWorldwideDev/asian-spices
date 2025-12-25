@@ -257,7 +257,7 @@ const EditPurchaseReturns = () => {
                           <div className="summer-description-box">
                             <label className="form-label">Description</label>
                             <div id="summernote2">
-                              <TextEditor />
+                              {/* <TextEditor /> */}
                             </div>
                             <p className="mt-1">Maximum 60 Words</p>
                           </div>

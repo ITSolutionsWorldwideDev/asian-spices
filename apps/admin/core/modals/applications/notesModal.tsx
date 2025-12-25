@@ -149,7 +149,7 @@ const NotesModal = () => {
                       <div className="col-lg-12">
                         <div className="mb-3 summer-description-box notes-summernote">
                           <label className="form-label">Descriptions</label>
-                          <TextEditor />
+                          {/* <TextEditor /> */}
                           <p>Maximum 60 Characters</p>
                         </div>
                       </div>
@@ -280,7 +280,7 @@ const NotesModal = () => {
                       <div className="col-lg-12">
                         <div className="input-blocks summer-description-box notes-summernote">
                           <label className="form-label">Descriptions</label>
-                          <TextEditor />
+                          {/* <TextEditor /> */}
                           <p>Maximum 60 Characters</p>
                         </div>
                       </div>

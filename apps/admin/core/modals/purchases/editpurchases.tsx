@@ -214,7 +214,7 @@ const EditPurchases = () => {
                       <div className="input-blocks summer-description-box">
                         <label>Notes</label>
                         <div id="summernote" />
-                        <TextEditor />
+                        {/* <TextEditor /> */}
                       </div>
                     </div>
                     <div className="col-lg-12">

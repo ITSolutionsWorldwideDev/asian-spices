@@ -12093,7 +12093,8 @@ table.dataTable {
 .page-wrapper {
   transition: all 0.5s ease;
   margin: 0 0 0 252px;
-  padding: 65px 0 0;
+  /* padding: 65px 0 0; */
+  padding: 0 0 0;
   position: relative;
   left: 0;
   transition: all 0.2s ease;
@@ -12101,7 +12102,8 @@ table.dataTable {
 @media (max-width: 991.96px) {
   .page-wrapper {
     margin: 0;
-    padding: 65px 0 0;
+    /* padding: 65px 0 0; */
+    padding: 35px 0 0;
   }
 }
 .page-wrapper .content {

@@ -4,6 +4,80 @@ import { pool } from "@acme/db";
 
 /* ------------------ GET (List Products) ------------------ */
 export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+
+  const search = searchParams.get("search");
+  const category = searchParams.get("category");
+  const brand = searchParams.get("brand");
+  const status = searchParams.get("status");
+  const sort = searchParams.get("sort");
+
+  const values: any[] = [];
+  let where = "WHERE 1=1";
+
+  if (search) {
+    values.push(`%${search}%`);
+    where += `
+      AND (
+        p.name ILIKE $${values.length}
+        OR p.sku ILIKE $${values.length}
+      )
+    `;
+  }
+
+  if (category) {
+    values.push(`%${category}%`);
+    where += ` AND c.category ILIKE $${values.length}`;
+  }
+
+  if (brand) {
+    values.push(`%${brand}%`);
+    where += ` AND b.name ILIKE $${values.length}`;
+  }
+
+  if (status !== null && status !== "") {
+    values.push(status);
+    where += ` AND p.status = $${values.length}`;
+  }
+
+  let orderBy = "ORDER BY p.created_at DESC";
+  if (sort === "price_asc") orderBy = "ORDER BY p.price ASC";
+  if (sort === "price_desc") orderBy = "ORDER BY p.price DESC";
+
+  /* const query = `
+    SELECT
+      p.product_id,
+      p.name,
+      p.sku,
+      p.price,
+      p.quantity,
+      p.status,
+      c.category,
+      b.name AS brand
+    FROM products p
+    LEFT JOIN categories c ON c.category_id = p.category_id
+    LEFT JOIN brand b ON b.brand_id = p.brand_id
+    ${where}
+    ${orderBy}
+  `; */
+
+  const query = `
+    SELECT p.product_id,p.name,p.sku,p.item_code,p.country_of_origin,p.price,p.quantity,
+            p.status,c.category,b.name as brand,sub.title as subcategory,pi.media_id
+          FROM products as p
+          left join categories as c ON c.category_id = p.category_id
+          left join subcategories as sub ON sub.category_id = p.subcategory_id
+          left join brand as b ON b.brand_id = p.brand_id
+          left join product_images as pi ON pi.product_id = p.product_id AND is_primary = true
+    ${where}
+    ${orderBy}
+  `;
+
+  const result = await pool.query(query, values);
+
+  return NextResponse.json({ items: result.rows });
+}
+/* export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 20);
@@ -38,7 +112,7 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+} */
 
 /* ------------------ POST (Create Product) ------------------ */
 export async function POST(req: NextRequest) {
