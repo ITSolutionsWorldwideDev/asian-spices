@@ -41,7 +41,7 @@ const RecipesProductCard = ({ card }: RecipesProductCardProps) => {
               query: {
                 title: card.title,
                 description: card.description,
-                image:card.image,
+                image: card.image,
               },
             }}
             className="flex items-center justify-center "
