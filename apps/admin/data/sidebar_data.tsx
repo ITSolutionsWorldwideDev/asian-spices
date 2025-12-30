@@ -88,12 +88,76 @@ export const SidebarData = [
       },
     ],
   },
+
   {
-    label: "People",
+    label: "Content (CMS)",
     submenuOpen: true,
     showSubRoute: false,
-    submenuHdr: "People",
+    submenuHdr: "Content (CMS)",
+    submenuItems: [
+      // {
+      //   label: "Pages",
+      //   icon: "page-break",
+      //   showSubRoute: false,
+      //   submenu: true,
+      //   submenuItems: [{ label: "Pages", link: "/pages" }],
+      // },
+      {
+        label: "Blog",
+        link: "/blogs",
+        icon: "wallpaper",
+        showSubRoute: false,
+        submenu: false,
+      },
+      // {
+      //   label: "Blog",
+      //   icon: "wallpaper",
+      //   showSubRoute: false,
+      //   submenu: true,
+      //   submenuItems: [
+      //     { label: "All Blog", link: '/blogs' },
+      //     { label: "Blog Tags", link: all_routes.blogTag },
+      //     { label: "Categories", link: all_routes.blogCategories },
+      //     { label: "Blog Comments", link: all_routes.blogComments },
+      //   ],
+      // },
+      // {
+      //   label: "FAQ",
+      //   icon: "help-circle",
+      //   link: all_routes.faq,
+      //   showSubRoute: false,
+      //   submenu: false,
+      // },
+    ],
+  },
+      // {
+      //   tittle: 'Content',
+      //   hasSubRoute: true,
+      //   showSubRoute: false,
+      //   subRoutes: [
+      //     {
+      //       tittle: 'Blog',
+      //       hasSubRoute: true,
+      //       showSubRoute: true,
+      //       subRoutes: [
+      //         {
+      //           tittle: 'All Blog',
+      //           hasSubRoute: true,
+      //           showSubRoute: true,
+      //           route: "/blogs",
+      //           subRoutes: [],
+      //         },
+      //       ],
+      //     },
 
+      //   ],
+      // },
+
+  {
+    label: "User Management",
+    submenuOpen: true,
+    showSubRoute: false,
+    submenuHdr: "User Management",
     submenuItems: [
       {
         label: "Customers",
@@ -102,26 +166,18 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
-    ],
-  },
-  {
-    label: "User Management",
-    submenuOpen: true,
-    showSubRoute: false,
-    submenuHdr: "User Management",
-    submenuItems: [
       {
         label: "Users",
         link: "/users",
         icon: "shield-up",
         showSubRoute: false,
       },
-      {
-        label: "Roles & Permissions",
-        link: "/roles-permissions",
-        icon: "jump-rope",
-        showSubRoute: false,
-      },
+      // {
+      //   label: "Roles & Permissions",
+      //   link: "/roles-permissions",
+      //   icon: "jump-rope",
+      //   showSubRoute: false,
+      // },
     ],
   },
   {
