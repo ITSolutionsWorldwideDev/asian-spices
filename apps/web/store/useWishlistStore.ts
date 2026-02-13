@@ -5,14 +5,15 @@ export interface WishlistItem {
   id: number;
   title: string;
   image: string;
-  price: number;
-  oldPrice: number | null;
-  tag: string;
-  off: string;
-  rating: number;
-  reviews: number;
-  left: number;
-  description: string;
+  price?: number;
+  oldPrice?: number | null;
+  tag?: string;
+  off?: string;
+  rating?: number;
+  reviews?: number;
+  left?: number;
+  description?: string;
+  weight?: string;
 }
 
 interface WishlistState {
@@ -25,16 +26,13 @@ interface WishlistState {
 }
 
 export const useWishlistStore = create<WishlistState>()(
-    
   persist(
     (set, get) => ({
       items: [],
 
-    
       addToWishlist: (item) =>
         set((state) => ({
           items: [...state.items, item],
-          
         })),
 
       removeFromWishlist: (id) =>
@@ -57,8 +55,6 @@ export const useWishlistStore = create<WishlistState>()(
     }),
     {
       name: "wishlist-storage", // key in localStorage
-    }
-
-    
-  )
+    },
+  ),
 );

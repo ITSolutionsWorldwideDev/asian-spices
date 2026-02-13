@@ -1,9 +1,12 @@
-import React from 'react'
+import SpicesProductDesc from "@/components/layout/productdescallpages/SpicesProductDesc";
+import React from "react";
 
 const spicesDetailPage = () => {
   return (
-    <div>page</div>
-  )
-}
+    <div>
+      <SpicesProductDesc />
+    </div>
+  );
+};
 
-export default spicesDetailPage
+export default spicesDetailPage;

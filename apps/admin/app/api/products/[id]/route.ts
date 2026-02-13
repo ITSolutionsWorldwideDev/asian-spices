@@ -11,7 +11,6 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-
   const { id } = await params;
 
   try {
@@ -87,10 +86,7 @@ export async function PUT(
     );
 
     if (result.rowCount === 0) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     return NextResponse.json(result.rows[0], { status: 201 });
@@ -112,4 +108,3 @@ export async function DELETE(
 
   return NextResponse.json({ success: true });
 }
-

@@ -27,7 +27,6 @@ export const config = {
   ],
 };
 
-
 // import { withAuth } from "next-auth/middleware";
 
 /* export default withAuth({
@@ -52,7 +51,6 @@ export const config = {
     "/((?!api|login|_next|static|assets|favicon.ico).*)",
   ],
 }; */
-
 
 /* import { withAuth } from "next-auth/middleware";
 

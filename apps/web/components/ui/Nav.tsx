@@ -21,8 +21,8 @@ const Nav: React.FC = () => {
 
         {/* Desktop Navigation */}
         <ResponsiveNavigation />
-         <CartandWhishBtn />
-                
+        <CartandWhishBtn />
+
         <ButtonsNavigation />
       </nav>
     </div>

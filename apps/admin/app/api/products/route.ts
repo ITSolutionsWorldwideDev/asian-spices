@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ items: result.rows });
 }
 /* export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);` 
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 20);
   const offset = (page - 1) * limit;

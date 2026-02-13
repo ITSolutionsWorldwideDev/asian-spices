@@ -1,3 +1,4 @@
+"use client";
 import Footer from "@/components/ui/Footer";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 import ProductCard from "@/components/ui/ProductCard";
@@ -6,8 +7,44 @@ import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import React from "react";
-
+import { useEffect, useState } from "react";
+import { NextResponse } from "next/server";
 const SpicesPage = () => {
+  const [product2s, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:3003/api/products"); // calling backend API route
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        console.log(data);
+        setProducts(data);
+      } catch (err) {
+        console.error("server error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+
+  // const fetchItems = async () => {
+  //   const response = await fetch("http://localhost:3000//api/products",{
+  //     cache: "no-store",
+  //   });
+  //   if (!response.ok) throw new Error("Failed to fetch products");
+  //   console.log(response.json());
+  // return response.json();
+  // }
+
+  //  const product = await fetchItems();
+  // console.log(product);
+
   const products = [
     {
       id: 1,
@@ -21,6 +58,7 @@ const SpicesPage = () => {
       reviews: 324,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich fdsajfk jfsakdjf kfjdsnfljasdnf fasdjfnlasdjf `,
+      weight: "5g",
     },
     {
       id: 2,
@@ -34,6 +72,7 @@ const SpicesPage = () => {
       reviews: 256,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
     {
       id: 3,
@@ -47,6 +86,7 @@ const SpicesPage = () => {
       reviews: 412,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
     {
       id: 4,
@@ -60,6 +100,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -74,6 +115,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -88,6 +130,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -102,6 +145,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -116,6 +160,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -130,6 +175,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -144,6 +190,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
 
     {
@@ -158,6 +205,7 @@ const SpicesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
+      weight: "5g",
     },
   ];
   const title = "Spices";

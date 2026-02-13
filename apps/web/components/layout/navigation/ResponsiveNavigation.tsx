@@ -14,6 +14,7 @@ import { FaL } from "react-icons/fa6";
 interface NavChildren {
   name: string;
   image: string;
+  href: string;
 }
 
 interface NavLink {
@@ -39,18 +40,26 @@ const ResponsiveNavigation = () => {
         {
           name: "Spices",
           image: "524531ab08204ddf1a7e11f44c85ef183cbf3159 (1).jpg",
+          href: "spices",
         },
         {
           name: "KitchenAppliances",
           image: "bef4555df0ac442433de79fbc2676fdbc3d5b455.jpg",
+          href: "kitchen-appliances",
         },
         {
           name: "Recipes",
           image: "e50f5d03690c88ecb61ae41e5b6aa2fd285b988d.jpg",
+          href: "recipes  ",
+        },
+        {
+          name: "Foods & Beverages ",
+          image: "7998dbf578bd435e51167e00d97f1bc7f0963051.png",
+          href: "foods-beverages",
         },
       ],
     },
-    { name: "Contact Us" },
+    { name: "Seller Hub" },
   ];
 
   const [isCartOpen, setCartOpen] = useState<boolean>(false);
@@ -97,7 +106,7 @@ const ResponsiveNavigation = () => {
                     .toLowerCase()
                     .replace(/[^a-z0-9\s-]/g, "")
                     .trim()
-                    .replace(/\s+/g, "-")}`}
+                    .replace(/\s+/g, "")}`}
                   onClick={() => handleClick(link.name)}
                   className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200
                      ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
@@ -133,7 +142,7 @@ const ResponsiveNavigation = () => {
                       {link.children.map((child) => (
                         <li key={child.name} className="">
                           <Link
-                            href={`/${child.name.toLowerCase()}`}
+                            href={`/${child.href}`}
                             className="flex items-center  px-4 py-2 text-black hover:bg-amber-800 transition-colors w-full"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                           >
@@ -177,7 +186,7 @@ const ResponsiveNavigation = () => {
                           .toLowerCase()
                           .replace(/[^a-z0-9\s-]/g, "")
                           .trim()
-                          .replace(/\s+/g, "-")}`
+                          .replace(/\s+/g, "")}`
                   }
                   onClick={() => {
                     handleClick(link.name);
@@ -212,7 +221,7 @@ const ResponsiveNavigation = () => {
                       {link.children.map((child) => (
                         <Link
                           key={child.name}
-                          href={`/${child.name.toLowerCase()}`}
+                          href={`/${child.href}`}
                           onClick={() => setMobileMenu(false)}
                           className="flex items-center gap-4 px-6 py-3 text-white/90 hover:bg-amber-700 transition-colors"
                         >
@@ -244,6 +253,14 @@ const ResponsiveNavigation = () => {
                 /
                 <button className="   font-bold   hover:shadow-xl transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 cursor-pointer ">
                   <Link href="/signup">Signup</Link>
+                </button>
+              </div>
+            </div>
+
+            <div className=" bg-white rounded-full   ">
+              <div className=" px-6 py-3 rounded-full flex justify-center">
+                <button className="  font-bold   hover:shadow-xl transform cursor-pointer hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 ">
+                  <Link href="/contactus">Contact Us</Link>
                 </button>
               </div>
             </div>
@@ -285,7 +302,7 @@ const ResponsiveNavigation = () => {
               </button>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

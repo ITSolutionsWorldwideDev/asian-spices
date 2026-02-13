@@ -6,13 +6,20 @@ export interface CartItem {
   title: string;
   price: number;
   quantity: number;
+  image: string;
+  weight?: string;
+  oldPrice: number | null;
+  // weight: string;
 }
 
 interface CartState {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">) => void;
+
   removeFromCart: (id: number) => void;
   clearCart: () => void;
+  increaseQty: (id: number) => void;
+  decreaseQty: (id: number) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -21,12 +28,13 @@ export const useCartStore = create<CartState>()(
       cart: [],
 
       addToCart: (item) => {
+        console.log(item);
         const existing = get().cart.find((i) => i.id === item.id);
 
         if (existing) {
           set({
             cart: get().cart.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
             ),
           });
         } else {
@@ -42,10 +50,26 @@ export const useCartStore = create<CartState>()(
         }),
 
       clearCart: () => set({ cart: [] }),
+
+      increaseQty: (id) =>
+        set((state) => ({
+          cart: state.cart.map((i) =>
+            i.id === id ? { ...i, quantity: i.quantity + 1 } : i,
+          ),
+        })),
+
+      decreaseQty: (id) =>
+        set((state) => ({
+          cart: state.cart
+            .map((i) => (i.id === id ? { ...i, quantity: i.quantity - 1 } : i))
+            .filter((i) => i.quantity > 0),
+        })),
     }),
+
+    // }),
     {
       name: "cart-storage", // 🔑 key in localStorage
       version: 1,
-    }
-  )
+    },
+  ),
 );

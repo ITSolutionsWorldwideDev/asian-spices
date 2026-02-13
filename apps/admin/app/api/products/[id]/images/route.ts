@@ -10,7 +10,6 @@ import { pool } from "@acme/db";
 //   try {
 //     const { mediaIds, primaryMediaId } = await req.json();
 
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -20,10 +19,7 @@ export async function POST(
   try {
     const { mediaIds, primaryMediaId } = await req.json();
 
-
-    await pool.query(`DELETE FROM product_images WHERE product_id=$1`, [
-      id,
-    ]);
+    await pool.query(`DELETE FROM product_images WHERE product_id=$1`, [id]);
 
     for (const mediaId of mediaIds) {
       await pool.query(
@@ -55,10 +51,9 @@ export async function PUT(
     await client.query("BEGIN");
 
     // Remove old relations
-    await client.query(
-      "DELETE FROM product_images WHERE product_id = $1",
-      [id]
-    );
+    await client.query("DELETE FROM product_images WHERE product_id = $1", [
+      id,
+    ]);
 
     // Insert new ones
     for (const mediaId of mediaIds) {
@@ -79,4 +74,3 @@ export async function PUT(
     client.release();
   }
 }
-

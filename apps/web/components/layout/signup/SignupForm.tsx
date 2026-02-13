@@ -1,118 +1,216 @@
-import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+"use client";
+
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
 const SignupForm = () => {
+  const [type, setType] = useState<"user" | "partner">("user");
+
   return (
-    <div className=" flex items-center justify-center ">
-          <div className="w-full max-w-md text-center">
-            {/* Heading */}
-             <div>
-          <Link href={`/`}>
-            <Image
-              src={`/assets/logo/Group 87.png`}
-              alt="home"
-              height={60}
-              width={60}
-              className="mb-10 cursor-pointer"
-            />
-          </Link>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-md text-center">
+        {/* Logo */}
+        <Link href="/" className="flex justify-center">
+          <Image
+            src="/assets/logo/Group 87.png"
+            alt="Asian Spices"
+            width={60}
+            height={60}
+            className="mb-6 cursor-pointer"
+          />
+        </Link>
+
+        {/* Heading */}
+        <h1 className="mb-6 text-2xl font-semibold text-gray-900">
+          Welcome Asian Spices 👋
+        </h1>
+
+        {/* Toggle */}
+        <div className="mb-8 flex rounded-lg bg-gray-100 p-1">
+          <button
+            onClick={() => setType("user")}
+            className={`flex-1 rounded-md py-2 text-sm font-semibold transition
+              ${
+                type === "user"
+                  ? "bg-white text-gray-900 shadow"
+                  : "text-gray-500"
+              }`}
+          >
+            Signup as User
+          </button>
+
+          <button
+            onClick={() => setType("partner")}
+            className={`flex-1 rounded-md py-2 text-sm font-semibold transition
+              ${
+                type === "partner"
+                  ? "bg-white text-gray-900 shadow"
+                  : "text-gray-500"
+              }`}
+          >
+            Signup as Partner
+          </button>
         </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-8">
-              Welcome Asian Spices 👋
-            </h1>
 
-            {/* Form */}
-            <form className="space-y-4 text-left">
-              {/* Email */}
-              <div>
-                <label className="text-sm text-gray-600 font-bold">Email</label>
-                <input
-                  type="email"
-                  placeholder="Example@email.com"
-                  className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="text-sm text-gray-600 font-bold">
-                  Phone No
-                </label>
-                <input
-                  type="tel"
-                  placeholder="+914 1665 49894"
-                  className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="text-sm text-gray-600 font-bold">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="At least 8 characters"
-                  className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="text-sm text-gray-600 font-bold">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="At least 8 characters"
-                  className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                />
-              </div>
-
-              {/* Sign up button */}
-              <button
-                type="submit"
-                className="w-full py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition"
-              >
-                Sign up
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="flex items-center my-6">
-              <div className="flex-1 h-px bg-gray-200" />
-              {/* <span className="px-3 text-sm text-gray-400">Or</span> */}
-              <div className="flex-1 h-px bg-gray-200" />
+        {/* ================= USER FORM ================= */}
+        {type === "user" && (
+          <form className="space-y-4 text-left">
+            <div>
+              <label className="text-sm font-bold text-gray-600">Email</label>
+              <input
+                type="email"
+                placeholder="example@email.com"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
             </div>
 
-            {/* Google Button */}
-            {/* <button className="w-full flex items-center justify-center gap-2 bg-white py-3 rounded-lg hover:bg-gray-50 transition">
-              <Image
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                width={20}
-                height={20}
+            <div>
+              <label className="text-sm font-bold text-gray-600">Phone No</label>
+              <input
+                type="tel"
+                placeholder="+914 1665 49894"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
               />
-              <span className="text-sm font-medium text-gray-700">
-                Sign in with Google
-              </span>
-            </button> */}
+            </div>
 
-            {/* Login link */}
-            <p className="text-sm text-gray-500 mt-6 font-bold">
-              Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 hover:underline">
-                Login
-              </Link>
-            </p>
+            <div>
+              <label className="text-sm font-bold text-gray-600">Password</label>
+              <input
+                type="password"
+                placeholder="At least 8 characters"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
 
-            {/* Footer */}
-            <p className="text-xs text-gray-400 mt-10">
-              © 2025 ALL RIGHTS RESERVED
-            </p>
-          </div>
-        </div>
-  )
-}
+            <div>
+              <label className="text-sm font-bold text-gray-600">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                placeholder="At least 8 characters"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
 
-export default SignupForm
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-slate-900 py-3 font-medium text-white
+                         hover:bg-slate-800 transition"
+            >
+              Sign up
+            </button>
+          </form>
+        )}
+
+        {/* ================= PARTNER FORM ================= */}
+        {type === "partner" && (
+          <form className="space-y-4 text-left">
+            <div>
+              <label className="text-sm font-bold text-gray-600">
+                Company Name
+              </label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">Username</label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">Email</label>
+              <input
+                type="email"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">Password</label>
+              <input
+                type="password"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">
+                Countries (COC)
+              </label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">KvK</label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">iDIN</label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-bold text-gray-600">VAT Check</label>
+              <input
+                type="text"
+                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-slate-900 py-3 font-medium text-white
+                         hover:bg-slate-800 transition"
+            >
+              Register as Partner
+            </button>
+          </form>
+        )}
+
+        {/* Footer */}
+        <p className="mt-6 text-sm font-bold text-gray-500">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Login
+          </Link>
+        </p>
+
+        <p className="mt-10 text-xs text-gray-400">
+          © 2025 ALL RIGHTS RESERVED
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default SignupForm;

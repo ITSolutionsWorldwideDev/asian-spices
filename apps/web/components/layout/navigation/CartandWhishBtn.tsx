@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useState } from "react";
 import Cart from "@/components/ui/Cart";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 const CartandWhishBtn = () => {
   const [isCartOpen, setCartOpen] = useState<boolean>(false);
 
@@ -21,11 +22,13 @@ const CartandWhishBtn = () => {
 
       <div
         className="bg-white rounded-full cursor-pointer "
-        onClick={() => setCartOpen(!isCartOpen)}
+        // onClick={() => setCartOpen(!isCartOpen)}
       >
-        <button className="px-3 py-3    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
-          <HiOutlineShoppingBag />
-        </button>
+        <Link href={"/cart"}>
+          <button className="px-3 py-3 font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+            <HiOutlineShoppingBag />
+          </button>
+        </Link>
       </div>
 
       {isCartOpen &&
@@ -33,7 +36,7 @@ const CartandWhishBtn = () => {
           <div className="absolute top-30 left-0 h-full w-full z-9999 ">
             <Cart />
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
