@@ -5,8 +5,8 @@ export interface WishlistItem {
   id: number;
   title: string;
   image: string;
-  price?: number;
-  oldPrice?: number | null;
+  price: number;
+  oldPrice: number | null;
   tag?: string;
   off?: string;
   rating?: number;

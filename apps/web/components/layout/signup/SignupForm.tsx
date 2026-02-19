@@ -67,7 +67,9 @@ const SignupForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-600">Phone No</label>
+              <label className="text-sm font-bold text-gray-600">
+                Phone No
+              </label>
               <input
                 type="tel"
                 placeholder="+914 1665 49894"
@@ -77,7 +79,9 @@ const SignupForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-600">Password</label>
+              <label className="text-sm font-bold text-gray-600">
+                Password
+              </label>
               <input
                 type="password"
                 placeholder="At least 8 characters"
@@ -123,7 +127,9 @@ const SignupForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-600">Username</label>
+              <label className="text-sm font-bold text-gray-600">
+                Username
+              </label>
               <input
                 type="text"
                 className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
@@ -141,7 +147,9 @@ const SignupForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-600">Password</label>
+              <label className="text-sm font-bold text-gray-600">
+                Password
+              </label>
               <input
                 type="password"
                 className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
@@ -179,7 +187,9 @@ const SignupForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-600">VAT Check</label>
+              <label className="text-sm font-bold text-gray-600">
+                VAT Check
+              </label>
               <input
                 type="text"
                 className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm

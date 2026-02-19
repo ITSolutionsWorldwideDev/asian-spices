@@ -289,7 +289,7 @@ const ResponsiveNavigation = () => {
         </div>
       )}
 
-      {isCartOpen &&
+      {/* {isCartOpen &&
         createPortal(
           <div className="absolute top-10 h-full w-full z-9999 ">
             <Cart />
@@ -303,7 +303,7 @@ const ResponsiveNavigation = () => {
             </div>
           </div>,
           document.body,
-        )}
+        )} */}
     </>
   );
 };

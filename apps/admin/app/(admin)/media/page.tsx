@@ -87,7 +87,7 @@ export default function MediaLibrary() {
                       showToast("success", "Upload complete");
                       fetchMedia();
                     }}
-                    onUploadError={(err) => {
+                    onUploadError={(err:any) => {
                       showToast("error", err.message);
                     }}
                   />

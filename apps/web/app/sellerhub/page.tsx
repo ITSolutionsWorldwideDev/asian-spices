@@ -1,9 +1,12 @@
+import SellerHub from '@/components/layout/sellerhub/SellerHub'
 import React from 'react'
 
-const SellerHub = () => {
+const page = () => {
   return (
-    <div>page</div>
+    <div>
+      <SellerHub/>
+    </div>
   )
 }
 
-export default SellerHub
+export default page

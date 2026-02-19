@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { ShoppingCart } from "lucide-react";
+
 export default function OrderSummary({
   items,
   subtotal,
@@ -6,8 +8,12 @@ export default function OrderSummary({
   //   tax,
   total,
 }: any) {
+  console.log(items);
+
+  let deliverDiffer = total < 50 ? 50 - total : undefined;
+
   return (
-    <div className="bg-white rounded-xl border p-6">
+    <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
       <h2 className="font-semibold mb-6">Order Summary</h2>
 
       <div className="space-y-4 mb-6">
@@ -15,12 +21,12 @@ export default function OrderSummary({
           <div key={item.id} className="flex gap-4">
             <div className="relative h-14 w-14 rounded-lg overflow-hidden">
               <Image
-                src={`/${item.image}`}
+                src={`/assets/home/premium_collection/${item.image}`}
                 alt={item.title}
                 fill
                 className="object-cover"
               />
-              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
+              <span className="absolute top-0 -right-1 bg-orange-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
                 {item.quantity}
               </span>
             </div>
@@ -35,7 +41,7 @@ export default function OrderSummary({
         ))}
       </div>
 
-      <div className="space-y-2 text-sm border-t pt-4">
+      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
         <div className="flex justify-between text-gray-600">
           <span>{items.label}</span>
           <span>${items.value}</span>
@@ -49,6 +55,14 @@ export default function OrderSummary({
         <span>Total</span>
         <span>${total.toFixed(2)}</span>
       </div>
+
+      {deliverDiffer && (
+        <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
+          <button className="text-white flex items-center justify-center w-full">
+            <ShoppingCart className="mr-3" /> Add {deliverDiffer.toFixed()} $ more for free shipping
+          </button>
+        </div>
+      )}
     </div>
   );
 }

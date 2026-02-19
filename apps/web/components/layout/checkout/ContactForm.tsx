@@ -1,6 +1,10 @@
-export default function ContactForm() {
+import { ChevronRight } from "lucide-react";
+interface ContactFormProps {
+  setStep: (step: "contact" | "shipping" | "payment") => void;
+}
+export default function ContactForm({ setStep }: ContactFormProps) {
   return (
-    <div className="bg-white rounded-xl border p-8">
+    <div className="bg-white rounded-xl border border-[#E5E7EB] p-8">
       <h2 className="font-semibold mb-6">Contact Information</h2>
 
       <div className="space-y-4">
@@ -25,8 +29,12 @@ export default function ContactForm() {
           Email me with news and offers
         </label>
 
-        <button className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-3 rounded-lg font-medium">
-          Continue to Shipping →
+        <button
+          className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-3 rounded-lg font-medium flex items-center justify-center"
+          type="button"
+          onClick={() => setStep("shipping")}
+        >
+          Continue to Shipping <ChevronRight />
         </button>
       </div>
     </div>
