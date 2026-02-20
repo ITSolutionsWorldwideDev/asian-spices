@@ -1,6 +1,8 @@
 // apps/admin/app/api/media/route.ts
 import { getServerSession } from "next-auth";
-import { authOptions } from "@acme/auth";
+// import { authOptions } from "@acme/auth";
+
+import { adminAuthOptions } from "@acme/auth/admin";
 
 import { NextResponse } from "next/server";
 import { pool } from "@acme/db";
@@ -10,7 +12,8 @@ import { pool } from "@acme/db";
 // --------------------------
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(adminAuthOptions);
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,7 +33,8 @@ export async function GET() {
 // --------------------------
 
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(adminAuthOptions);
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

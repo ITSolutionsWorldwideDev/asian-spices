@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "@acme/auth";
+// import { authOptions } from "@acme/auth";
+import { adminAuthOptions } from "@acme/auth/admin";
 
 /* ------------------------------------
    GET
@@ -120,7 +121,8 @@ export async function GET(req: NextRequest) {
 ------------------------------------ */
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    // const session = await getServerSession(authOptions);
+    const session = await getServerSession(adminAuthOptions);
     if (!session?.user?.id)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -1,4 +1,6 @@
 
+// apps\admin\data\all_routes.tsx
+
 export const all_routes = {
   newdashboard: "/new-dashboard",
   dashboard: "/dashboard",
@@ -296,4 +298,30 @@ export const all_routes = {
   layoutBoxed:"/layout-boxed",
   layoutRtl:"/layout-rtl",
   layoutDark:"/layout-dark",
+
+  custom: {
+    currency: "USD",
+    dateFormat: "DD/MM/YYYY",
+    timezone: "UTC",
+    theme: "light",
+  },
 };
+
+/* export const all_routes = {
+  dashboard: "/admin/dashboard",
+  customers: "/admin/customers",
+  invoice: "/admin/invoice",
+  profile: "/admin/profile",
+  signin: "/admin/signin",
+  chat: "/admin/chat",
+  email: "/admin/email",
+  category: "/admin/category",
+  subcategories: "/admin/sub-categories",
+  brand: "/admin/brand",
+  products: "/admin/products",
+  new_product: "/admin/products/new",
+  media: "/admin/media",
+  orders: "/admin/orders",
+  blogs: "/admin/blogs",
+  users: "/admin/users",
+}; */

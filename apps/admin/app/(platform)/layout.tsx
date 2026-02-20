@@ -1,0 +1,22 @@
+// app/(platform)/layout.tsx
+import PlatformHeader from "@/components/platform/Header";
+import PlatformSidebar from "@/components/platform/Sidebar";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
+
+import "../layout.css";
+
+export default async function PlatformLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  await requirePlatformAdmin(); // server guard
+
+  return (
+    <div className="main-wrapper">
+      <PlatformHeader />
+      <PlatformSidebar />
+      <main>{children}</main>
+    </div>
+  );
+}
