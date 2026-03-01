@@ -34,7 +34,7 @@ export async function createUser(data: {
     [rows[0].id, actor.id, JSON.stringify(data)]
   );
 
-  revalidatePath("/users");
+  revalidatePath("/platform/users");
 }
 
 export async function updateUser(userId: string, data: any) {
@@ -51,7 +51,7 @@ export async function updateUser(userId: string, data: any) {
     [userId, actor.id]
   );
 
-  revalidatePath("/users");
+  revalidatePath("/platform/users");
 }
 
 

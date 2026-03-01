@@ -1,0 +1,141 @@
+"use client";
+
+import { useState } from "react";
+import { CreditCard, Lock } from "lucide-react";
+
+export default function CheckoutPage() {
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [sameAddress, setSameAddress] = useState(true);
+
+  return (
+    <div className="  flex items-center justify-center ">
+      <div className="w-full  bg-white rounded-2xl shadow p-8">
+        {/* Title */}
+        <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
+
+        {/* Payment Options */}
+        <div className="space-y-4">
+          {/* Card Option */}
+          <div
+            onClick={() => setPaymentMethod("card")}
+            className={`flex items-center gap-3 border border-[#E5E7EB] rounded-xl p-4 cursor-pointer ${
+              paymentMethod === "card"
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-200"
+            }`}
+          >
+            <input
+              type="radio"
+              checked={paymentMethod === "card"}
+              onChange={() => setPaymentMethod("card")}
+            />
+            <CreditCard size={18} />
+            <span>Credit / Debit Card</span>
+          </div>
+
+          {/* PayPal Option */}
+          <div
+            onClick={() => setPaymentMethod("paypal")}
+            className={`flex items-center gap-3 border border-[#E5E7EB] rounded-xl p-4 cursor-pointer ${
+              paymentMethod === "paypal"
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-200"
+            }`}
+          >
+            <input
+              type="radio"
+              checked={paymentMethod === "paypal"}
+              onChange={() => setPaymentMethod("paypal")}
+            />
+            <span className="w-5 h-5 bg-blue-600 rounded"></span>
+            <span>PayPal</span>
+          </div>
+        </div>
+
+        {/* Card Form */}
+        {paymentMethod === "card" && (
+          <div className="mt-8 space-y-5">
+            {/* Card Number */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Card Number *
+              </label>
+              <input
+                type="text"
+                placeholder="1234 5678 9012 3456"
+                className="w-full bg-[#F3F3F5] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+
+            {/* Cardholder */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Cardholder Name *
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                className="w-full bg-[#F3F3F5] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+
+            {/* Expiry & CVV */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Expiry Date *
+                </label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  className="w-full bg-[#F3F3F5] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">CVV *</label>
+                <input
+                  type="text"
+                  placeholder="123"
+                  className="w-full bg-[#F3F3F5] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            </div>
+
+            <hr className="my-6 text-[#F3F3F5] " />
+
+            {/* Billing Address */}
+            <h3 className="text-lg font-medium">Billing Address</h3>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={sameAddress}
+                onChange={() => setSameAddress(!sameAddress)}
+              />
+              <span className="text-sm">Same as shipping address</span>
+            </div>
+
+            {/* Secure Notice */}
+            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-4 text-sm text-gray-600">
+              <Lock size={16} />
+              Your payment information is encrypted and secure
+            </div>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row mt-8 gap-4 sm:gap-8">
+          <button className="border border-[#E5E7EB] rounded-lg px-6 py-3 w-full hover:bg-gray-100 transition">
+            Back
+          </button>
+
+          <button className="bg-orange-500 text-white rounded-lg px-6 py-3 w-full hover:bg-orange-600 flex items-center justify-center gap-2 transition">
+            <Lock size={16} />
+            Place Order
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function GeneralSettingsForm({ initialValues }: Props) {
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [form, setForm] = useState({
@@ -29,7 +29,7 @@ export default function GeneralSettingsForm({ initialValues }: Props) {
 
     startTransition(async () => {
       await updatePlatformSetting("general", form);
-    //   showToast("success", "General settings updated");
+      showToast("success", "General settings updated");
     });
   }
 
@@ -41,18 +41,14 @@ export default function GeneralSettingsForm({ initialValues }: Props) {
         className="input w-full form-control"
         placeholder="Platform name"
         value={form.platform_name}
-        onChange={(e) =>
-          setForm({ ...form, platform_name: e.target.value })
-        }
+        onChange={(e) => setForm({ ...form, platform_name: e.target.value })}
       />
 
       <input
         className="input w-full form-control"
         placeholder="Support email"
         value={form.support_email}
-        onChange={(e) =>
-          setForm({ ...form, support_email: e.target.value })
-        }
+        onChange={(e) => setForm({ ...form, support_email: e.target.value })}
       />
 
       <select

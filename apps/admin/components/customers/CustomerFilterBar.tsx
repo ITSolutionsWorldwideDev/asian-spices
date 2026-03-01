@@ -1,10 +1,12 @@
+// apps/admin/components/customers/CustomerFilterBar.tsx
+
 "use client";
 
 import { useState } from "react";
 
 type Filters = {
   search?: string;
-  status?: string;
+  customer_type?: string;
   sort?: string;
 };
 
@@ -30,13 +32,21 @@ export default function CustomerFilterBar({
         onChange={(e) => update("search", e.target.value)}
       />
 
-      <select
+      {/* <select
         className="px-3 py-2 border rounded-md text-sm"
         onChange={(e) => update("status", e.target.value)}
       >
         <option value="">All Status</option>
         <option value="ACTIVE">Active</option>
         <option value="BLOCKED">Blocked</option>
+      </select> */}
+      <select
+        className="px-3 py-2 border rounded-md text-sm"
+        onChange={(e) => update("customer_type", e.target.value)}
+      >
+        <option value="">All Types</option>
+        <option value="B2C">B2C</option>
+        <option value="B2B">B2B</option>
       </select>
 
       <select

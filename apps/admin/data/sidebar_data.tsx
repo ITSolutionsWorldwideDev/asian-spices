@@ -1,5 +1,5 @@
 // apps/admin/data/sidebar_data.tsx
-import { all_routes as route } from "./all_routes";
+// import { all_routes as route } from "./all_routes";
 
 export interface SidebarSubItem {
   label: string;
@@ -27,7 +27,6 @@ export const SidebarData: SidebarItem[] = [
         label: "Dashboard",
         icon: "layout-grid",
         link: "/dashboard",
-        // link: "/admin/dashboard",
         submenu: false,
       },
     ],
@@ -40,7 +39,6 @@ export const SidebarData: SidebarItem[] = [
       {
         label: "Category",
         link: "/category",
-        // link: "/admin/category",
         icon: "list-details",
         submenu: false,
       },
@@ -63,10 +61,34 @@ export const SidebarData: SidebarItem[] = [
   },
   {
     label: "Sales",
+    submenuHdr: "Sales",
     submenu: true,
     submenuItems: [
       { label: "Orders", link: "/orders", icon: "file-invoice", submenu: false },
       { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
+    ],
+  },
+  {
+    label: "Content (CMS)",
+    submenuHdr: "Content (CMS)",
+    submenuItems: [
+      { label: "Blog", link: "/blogs", icon: "wallpaper", submenu: false },
+    ],
+  },
+  {
+    label: "User Management",
+    submenuHdr: "User Management",
+    submenuItems: [
+      { label: "Customers", link: "/customers", icon: "users-group", submenu: false },
+      { label: "Users", link: "/users", icon: "shield-up", submenu: false },
+    ],
+  },
+  {
+    label: "Settings",
+    submenuHdr: "Settings",
+    submenuItems: [
+      { label: "Store Settings", link: "/settings", icon: "settings", submenu: false },
+      { label: "Logout", link: "/signin", icon: "logout", submenu: false },
     ],
   },
 ];

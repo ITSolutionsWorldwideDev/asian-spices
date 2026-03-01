@@ -14,14 +14,12 @@ type Props = {
 };
 
 export default function FeatureFlagsForm({ initialValues }: Props) {
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [form, setForm] = useState({
-    enable_store_suspension:
-      initialValues.enable_store_suspension ?? true,
-    enable_audit_logs:
-      initialValues.enable_audit_logs ?? true,
+    enable_store_suspension: initialValues.enable_store_suspension ?? true,
+    enable_audit_logs: initialValues.enable_audit_logs ?? true,
   });
 
   function onSubmit(e: React.FormEvent) {
@@ -29,7 +27,7 @@ export default function FeatureFlagsForm({ initialValues }: Props) {
 
     startTransition(async () => {
       await updatePlatformSetting("features", form);
-    //   showToast("success", "Feature flags updated");
+      showToast("success", "Feature flags updated");
     });
   }
 

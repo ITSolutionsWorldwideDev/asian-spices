@@ -3,19 +3,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool, buildUpdateQuery } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> },
+) {
+  const { userId } = await params;
   await requirePlatformAdmin();
-  const { rows } = await pool.query(`SELECT * FROM users WHERE id = $1`, [params.userId]);
+  const { rows } = await pool.query(`SELECT * FROM users WHERE id = $1`, [
+    userId,
+  ]);
+  // const { rows } = await pool.query(`SELECT * FROM users WHERE id = $1`, [params.userId]);
   return NextResponse.json(rows[0]);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { userId: string } }) {
+// export async function PUT(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> },
+) {
   await requirePlatformAdmin();
   const body = await req.json();
 
+  const { userId } = await params;
+
   const { text, values } = buildUpdateQuery("users", body, {
     column: "id",
-    value: params.userId,
+    // value: params.userId,
+    value: userId,
   });
 
   const { rows } = await pool.query(text, values);
@@ -24,22 +38,38 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
   await pool.query(
     `INSERT INTO user_audit_logs (user_id, action, actor_id, changes)
      VALUES ($1, 'updated', $2, $3)`,
-    [params.userId, body.actorId, JSON.stringify(body)]
+    [
+      userId,
+      // params.userId,
+      body.actorId,
+      JSON.stringify(body),
+    ],
   );
 
   return NextResponse.json(rows[0]);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
+// export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> },
+) {
+  const { userId } = await params;
+
   await requirePlatformAdmin();
-  await pool.query(`DELETE FROM users WHERE id = $1`, [params.userId]);
+  // await pool.query(`DELETE FROM users WHERE id = $1`, [params.userId]);
+  await pool.query(`DELETE FROM users WHERE id = $1`, [userId]);
 
   // audit log
   const body = await req.json();
   await pool.query(
     `INSERT INTO user_audit_logs (user_id, action, actor_id)
      VALUES ($1, 'deleted', $2)`,
-    [params.userId, body.actorId]
+    [
+      userId,
+      // params.userId,
+      body.actorId,
+    ],
   );
 
   return NextResponse.json({ message: "User deleted" });
@@ -110,4 +140,3 @@ export async function DELETE(
 
   return NextResponse.json({ message: "User deleted" });
 } */
-

@@ -5,22 +5,39 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const PLATFORM_SUBDOMAIN = "admin";
+
 export default function SigninComponent() {
 
   const { status } = useSession();
   const router = useRouter();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   // ✅ If already logged in, go to dashboard
   useEffect(() => {
     if (status === "authenticated") {
+      const hostname = window.location.hostname;
+      const subdomain = hostname.split(".")[0];
+
+      if (subdomain === PLATFORM_SUBDOMAIN) {
+        router.replace("/platform/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
+    }
+  }, [status, router]);
+  /* 
+  useEffect(() => {
+    if (status === "authenticated") {
       router.replace("/dashboard");
       // router.replace("/admin/dashboard");
     }
-  }, [status, router]);
+  }, [status, router]); 
+  */
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +52,7 @@ export default function SigninComponent() {
       redirect: false,
       email,
       password,
-      callbackUrl: "/dashboard"
+      // callbackUrl: "/dashboard"
       // callbackUrl: "/admin/dashboard"
     });
 
@@ -47,10 +64,17 @@ export default function SigninComponent() {
       return;
     }
 
-    // router.push("/"); // redirect to dashboard
-    // router.push("/dashboard");
-    router.replace(res?.url || "/dashboard");
-    // router.replace(res?.url || "/admin/dashboard");
+
+    // router.replace(res?.url || "/dashboard");
+    
+    const hostname = window.location.hostname;
+    const subdomain = hostname.split(".")[0];
+
+    if (subdomain === PLATFORM_SUBDOMAIN) {
+      router.replace("/platform/dashboard");
+    } else {
+      router.replace("/dashboard");
+    }
   };
 
   if (status === "authenticated") return null;

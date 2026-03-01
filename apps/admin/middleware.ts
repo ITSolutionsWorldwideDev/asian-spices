@@ -1,4 +1,164 @@
 // apps/admin/middleware.ts
+
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { withAuth } from "next-auth/middleware";
+
+const PLATFORM_SUBDOMAIN = "admin";
+
+function extractSubdomain(hostname: string) {
+  const host = hostname.split(":")[0];
+  const parts = host.split(".");
+  return parts[0];
+}
+
+export default withAuth(
+  function middleware(req: NextRequest) {
+    const hostname = req.headers.get("host") || "";
+    const pathname = req.nextUrl.pathname;
+
+    // ✅ DEV: Redirect localhost → admin.localhost
+    if (process.env.NODE_ENV === "development") {
+      if (
+        hostname.startsWith("localhost") ||
+        hostname.startsWith("127.0.0.1")
+      ) {
+        const url = req.nextUrl.clone();
+        url.hostname = "admin.localhost";
+        return NextResponse.redirect(url);
+      }
+    }
+
+    const subdomain = extractSubdomain(hostname);
+    const isPlatformRoute = pathname.startsWith("/platform");
+
+    if (pathname.startsWith("/api")) {
+      // return NextResponse.next();
+      const res = NextResponse.next();
+      res.headers.set("x-tenant-subdomain", subdomain);
+      return res;
+    }
+
+    // 🚫 Store accessing platform
+    if (subdomain !== PLATFORM_SUBDOMAIN && isPlatformRoute) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+
+    // 🚫 Platform accessing store
+    if (subdomain === PLATFORM_SUBDOMAIN && !isPlatformRoute) {
+      return NextResponse.redirect(new URL("/platform/dashboard", req.url));
+    }
+
+    const res = NextResponse.next();
+    res.headers.set("x-tenant-subdomain", subdomain);
+
+    return res;
+  },
+  {
+    callbacks: {
+      async authorized({ token }) {
+        if (!token) return false;
+
+        if (token.isPlatformAdmin) return true;
+
+        return !!token.storeRoles?.length;
+      },
+    },
+  },
+);
+
+// export const config = {
+//   matcher: ["/((?!api|_next|static|assets|favicon.ico|login).*)"],
+// };
+
+export const config = {
+  matcher: ["/((?!_next|static|assets|favicon.ico|login).*)", "/api/:path*"],
+};
+
+/* export default withAuth({
+  callbacks: {
+    async authorized({ token }) {
+      if (!token) return false;
+
+      // Platform admins have full access
+      if (token.isPlatformAdmin) return true;
+
+      // Store admins/managers/editors: check storeRoles
+      return !!token.storeRoles?.length;
+    }
+  }
+});
+
+// Subdomain resolution
+export function middleware(req: NextRequest) {
+  const hostname = req.headers.get("host") || ""; // e.g. store1.admin.localhost:3000
+  const subdomain = hostname.split(".")[0];       // store1
+
+  // Save store subdomain in request header for layouts
+  const res = NextResponse.next();
+  res.headers.set("x-tenant-subdomain", subdomain);
+
+  return res;
+} */
+
+/* import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export default withAuth(
+  function middleware(req: NextRequest) {
+    const { nextUrl } = req;
+    const host = req.headers.get("host") || "";
+
+    let subdomain: string | null = null;
+
+    const hostname = host.split(":")[0]; // remove port
+
+    if (hostname.endsWith(".localhost")) {
+      // store1.localhost
+      subdomain = hostname.split(".")[0];
+    } else {
+      const parts = hostname.split(".");
+      // store1.admin.yourapp.com
+      if (parts.length >= 3) {
+        subdomain = parts[0];
+      }
+    }
+
+    // Platform domain (admin.yourapp.com or localhost)
+    if (
+      hostname === "localhost" ||
+      hostname.startsWith("admin.") ||
+      subdomain === "admin"
+    ) {
+      return NextResponse.next();
+    }
+
+    // Attach tenant header for store layouts
+    if (subdomain) {
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-tenant-subdomain", subdomain);
+
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders
+        }
+      });
+    }
+
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized({ token }) {
+        // Only check authentication here
+        return !!token;
+      }
+    }
+  }
+); */
+
+/* 
 import { withAuth } from "next-auth/middleware";
 import type { JWT } from "next-auth/jwt";
 import { AUTH_ROLES } from "@acme/auth/constants";
@@ -37,56 +197,4 @@ export const config = {
     "/((?!api|login|_next|static|assets|favicon.ico).*)"
   ]
 };
-
-
-
-
-// import { AUTH_ROLES, type StoreRole } from "@acme/auth";
-      // ✅ Store-level admin roles
-      // const hasAdminRole = token.storeRoles?.some(r =>
-      //   r.role === AUTH_ROLES.ADMIN ||
-      //   r.role === AUTH_ROLES.MANAGER ||
-      //   r.role === AUTH_ROLES.EDITOR
-      // );
-
-/* 
-// apps/admin/middleware.ts
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-export default withAuth(
-  function middleware(req: NextRequest) {
-    const pathname = req.nextUrl.pathname;
-
-    // Allow platform routes without tenant resolution
-    if (pathname.includes("/(platform)")) {
-      return NextResponse.next();
-    }
-
-    // Resolve storeId for store routes
-    const match = pathname.match(/\/\(store\)\/([^/]+)/);
-
-    if (match) {
-      const storeId = match[1];
-      const res = NextResponse.next();
-      res.headers.set("x-store-id", storeId);
-      return res;
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized({ token }) {
-        return !!token;
-      }
-    }
-  }
-);
-
-export const config = {
-  matcher: ["/admin/:path*"]
-};
-
-*/
+ */

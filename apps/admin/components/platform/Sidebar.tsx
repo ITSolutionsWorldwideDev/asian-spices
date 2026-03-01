@@ -12,27 +12,27 @@ const PLATFORM_MENU = [
   {
     label: "Dashboard",
     icon: "layout-grid",
-    link: "/dashboard"
+    link: "/platform/dashboard"
   },
   {
     label: "Stores",
     icon: "building-store",
-    link: "/stores"
+    link: "/platform/stores"
   },
   {
     label: "Users & Roles",
     icon: "users",
-    link: "/users"
+    link: "/platform/users"
   },
   {
     label: "Billing",
     icon: "credit-card",
-    link: "/billing"
+    link: "/platform/billing"
   },
   {
     label: "Settings",
     icon: "settings-cog",
-    link: "/settings"
+    link: "/platform/settings"
   }
 ];
 

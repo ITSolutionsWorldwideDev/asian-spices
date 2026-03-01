@@ -16,6 +16,14 @@ const ButtonsNavigation = () => {
             </button>
           </div>
         </div>
+
+        <div className="hover:rotate-10 bg-white rounded-full   hover:text-white ">
+          <div className="hover:bg-black hover:-rotate-10 px-6 py-3 rounded-full">
+            <button className="   font-bold   hover:shadow-xl transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 cursor-pointer ">
+              <Link href="/contactus">Contact Us</Link>
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );

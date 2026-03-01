@@ -1,8 +1,11 @@
 // apps/admin/lib/auth/guards.ts
-import { redirect } from "next/navigation";
+
+import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { pool } from "@acme/db";
 import { getSessionUser } from "./getSession";
 import type { PermissionKey } from "./permissions";
+import { NextRequest } from "next/server";
 
 /**
  * Layer 1: User must be authenticated
@@ -22,6 +25,125 @@ export async function requirePlatformAdmin() {
   }
 
   return user;
+}
+
+/**
+ * ===============================
+ * Resolve Current Store (Subdomain Based)
+ * ===============================
+ */
+export async function getCurrentStore() {
+  const headersList = await headers();
+  const subdomain = headersList.get("x-tenant-subdomain");
+
+  if (!subdomain) {
+    notFound();
+  }
+
+  const storeRes = await pool.query(
+    `SELECT id, name, status FROM stores WHERE slug = $1 LIMIT 1`,
+    [subdomain]
+  );
+
+  if (!storeRes.rowCount) {
+    notFound();
+  }
+
+  const store = storeRes.rows[0];
+
+  if (store.status === "suspended") {
+    redirect("/store-suspended");
+  }
+
+  return store; // { id, name, status }
+}
+
+/**
+ * ===============================
+ * Layer 3: Store Access (Membership)
+ * ===============================
+ */
+export async function requireStoreAccess() {
+  const user = await requireAuth();
+  const store = await getCurrentStore();
+
+  // Platform admin bypass
+  if (user.isPlatformAdmin) {
+    return store;
+  }
+
+  const membership = await pool.query(
+    `
+    SELECT 1
+    FROM store_users
+    WHERE user_id = $1
+      AND store_id = $2
+    LIMIT 1
+    `,
+    [user.id, store.id]
+  );
+
+  if (!membership.rowCount) {
+    redirect("/unauthorized");
+  }
+
+  return store;
+}
+
+/**
+ * ===============================
+ * Layer 4: Store Permission
+ * ===============================
+ */
+export async function requireStorePermission(
+  permission: PermissionKey
+) {
+  const user = await requireAuth();
+  const store = await getCurrentStore();
+
+  // Platform admin bypass
+  if (user.isPlatformAdmin) {
+    return store;
+  }
+
+  const { rowCount } = await pool.query(
+    `
+    SELECT 1
+    FROM store_users su
+    JOIN role_permissions rp ON rp.role_id = su.role_id
+    JOIN permissions p ON p.id = rp.permission_id
+    WHERE su.user_id = $1
+      AND su.store_id = $2
+      AND p.key = $3
+    LIMIT 1
+    `,
+    [user.id, store.id, permission]
+  );
+
+  if (!rowCount) {
+    redirect("/unauthorized");
+  }
+
+  return store;
+}
+
+
+export async function getCurrentStoreAPI(req: NextRequest) {
+  const subdomain = req.headers.get("x-tenant-subdomain");
+  if (!subdomain) throw new Error("STORE_SUBDOMAIN_MISSING");
+
+  const storeRes = await pool.query(
+    `SELECT id, name, status FROM stores WHERE slug = $1 LIMIT 1`,
+    [subdomain]
+  );
+
+  if (!storeRes.rowCount) throw new Error("STORE_NOT_FOUND");
+
+  const store = storeRes.rows[0];
+
+  if (store.status === "suspended") throw new Error("STORE_SUSPENDED");
+
+  return store;
 }
 
 /**
@@ -55,38 +177,3 @@ export async function requirePlatformAdmin() {
   }
 } */
 
-
-export async function requireStorePermission(
-  storeId: string,
-  permission: PermissionKey
-) {
-  const user = await requireAuth();
-
-  const storeRes = await pool.query(
-    `SELECT status FROM stores WHERE id = $1`,
-    [storeId]
-  );
-
-  if (!storeRes.rowCount) redirect("/not-found");
-
-  if (storeRes.rows[0].status === "suspended") {
-    redirect("/store-suspended");
-  }
-
-  if (user.isPlatformAdmin) return;
-
-  const { rowCount } = await pool.query(
-    `
-    SELECT 1
-    FROM store_users su
-    JOIN role_permissions rp ON rp.role_id = su.role_id
-    JOIN permissions p ON p.id = rp.permission_id
-    WHERE su.user_id = $1
-      AND su.store_id = $2
-      AND p.key = $3
-    `,
-    [user.id, storeId, permission]
-  );
-
-  if (!rowCount) redirect("/unauthorized");
-}

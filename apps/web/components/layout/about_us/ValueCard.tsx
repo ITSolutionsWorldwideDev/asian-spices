@@ -46,9 +46,12 @@ const ValueCard = () => {
   ];
   return (
     <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-      {valuesData.map((item) => (
+      {valuesData.map((item, ind) => (
         <div className="flex flex-col items-center text-center px-6">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
+          <div
+            className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-500"
+            key={ind}
+          >
             {item.icon}
           </div>
 

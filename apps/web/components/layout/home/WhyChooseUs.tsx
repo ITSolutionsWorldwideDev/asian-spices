@@ -41,10 +41,10 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="container mx-auto overflow-hidden">
+    <section className=" container mx-auto overflow-hidden ">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         {/* Left Section */}
-        <div className="grid sm:grid-cols-2 gap-6 ">
+        <div className="grid sm:grid-cols-2 gap-6 lg:p-10">
           {features.map((item, index) => (
             <div
               key={index}

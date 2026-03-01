@@ -1,4 +1,4 @@
-// apps/admin/app/(platform)/stores/StoresClient.tsx
+// apps/admin/app/(platform)/platform/stores/StoresClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -34,7 +34,7 @@ export default function StoresClient({ stores, total, page, pageSize }: any) {
           <h6 className="text-gray-500">Manage platform stores</h6>
         </div>
 
-        <Link href="/stores/new" className="btn btn-primary">
+        <Link href="/platform/stores/new" className="btn btn-primary">
           Add Store
         </Link>
       </div>
@@ -78,10 +78,6 @@ export default function StoresClient({ stores, total, page, pageSize }: any) {
           ))}
         </div>
       )}
-
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-      </div> */}
 
       {/* PAGINATION */}
       <div className="flex justify-center gap-2 mt-6">

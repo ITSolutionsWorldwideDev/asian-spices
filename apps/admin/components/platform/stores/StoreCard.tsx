@@ -1,4 +1,4 @@
-// apps/admin/app/(platform)/stores/StoreCard.tsx
+// apps/admin/app/(platform)/platform/stores/StoreCard.tsx
 "use client";
 
 import Link from "next/link";
@@ -47,12 +47,13 @@ export default function StoreCard({
 
       <div className="flex items-center justify-between text-xs text-gray-500">
         <span>
-          {new Date(store.created_at).toLocaleDateString()}
+          {/* {new Date(store.created_at).toLocaleDateString()} */}
+          {new Date(store.created_at).toISOString().split("T")[0]}
         </span>
 
         <div className="flex gap-2">
           <Link
-            href={`/stores/${store.id}`}
+            href={`/platform/stores/${store.id}`}
             className="p-1 hover:text-blue-600"
           >
             <Edit size={14} />

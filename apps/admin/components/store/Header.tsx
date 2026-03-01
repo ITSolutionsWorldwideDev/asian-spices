@@ -8,15 +8,16 @@ import { ChevronsLeft } from "react-feather";
 import { signOut, useSession } from "next-auth/react";
 
 export default function StoreHeader({
-  storeId
+  storeId,
+  storeName,
 }: {
   storeId: string;
+  storeName: string;
 }) {
-  const pathname = usePathname();
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   const [toggle, setToggle] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
@@ -25,25 +26,150 @@ export default function StoreHeader({
     setToggle(!toggle);
   };
 
-  const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      document.documentElement.requestFullscreen?.();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.();
-      setIsFullscreen(false);
-    }
-  };
+  useEffect(() => {
+    setProfileDropdownOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.classList.remove("slide-nav", "expand-menu");
     setMobileDropdownOpen(false);
   }, [pathname]);
+  // const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // const toggleFullscreen = () => {
+  //   if (!isFullscreen) {
+  //     document.documentElement.requestFullscreen?.();
+  //     setIsFullscreen(true);
+  //   } else {
+  //     document.exitFullscreen?.();
+  //     setIsFullscreen(false);
+  //   }
+  // };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="flex items-center justify-between px-4 py-2">
         {/* LEFT */}
+        <div className="flex items-center space-x-3">
+          <Link
+            href={`/${storeId}/dashboard`}
+            className="flex items-center space-x-2"
+          >
+            <img src="/assets/img/logo.svg" alt="Logo" className="h-8" />
+            <span className="font-semibold text-sm text-gray-700">
+              {storeName}
+            </span>
+          </Link>
+
+          <button
+            onClick={handleSidebar}
+            className="hidden md:flex p-1 hover:bg-gray-100 rounded-md"
+          >
+            <ChevronsLeft className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* RIGHT */}
+        <div className="relative">
+          <button
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            className="flex items-center rounded-full hover:bg-gray-100 p-1"
+          >
+            <img
+              src="/assets/img/profiles/avator1.jpg"
+              alt="Profile"
+              className="h-8 w-8 rounded-full"
+            />
+          </button>
+
+          {profileDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white border rounded-md shadow-lg">
+              <div className="p-3 border-b">
+                <p className="font-medium text-sm">
+                  {session?.user?.email ?? "Guest"}
+                </p>
+                <p className="text-xs text-gray-500">Store: {storeName}</p>
+              </div>
+
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="flex items-center justify-between px-4 py-2">
+        {/* LEFT */}
+        <div className="flex items-center space-x-3">
+          <Link
+            href={`/dashboard`}
+            className="flex items-center space-x-2"
+          >
+            <img src="/assets/img/logo.svg" alt="Logo" className="h-8" />
+            <span className="font-semibold text-sm text-gray-700">
+              {storeName}
+            </span>
+          </Link>
+
+          <button
+            onClick={handleSidebar}
+            className="hidden md:flex p-1 hover:bg-gray-100 rounded-md"
+          >
+            <ChevronsLeft className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* RIGHT */}
+        <div className="relative">
+          <button
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            className="flex items-center rounded-full hover:bg-gray-100 p-1"
+          >
+            <img
+              src="/assets/img/profiles/avator1.jpg"
+              alt="Profile"
+              className="h-8 w-8 rounded-full"
+            />
+          </button>
+
+          {profileDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white border rounded-md shadow-lg">
+              <div className="p-3 border-b">
+                <p className="font-medium text-sm">
+                  {session?.user?.email}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Store: {storeName}
+                </p>
+              </div>
+
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+  /* 
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="flex items-center justify-between px-4 py-2">
+
         <div className="flex items-center space-x-2">
           <Link
             href={`/${storeId}/dashboard`}
@@ -56,7 +182,7 @@ export default function StoreHeader({
             />
           </Link>
 
-          {/* Desktop sidebar toggle */}
+
           <button
             onClick={handleSidebar}
             className="hidden md:flex p-1 hover:bg-gray-100 rounded-md"
@@ -64,7 +190,7 @@ export default function StoreHeader({
             <ChevronsLeft className="w-5 h-5" />
           </button>
 
-          {/* Mobile menu toggle */}
+
           <button
             onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
             className="md:hidden p-2 hover:bg-gray-100 rounded-md"
@@ -73,9 +199,9 @@ export default function StoreHeader({
           </button>
         </div>
 
-        {/* RIGHT */}
+
         <div className="flex items-center space-x-2">
-          {/* Fullscreen */}
+
           <button
             onClick={toggleFullscreen}
             className="hidden md:flex p-2 rounded hover:bg-gray-100"
@@ -84,7 +210,7 @@ export default function StoreHeader({
             <i className="ti ti-maximize" />
           </button>
 
-          {/* Profile */}
+
           <div className="relative">
             <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
@@ -130,7 +256,7 @@ export default function StoreHeader({
         </div>
       </div>
 
-      {/* MOBILE DROPDOWN */}
+
       {mobileDropdownOpen && (
         <div className="md:hidden px-4 pb-2 bg-white border-t">
           <Link
@@ -161,40 +287,4 @@ export default function StoreHeader({
         </div>
       )}
     </header>
-  );
-}
-
-/* "use client";
-
-import { signOut, useSession } from "next-auth/react";
-
-export default function StoreHeader({
-  storeId
-}: {
-  storeId: string;
-}) {
-  const { data: session } = useSession();
-
-  return (
-    <header className="header">
-      <div className="header-left">
-        <h2>Store Admin</h2>
-        <span className="text-muted">Store ID: {storeId}</span>
-      </div>
-
-      <div className="header-right">
-        <span className="me-3">
-          {session?.user?.email}
-        </span>
-
-        <button
-          className="btn btn-outline-danger"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-        >
-          Logout
-        </button>
-      </div>
-    </header>
-  );
-}
- */
+  ); */

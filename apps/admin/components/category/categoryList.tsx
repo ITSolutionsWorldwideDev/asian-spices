@@ -13,10 +13,12 @@ import { Button, useToast } from "@repo/ui";
    Types
 ------------------------------------ */
 type Category = {
-  category_id: number;
-  category: string;
-  categoryslug: string;
+  id: string;
+  name: string;
+  slug: string;
   status: number;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export default function CategoryListComponent() {
@@ -27,13 +29,13 @@ export default function CategoryListComponent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
-    category_id: null as number | null,
-    category: "",
+    id: null as string | null,
+    name: "",
     status: true,
   });
 
@@ -64,8 +66,8 @@ export default function CategoryListComponent() {
   const openAddModal = () => {
     setIsEditMode(false);
     setFormData({
-      category_id: null,
-      category: "",
+      id: null,
+      name: "",
       status: true,
     });
     setIsModalOpen(true);
@@ -74,8 +76,8 @@ export default function CategoryListComponent() {
   const openEditModal = (record: Category) => {
     setIsEditMode(true);
     setFormData({
-      category_id: record.category_id,
-      category: record.category,
+      id: record.id,
+      name: record.name,
       status: record.status === 1,
     });
     setIsModalOpen(true);
@@ -86,36 +88,17 @@ export default function CategoryListComponent() {
   ------------------------------------ */
   const handleSubmit = async () => {
     try {
+
       const payload = {
-        category: formData.category,
+        name: formData.name,
         status: formData.status ? 1 : 0,
       };
-
-      /* if (isEditMode && formData.category_id) {
-        await fetch("/api/category", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category_id: formData.category_id,
-            ...payload,
-          }),
-        });
-      } else {
-        await fetch("/api/category", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } */
-      
 
       const res = await fetch("/api/category", {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isEditMode
-            ? { category_id: formData.category_id, ...payload }
-            : payload
+          isEditMode ? { id: formData.id, ...payload } : payload,
         ),
       });
 
@@ -123,7 +106,7 @@ export default function CategoryListComponent() {
 
       showToast(
         "success",
-        isEditMode ? "Category updated" : "Category created"
+        isEditMode ? "Category updated" : "Category created",
       );
 
       setIsModalOpen(false);
@@ -159,11 +142,11 @@ export default function CategoryListComponent() {
   const columns = [
     {
       title: "Category",
-      dataIndex: "category",
+      dataIndex: "name",
     },
     {
       title: "Slug",
-      dataIndex: "categoryslug",
+      dataIndex: "slug",
     },
     {
       title: "Status",
@@ -186,7 +169,7 @@ export default function CategoryListComponent() {
           </button>
           <button
             onClick={() => {
-              setSelectedId(record.category_id);
+              setSelectedId(record.id);
               setShowDeleteModal(true);
             }}
             className="p-2 text-red-600"
@@ -228,11 +211,7 @@ export default function CategoryListComponent() {
               {loading ? (
                 <p className="text-center py-6">Loading...</p>
               ) : (
-                <Table
-                  columns={columns}
-                  dataSource={categories}
-                  rowKey="category_id"
-                />
+                <Table columns={columns} dataSource={categories} rowKey="id" />
               )}
             </div>
           </div>
@@ -261,9 +240,9 @@ export default function CategoryListComponent() {
                 <input
                   type="text"
                   placeholder="Category name"
-                  value={formData.category}
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                   className="w-full border rounded px-3 py-2 mb-4"
                 />
@@ -328,3 +307,20 @@ export default function CategoryListComponent() {
     </>
   );
 }
+
+/* if (isEditMode && formData.id) {
+        await fetch("/api/category", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: formData.id,
+            ...payload,
+          }),
+        });
+      } else {
+        await fetch("/api/category", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } */

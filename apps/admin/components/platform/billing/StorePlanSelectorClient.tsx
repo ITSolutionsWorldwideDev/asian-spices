@@ -2,8 +2,8 @@
 "use client";
 
 import { useTransition } from "react";
-import { assignPlanToStore } from "@/app/(platform)/billing/actions";
-// import { useToast } from "@repo/ui";
+import { assignPlanToStore } from "@/app/(platform)/platform/billing/actions";
+import { useToast } from "@repo/ui";
 
 export default function StorePlanSelectorClient({
   storeId,
@@ -11,13 +11,13 @@ export default function StorePlanSelectorClient({
   currentPlanId,
   currentPlanName,
 }: any) {
-  //   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   function handleChange(planId: string) {
     startTransition(async () => {
       await assignPlanToStore(storeId, planId);
-      //   showToast("success", "Plan updated");
+      showToast("success", "Plan updated");
     });
   }
 
@@ -70,13 +70,13 @@ export default function StorePlanSelectorClient({
   stores,
   plans,
 }: Props) {
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   function handleChange(storeId: string, planId: string) {
     startTransition(async () => {
       await assignPlanToStore(storeId, planId);
-    //   showToast("success", "Plan updated");
+      showToast("success", "Plan updated");
     });
   }
 

@@ -2,12 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
-// export async function PATCH(
-//   _: Request,
-//   { params }: { params: Promise<{ status: number, customerId: string }> }
-// ) {
-//   const { status, customerId } = await params;
-
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ customerId: string }> }

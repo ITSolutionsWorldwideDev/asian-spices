@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function BillingSettingsForm({ initialValues }: Props) {
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [form, setForm] = useState({
@@ -27,7 +27,7 @@ export default function BillingSettingsForm({ initialValues }: Props) {
 
     startTransition(async () => {
       await updatePlatformSetting("billing", form);
-    //   showToast("success", "Billing settings updated");
+      showToast("success", "Billing settings updated");
     });
   }
 
@@ -49,9 +49,7 @@ export default function BillingSettingsForm({ initialValues }: Props) {
         className="input w-full form-control"
         placeholder="Invoice prefix"
         value={form.invoice_prefix}
-        onChange={(e) =>
-          setForm({ ...form, invoice_prefix: e.target.value })
-        }
+        onChange={(e) => setForm({ ...form, invoice_prefix: e.target.value })}
       />
 
       <button className="btn btn-primary" disabled={isPending}>

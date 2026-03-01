@@ -1,4 +1,4 @@
-// apps/admin/app/(platform)/stores/StoreRow.tsx
+// apps/admin/app/(platform)/platform/stores/StoreRow.tsx
 "use client";
 
 import DeleteStoreBtn from "./DeleteStoreBtn";
@@ -23,7 +23,7 @@ export default function StoreRow({ store }: { store: Store }) {
 
       <div className="flex gap-2">
         <a
-          href={`/stores/${store.id}`}
+          href={`/platform/stores/${store.id}`}
           className="btn btn-sm btn-secondary"
         >
           Edit

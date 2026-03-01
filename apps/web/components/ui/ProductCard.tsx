@@ -9,7 +9,9 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
+import Link from "next/link";
 
+import { usePathname } from "next/navigation";
 type Product = {
   id: number;
   title: string;
@@ -22,6 +24,7 @@ type Product = {
   reviews: number;
   left: number;
   description: string;
+  weight?: string;
 };
 
 interface ProductCardProps {
@@ -29,6 +32,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ item }: ProductCardProps) {
+  const path = usePathname();
+
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
   const isInWishlist = useWishlistStore((state) => state.isInWishlist);
@@ -40,8 +45,9 @@ export default function ProductCard({ item }: ProductCardProps) {
     setMounted(true);
   }, []);
   const addToCart = useCartStore((state) => state.addToCart);
+  // console.log(addToCart)
   const items = useWishlistStore((state) => state.items);
-  console.log(items);
+  console.log(item);
 
   const [showAll, setShowAll] = useState(false);
 
@@ -105,11 +111,12 @@ export default function ProductCard({ item }: ProductCardProps) {
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold mt-1">{product.title}</h3>
-            <span className="text-sm text-gray-400">
-              {product.description.split(" ").slice(0, 10).join(" ")}
-            </span>
-
+            <Link href={`${path}/${product.title}`}>
+              <h3 className="font-semibold mt-1">{product.title}</h3>
+              <span className="text-sm text-gray-400">
+                {product.description.split(" ").slice(0, 10).join(" ")}
+              </span>
+            </Link>
             {/* Price */}
             <div className="flex items-center gap-2 mt-2">
               <span className="text-orange-400 font-bold text-xl">
@@ -130,6 +137,10 @@ export default function ProductCard({ item }: ProductCardProps) {
                   id: product.id,
                   title: product.title,
                   price: product.price,
+                  // quantity:product.
+                  oldPrice: product.oldPrice,
+                  weight: product.weight,
+                  image: product.image,
                 })
               }
             >

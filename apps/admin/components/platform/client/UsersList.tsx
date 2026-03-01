@@ -66,7 +66,7 @@ export default function UsersListComponent() {
         />
 
         <Link
-          href="/users/new"
+          href="/platform/users/new"
           className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           <TbCirclePlus size={18} /> Add User
@@ -192,7 +192,7 @@ export default function UsersListComponent() {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const PAGE_SIZE = 10;
 
   const fetchUsers = async () => {
@@ -204,7 +204,7 @@ export default function UsersListComponent() {
       setTotal(data.total);
     } catch (err) {
       console.error(err);
-    //   showToast("error", "Failed to fetch users");
+      showToast("error", "Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -226,7 +226,7 @@ export default function UsersListComponent() {
       fetchUsers();
     } catch (err) {
       console.error(err);
-    //   showToast("error", "Delete failed");
+      showToast("error", "Delete failed");
     }
   };
 

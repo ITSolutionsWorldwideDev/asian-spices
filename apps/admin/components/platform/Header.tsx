@@ -44,7 +44,7 @@ export default function PlatformHeader() {
       <div className="flex items-center justify-between px-4 py-2">
         {/* LEFT */}
         <div className="flex items-center space-x-2">
-          <Link href="/dashboard" className="flex items-center">
+          <Link href="/platform/dashboard" className="flex items-center">
             <img
               src="/assets/img/logo.svg"
               alt="Logo"
@@ -130,7 +130,7 @@ export default function PlatformHeader() {
       {mobileDropdownOpen && (
         <div className="md:hidden px-4 pb-2 bg-white border-t">
           <Link
-            href="/dashboard"
+            href="/platform/dashboard"
             className="block px-4 py-2 hover:bg-gray-100"
             onClick={() => setMobileDropdownOpen(false)}
           >
@@ -138,7 +138,7 @@ export default function PlatformHeader() {
           </Link>
 
           <Link
-            href="/users"
+            href="/platform/users"
             className="block px-4 py-2 hover:bg-gray-100"
             onClick={() => setMobileDropdownOpen(false)}
           >

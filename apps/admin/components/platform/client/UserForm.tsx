@@ -26,7 +26,7 @@ type Props = {
 
 export default function UserForm({ user }: Props) {
   const router = useRouter();
-//   const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [form, setForm] = useState<UserFormData>({
@@ -44,7 +44,7 @@ export default function UserForm({ user }: Props) {
       try {
         if (user) {
           await updateUser(user.id, form);
-        //   showToast("success", "User updated");
+          showToast("success", "User updated");
         } else {
           if (!form.password) {
             throw new Error("Password is required");
@@ -55,14 +55,14 @@ export default function UserForm({ user }: Props) {
             password: form.password,
           });
 
-        //   showToast("success", "User created");
+          showToast("success", "User created");
         }
 
-        router.push("/users");
+        router.push("/platform/users");
         router.refresh();
       } catch (err) {
         console.error(err);
-        // showToast("error", "Action failed");
+        showToast("error", "Action failed");
       }
     });
   }

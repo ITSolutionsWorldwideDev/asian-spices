@@ -1,4 +1,4 @@
-// apps/admin/app/(platform)/stores/DeleteStoreBtn.tsx
+// apps/admin/app/(platform)/platform/stores/DeleteStoreBtn.tsx
 "use client";
 
 import { useTransition } from "react";

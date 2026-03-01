@@ -14,6 +14,7 @@ type Product = {
   reviews: number;
   left: number;
   description: string;
+  // weight?:string;
 };
 
 const products = [

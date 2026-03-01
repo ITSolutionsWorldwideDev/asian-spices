@@ -1,13 +1,27 @@
-// /app/api/brand/route.ts (GET)
+// /app/api/brand/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
+/* ------------------------------------
+   Utils
+------------------------------------ */
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 /* ------------------------------------
    GET
 ------------------------------------ */
 export async function GET(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
+
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
@@ -22,8 +36,9 @@ export async function GET(req: NextRequest) {
     /* -------- Single brand -------- */
     if (id) {
       const result = await pool.query(
-        `SELECT * FROM brand WHERE brand_id = $1`,
-        [id]
+        `SELECT * FROM store_brands
+         WHERE brand_id = $1 AND store_id = $2`,
+        [id, storeId],
       );
 
       if (!result.rows.length) {
@@ -42,7 +57,7 @@ export async function GET(req: NextRequest) {
       where.push(`LOWER(name) LIKE $${values.length}`);
     }
 
-    const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+    const whereClause = where.length ? `AND ${where.join(" AND ")}` : "";
 
     let orderBy = "created_at DESC";
     if (sort === "nameAsc") orderBy = "name ASC";
@@ -52,17 +67,17 @@ export async function GET(req: NextRequest) {
     values.push(limit, offset);
 
     const dataQuery = `
-      SELECT brand_id, name, status, created_at, updated_at
-      FROM brand
-      ${whereClause}
+      SELECT *
+      FROM store_brands
+      WHERE store_id = '${storeId}' ${whereClause}
       ORDER BY ${orderBy}
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `;
 
     const countQuery = `
       SELECT COUNT(*)::int AS count
-      FROM brand
-      ${whereClause}
+      FROM store_brands
+      WHERE store_id = '${storeId}' ${whereClause}
     `;
 
     const [dataRes, countRes] = await Promise.all([
@@ -79,44 +94,58 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to fetch brands" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch brands" },
+      { status: 500 },
+    );
   }
 }
-
 
 /* ------------------------------------
    POST (create brand)
 ------------------------------------ */
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { brand, status = 1 } = body;
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
 
-    if (!brand) {
-      return NextResponse.json({ error: "Brand is required" }, { status: 400 });
+  try {
+    const { name, description, logo_url, status = true } = await req.json();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Brand name is required" },
+        { status: 400 },
+      );
     }
+
+    const slug = slugify(name);
 
     const result = await pool.query(
       `
-      INSERT INTO brand (name, status, created_at, updated_at)
-      VALUES ($1, $2, NOW(), NOW())
+      INSERT INTO store_brands
+      (store_id, name, slug, description, logo_url, status, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
       `,
-      [brand, status]
+      [storeId, name, slug, description || null, logo_url || null, status],
     );
 
     return NextResponse.json(result.rows[0], { status: 201 });
+    
   } catch (err: any) {
     console.error(err);
 
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Brand already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to create brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create brand" },
+      { status: 500 },
+    );
   }
 }
 
@@ -124,43 +153,58 @@ export async function POST(req: NextRequest) {
    PUT (update brand)
 ------------------------------------ */
 export async function PUT(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
+
   try {
-    const body = await req.json();
-    const { brand_id, brand, status } = body;
+    const { brand_id, name, description, logo_url, status } = await req.json();
 
     if (!brand_id) {
       return NextResponse.json({ error: "Brand ID required" }, { status: 400 });
     }
 
+    const slug = name ? slugify(name) : undefined;
+
     const result = await pool.query(
       `
-      UPDATE brand
+      UPDATE store_brands
       SET
-        name = COALESCE($1, brand),
-        status = COALESCE($2, status),
+        name = COALESCE($1, name),
+        slug = COALESCE($2, slug),
+        description = COALESCE($3, description),
+        logo_url = COALESCE($4, logo_url),
+        status = COALESCE($5, status),
         updated_at = NOW()
-      WHERE brand_id = $3
+      WHERE brand_id = $6
+        AND store_id = $7
       RETURNING *
       `,
-      [brand, status, brand_id]
+      [name, slug, description, logo_url, status, brand_id, storeId],
     );
 
     if (!result.rows.length) {
-      return NextResponse.json({ error: "Brand not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Brand not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(result.rows[0]);
+
   } catch (err: any) {
     console.error(err);
 
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Brand name already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to update brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update brand" },
+      { status: 500 },
+    );
   }
 }
 
@@ -168,6 +212,9 @@ export async function PUT(req: NextRequest) {
    DELETE (remove brand)
 ------------------------------------ */
 export async function DELETE(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -177,17 +224,31 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const result = await pool.query(
-      `DELETE FROM brand WHERE brand_id = $1 RETURNING *`,
-      [id]
+      `
+      DELETE FROM store_brands
+      WHERE brand_id = $1
+        AND store_id = $2
+      RETURNING *
+      `,
+      [id, storeId],
     );
 
     if (!result.rows.length) {
-      return NextResponse.json({ error: "Brand not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Brand not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ message: "Brand deleted successfully" });
+    return NextResponse.json({
+      message: "Brand deleted successfully",
+    });
+
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to delete brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete brand" },
+      { status: 500 },
+    );
   }
 }
