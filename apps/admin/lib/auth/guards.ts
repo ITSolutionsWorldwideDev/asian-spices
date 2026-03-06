@@ -11,8 +11,15 @@ import { NextRequest } from "next/server";
  * Layer 1: User must be authenticated
  */
 export async function requireAuth() {
-  return getSessionUser();
+  const user = await getSessionUser();
+  if (!user) {
+    redirect("/login");
+  }
+  return user;
 }
+// export async function requireAuth() {
+//   return getSessionUser();
+// }
 
 /**
  * Layer 2: Platform admin only

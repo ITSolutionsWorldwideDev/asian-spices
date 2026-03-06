@@ -9,25 +9,39 @@ export function createCallbacks(maxIdleTime: number) {
       if (user) {
         token.userId = user.id;
         token.email = user.email;
-        token.isPlatformAdmin = user.isPlatformAdmin;
+        
+        token.isPlatformAdmin = user.isPlatformAdmin ?? user.is_platform_admin;
         token.storeRoles = user.storeRoles;
       }
 
-      token.lastActiveAt = Date.now();
+      token.lastActiveAt = (token.lastActiveAt as number) || Date.now();
       return token;
     },
 
     async session({ session, token }: { session: Session; token: JWT }){
-      const expired =
-        token.lastActiveAt &&
-        Date.now() - token.lastActiveAt > maxIdleTime;
 
-      session.user = {
-        id: token.userId,
-        email: token.email,
-        isPlatformAdmin: token.isPlatformAdmin,
-        storeRoles: token.storeRoles
-      };
+      const now = Date.now();
+      const lastActive = (token.lastActiveAt as number) || now;
+      const expired = now - lastActive > maxIdleTime;
+
+      if (session.user) {
+        session.user.id = token.userId as string;
+        session.user.email = token.email as string;
+        session.user.isPlatformAdmin = !!token.isPlatformAdmin;
+        session.user.storeRoles = (token.storeRoles as any[]) || [];
+      }
+
+
+      // const expired =
+      //   token.lastActiveAt &&
+      //   Date.now() - token.lastActiveAt > maxIdleTime;
+
+      // session.user = {
+      //   id: token.userId,
+      //   email: token.email,
+      //   isPlatformAdmin: token.isPlatformAdmin,
+      //   storeRoles: token.storeRoles
+      // };
 
       session.expired = Boolean(expired);
       return session;

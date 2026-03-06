@@ -141,13 +141,26 @@ export default function ManageSettingsComponent() {
 
         const data = await res.json();
 
+        const sanitizedData = Object.keys(data).reduce((acc, key) => {
+          acc[key] = data[key] === null ? "" : data[key];
+          return acc;
+        }, {} as any);
+
         setFormData((prev) => ({
           ...prev,
-          ...data,
+          ...sanitizedData,
           renewal_date: data.renewal_date
             ? data.renewal_date.split("T")[0]
             : "",
         }));
+
+        // setFormData((prev) => ({
+        //   ...prev,
+        //   ...data,
+        //   renewal_date: data.renewal_date
+        //     ? data.renewal_date.split("T")[0]
+        //     : "",
+        // }));
       } catch (err) {
         console.error("Failed to load settings");
       } finally {
@@ -278,6 +291,17 @@ export default function ManageSettingsComponent() {
   /* const selectedCountry =
     countriesOptions.find((c) => c.value === formData.country_code) ||
     null; */
+
+  // Inside ManageSettingsComponent
+  const countryOptions = useMemo(
+    () => countries.map((c) => ({ value: c.iso2, label: c.name })),
+    [countries],
+  );
+
+  const selectedCountry = useMemo(
+    () => countryOptions.find((c) => c.value === formData.country_code) || null,
+    [countryOptions, formData.country_code],
+  );
 
   const [open, setOpen] = useState({
     general: true,
@@ -440,7 +464,7 @@ export default function ManageSettingsComponent() {
                   <div className="relative">
                     <label className="block mb-1 font-medium">Country</label>
 
-                    <Select
+                    {/* <Select
                       options={countries.map((c) => ({
                         value: c.iso2,
                         label: c.name,
@@ -451,6 +475,14 @@ export default function ManageSettingsComponent() {
                           .find((c) => c.value === formData.country_code) ||
                         null
                       }
+                      onChange={(opt) =>
+                        handleChange("country_code", opt?.value ?? "")
+                      }
+                    /> */}
+
+                    <Select
+                      options={countryOptions}
+                      value={selectedCountry}
                       onChange={(opt) =>
                         handleChange("country_code", opt?.value ?? "")
                       }
@@ -711,7 +743,7 @@ export default function ManageSettingsComponent() {
 
 type InputProps = {
   label: string;
-  value: string | number;
+  value: string | number | "";
   type?: string;
   onChange: (value: string) => void;
 };
@@ -722,7 +754,7 @@ function Input({ label, value, onChange, type = "text" }: InputProps) {
       <label className="block mb-1 text-sm font-medium">{label}</label>
       <input
         type={type}
-        value={value}
+        value={value ?? ""}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           onChange(e.target.value)
         }

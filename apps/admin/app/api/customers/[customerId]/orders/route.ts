@@ -6,11 +6,11 @@ import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
     const store = await getCurrentStoreAPI(req);
-    const { customerId } = params;
+    const { customerId } = await params;
 
     const orders = await pool.query(
       `

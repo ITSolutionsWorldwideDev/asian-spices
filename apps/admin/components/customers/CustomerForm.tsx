@@ -5,9 +5,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type CustomerType = "B2C" | "B2B";
+
 type Customer = {
   id?: string;
-  customer_type: "B2C" | "B2B";
+  customer_type: CustomerType;
   company_name?: string;
   tax_id?: string;
   first_name: string;
@@ -79,7 +81,7 @@ export default function CustomerForm({ initialData, onSaved }: Props) {
       <select
         value={form.customer_type}
         onChange={(e) =>
-          update("customer_type", e.target.value as "B2C" | "B2B")
+          update("customer_type", e.target.value as CustomerType)
         }
         className="border p-2 w-full"
       >

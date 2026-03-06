@@ -1,5 +1,6 @@
-// apps/admin/app/(platform)/users/page.tsx
-import UsersListComponent from "@/components/platform/client/UsersList";
+// apps/admin/app/(store)/users/page.tsx
+
+import UsersListComponent from "@/components/store/users/UsersList";
 
 export default function UsersPage() {
   return (

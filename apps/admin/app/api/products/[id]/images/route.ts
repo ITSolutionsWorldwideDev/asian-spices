@@ -35,11 +35,12 @@ export async function POST(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
+  
 ) {
   await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
 
-  const { id } = params;
+  const { id } = await params;
   const { images } = await req.json();
   // images = [{ url, alt_text, is_primary, sort_order }]
 

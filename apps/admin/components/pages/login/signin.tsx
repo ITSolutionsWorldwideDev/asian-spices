@@ -132,7 +132,7 @@ export default function SigninComponent() {
                             name="password"
                           />
                           <span
-                            className={`input-group-text cursor-pointer fa toggle-password ${
+                            className={`input-group-text cursor-pointer fa toggle-password  pt-2 ${
                               isPasswordVisible ? "fa-eye-slash" : "fa-eye"
                             }`}
                             onClick={() =>

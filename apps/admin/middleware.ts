@@ -15,19 +15,29 @@ function extractSubdomain(hostname: string) {
 export default withAuth(
   function middleware(req: NextRequest) {
     const hostname = req.headers.get("host") || "";
-    const pathname = req.nextUrl.pathname;
+    const url = req.nextUrl.clone();
 
-    // ✅ DEV: Redirect localhost → admin.localhost
+    // 1. FIX: Development Subdomain Force
     if (process.env.NODE_ENV === "development") {
-      if (
-        hostname.startsWith("localhost") ||
-        hostname.startsWith("127.0.0.1")
-      ) {
-        const url = req.nextUrl.clone();
+      if (!hostname.includes("admin.localhost") && !hostname.includes(".localhost")) {
         url.hostname = "admin.localhost";
         return NextResponse.redirect(url);
       }
     }
+
+    const pathname = req.nextUrl.pathname;
+
+    // ✅ DEV: Redirect localhost → admin.localhost
+    // if (process.env.NODE_ENV === "development") {
+    //   if (
+    //     hostname.startsWith("localhost") ||
+    //     hostname.startsWith("127.0.0.1")
+    //   ) {
+    //     const url = req.nextUrl.clone();
+    //     url.hostname = "admin.localhost";
+    //     return NextResponse.redirect(url);
+    //   }
+    // }
 
     const subdomain = extractSubdomain(hostname);
     const isPlatformRoute = pathname.startsWith("/platform");
@@ -47,7 +57,7 @@ export default withAuth(
     // 🚫 Platform accessing store
     if (subdomain === PLATFORM_SUBDOMAIN && !isPlatformRoute) {
       return NextResponse.redirect(new URL("/platform/dashboard", req.url));
-    }
+    } 
 
     const res = NextResponse.next();
     res.headers.set("x-tenant-subdomain", subdomain);
@@ -56,24 +66,40 @@ export default withAuth(
   },
   {
     callbacks: {
-      async authorized({ token }) {
+      async authorized({ token, req }) {
+        const hostname = req.headers.get("host") || "";
+        const subdomain = extractSubdomain(hostname);
+        const isPlatformSubdomain = subdomain === "admin";
+
         if (!token) return false;
 
-        if (token.isPlatformAdmin) return true;
+        
+        if (isPlatformSubdomain) {
+          return !!token.isPlatformAdmin;
+        }
+        // if (subdomain === PLATFORM_SUBDOMAIN) {
+        //   return !!token.isPlatformAdmin;
+        // }
 
-        return !!token.storeRoles?.length;
+        // For other subdomains (storefronts/tenant dashboards), 
+        // allow if they have any store roles or are a platform admin
+        // return !!(token.isPlatformAdmin || token.storeRoles?.length);
+        return !!(token.isPlatformAdmin || (token.storeRoles && token.storeRoles.length > 0));
       },
+    },
+    pages: {
+      signIn: "/login",
     },
   },
 );
+export const config = {
+  matcher: ["/((?!_next|static|_next/image|assets|favicon.ico|favicon.png|robots.txt|.*\\.svg$|login).*)", "/api/:path*"],
+};
 
 // export const config = {
 //   matcher: ["/((?!api|_next|static|assets|favicon.ico|login).*)"],
 // };
 
-export const config = {
-  matcher: ["/((?!_next|static|assets|favicon.ico|login).*)", "/api/:path*"],
-};
 
 /* export default withAuth({
   callbacks: {

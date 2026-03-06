@@ -3,8 +3,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
-export async function PUT(req: NextRequest, { params }: { params: { customerId: string, addressId: string }}) {
-  const { customerId, addressId } = params;
+type Params = Promise<{ customerId: string; addressId: string }>;
+
+export async function PUT(
+  req: NextRequest, 
+  { params }: { params: Params }
+) {
+  const { customerId, addressId } = await params;
   const body = await req.json();
 
   await pool.query(
@@ -31,8 +36,12 @@ export async function PUT(req: NextRequest, { params }: { params: { customerId: 
 }
 
 
-export async function DELETE(_: NextRequest, { params }: { params: { customerId: string, addressId: string }}) {
-  const { customerId, addressId } = params;
+export async function DELETE(
+  _: NextRequest, 
+  { params }: { params: Params }
+) {
+  
+  const { customerId, addressId } = await params;
 
   await pool.query(
     `DELETE FROM store_customer_addresses WHERE id=$1 AND customer_id=$2`,

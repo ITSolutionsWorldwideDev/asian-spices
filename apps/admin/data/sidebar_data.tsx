@@ -81,6 +81,22 @@ export const SidebarData: SidebarItem[] = [
     submenuItems: [
       { label: "Customers", link: "/customers", icon: "users-group", submenu: false },
       { label: "Users", link: "/users", icon: "shield-up", submenu: false },
+      { label: "Roles & Permissions", link: "/settings/roles", icon: "shield-up", submenu: false },
+      
+          // {
+          //   tittle: 'Roles & Permissions',
+          //   hasSubRoute: false,
+          //   showSubRoute: false,
+          //   route: "/roles-permissions",
+          //   subRoutes: [],
+          // },
+          // {
+          //   tittle: 'Delete Account Request',
+          //   hasSubRoute: false,
+          //   showSubRoute: false,
+          //   route: "/delete-account",
+          //   subRoutes: [],
+          // },
     ],
   },
   {

@@ -94,6 +94,9 @@ export async function PUT(req: NextRequest) {
   try {
     const store = await getCurrentStoreAPI(req);
     const body = await req.json();
+    
+    const val = (v: any) => (v === "" || v === undefined ? null : v);
+    const num = (v: any) => (v === "" || v === undefined ? 0 : Number(v));
 
     await client.query("BEGIN");
 
@@ -107,7 +110,7 @@ export async function PUT(req: NextRequest) {
           updated_at = NOW()
       WHERE id = $2
       `,
-      [body.store_name, store.id]
+      [val(body.store_name), store.id]
     );
 
     /* =========================
@@ -134,15 +137,15 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.store_email,
-        body.store_phone,
-        body.currency_code,
-        body.currency_symbol,
-        body.country_code,
-        body.timezone,
-        body.language,
-        body.date_format,
-        body.time_format,
+        val(body.store_email),
+        val(body.store_phone),
+        val(body.currency_code),
+        val(body.currency_symbol),
+        val(body.country_code),
+        val(body.timezone),
+        val(body.language),
+        val(body.date_format),
+        val(body.time_format),
       ]
     );
 
@@ -167,12 +170,12 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.logo_url,
-        body.favicon_url,
-        body.banner_url,
-        body.primary_color,
-        body.secondary_color,
-        body.theme_mode,
+        val(body.logo_url),
+        val(body.favicon_url),
+        val(body.banner_url),
+        val(body.primary_color),
+        val(body.secondary_color),
+        val(body.theme_mode),
       ]
     );
 
@@ -195,12 +198,12 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.address_line1,
-        body.address_line2,
-        body.city,
-        body.state,
-        body.postal_code,
-        body.country,
+        val(body.address_line1),
+        val(body.address_line2),
+        val(body.city),
+        val(body.state),
+        val(body.postal_code),
+        val(body.country),
         body.latitude,
         body.longitude,
       ]
@@ -224,10 +227,10 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.tax_name,
-        body.tax_rate,
-        body.tax_inclusive,
-        body.tax_registration_number,
+        val(body.tax_name),
+        num(body.tax_rate),
+        body.tax_inclusive || false,
+        val(body.tax_registration_number),
       ]
     );
 
@@ -250,10 +253,10 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.stripe_enabled,
-        body.stripe_account_id,
-        body.razorpay_enabled,
-        body.cod_enabled,
+        !!body.stripe_enabled,
+        val(body.stripe_account_id),
+        !!body.razorpay_enabled,
+        !!body.cod_enabled,
       ]
     );
 
@@ -274,9 +277,9 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.free_shipping_threshold,
-        body.flat_shipping_rate,
-        body.international_shipping,
+        num(body.free_shipping_threshold),
+        num(body.flat_shipping_rate),
+        !!body.international_shipping,
       ]
     );
 
@@ -300,9 +303,9 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.meta_title,
-        body.meta_description,
-        body.meta_keywords,
+        val(body.meta_title),
+        val(body.meta_description),
+        val(body.meta_keywords),
         body.facebook_pixel_id,
         body.google_analytics_id,
       ]
@@ -325,9 +328,9 @@ export async function PUT(req: NextRequest) {
       `,
       [
         store.id,
-        body.plan_name,
+        val(body.plan_name),
         body.subscription_status,
-        body.renewal_date || null,
+        val(body.renewal_date),
       ]
     );
 

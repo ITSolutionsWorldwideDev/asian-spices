@@ -3,8 +3,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
-export async function POST(req: NextRequest, { params }: { params: { customerId: string }}) {
-  const { customerId } = params;
+type Params = Promise<{ customerId: string }>;
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Params }
+) {
+  const { customerId } = await params;
   const body = await req.json();
 
   const result = await pool.query(

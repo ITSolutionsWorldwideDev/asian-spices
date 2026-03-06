@@ -5,6 +5,92 @@
 import { pool } from "@acme/db";
 import { revalidatePath } from "next/cache";
 import { requirePlatformAdminServer } from "@/lib/auth/server-guards";
+import bcrypt from "bcryptjs";
+
+export async function getReferenceData() {
+  await requirePlatformAdminServer();
+
+  try {
+    // 1. Fetch active stores
+    const storesRes = await pool.query(
+      `SELECT id, name FROM stores WHERE status = 'active' ORDER BY name ASC`
+    );
+
+    // 2. Fetch only 'store' scoped roles for the assignments dropdown
+    // We exclude 'platform' roles because those are handled by the is_platform_admin toggle
+    const rolesRes = await pool.query(
+      `SELECT id, key, '' AS name FROM roles WHERE scope = 'store' ORDER BY key ASC`
+    );
+
+    return {
+      stores: storesRes.rows,
+      roles: rolesRes.rows.map(r => ({
+        id: r.id,
+        // Format the key for display (e.g., "store_admin" -> "Store Admin")
+        name: r.name || r.key.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+      })),
+    };
+  } catch (error) {
+    console.error("Failed to fetch reference data:", error);
+    return { stores: [], roles: [] };
+  }
+}
+
+export async function saveUserAction(userId: string | null, formData: any) {
+  const actor = await requirePlatformAdminServer();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    let finalUserId = userId;
+
+    if (!userId) {
+      // CREATE USER
+      const hashedPassword = await bcrypt.hash(formData.password, 10);
+      const userRes = await client.query(
+        `INSERT INTO users (email, name, password_hash, is_platform_admin, status)
+         VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+        [formData.email, formData.name, hashedPassword, formData.is_platform_admin, formData.status]
+      );
+      finalUserId = userRes.rows[0].id;
+    } else {
+      // UPDATE USER
+      await client.query(
+        `UPDATE users SET email = $1, name = $2, is_platform_admin = $3, status = $4 WHERE id = $5`,
+        [formData.email, formData.name, formData.is_platform_admin, formData.status, userId]
+      );
+    }
+
+    // SYNC STORE ASSIGNMENTS
+    // Simplest way: Delete existing and re-insert (or use a delta)
+    await client.query(`DELETE FROM store_users WHERE user_id = $1`, [finalUserId]);
+    
+    if (formData.storeAssignments?.length > 0) {
+      for (const assign of formData.storeAssignments) {
+        await client.query(
+          `INSERT INTO store_users (store_id, user_id, role_id) VALUES ($1, $2, $3)`,
+          [assign.store_id, finalUserId, assign.role_id]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    revalidatePath("/platform/users");
+    return { success: true, id: finalUserId };
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+/* "use server";
+
+import { pool } from "@acme/db";
+import { revalidatePath } from "next/cache";
+import { requirePlatformAdminServer } from "@/lib/auth/server-guards";
 
 export async function createUser(data: {
   email: string;
@@ -52,101 +138,4 @@ export async function updateUser(userId: string, data: any) {
   );
 
   revalidatePath("/platform/users");
-}
-
-
-/* import { revalidatePath } from "next/cache";
-import { pool, buildInsertQuery, buildUpdateQuery } from "@acme/db";
-import { requirePlatformAdminServer } from "@/lib/auth/server-guards";
-
-export async function createUser(data: {
-  email: string;
-  name?: string;
-  password: string;
-  is_platform_admin?: boolean;
-  status?: "active" | "suspended";
-  roleId?: string;
-  actorId: string;
-}) {
-  await requirePlatformAdminServer();
-
-  // Insert user
-  const { text, values } = buildInsertQuery("users", {
-    email: data.email,
-    name: data.name,
-    password_hash: data.password, // hash in production
-    is_platform_admin: data.is_platform_admin ?? false,
-    status: data.status ?? "active",
-  });
-
-  const { rows } = await pool.query(text, values);
-  const userId = rows[0].id;
-
-  // Assign role if provided
-  if (data.roleId) {
-    await pool.query(
-      `INSERT INTO store_users (user_id, role_id) VALUES ($1, $2)`,
-      [userId, data.roleId]
-    );
-  }
-
-  // Audit log
-  await pool.query(
-    `INSERT INTO user_audit_logs (user_id, action, actor_id, changes)
-     VALUES ($1, 'created', $2, $3)`,
-    [userId, data.actorId, JSON.stringify(data)]
-  );
-
-  // Revalidate pages if using caching
-  revalidatePath("/users");
-
-  return rows[0];
 } */
-
-/* export async function updateUser(userId: string, data: {
-  email?: string;
-  name?: string;
-  password?: string;
-  is_platform_admin?: boolean;
-  status?: "active" | "suspended";
-  roleId?: string;
-  actorId: string;
-}) {
-  await requirePlatformAdmin();
-
-  // Update user
-  const updateData: any = { ...data };
-  if (data.password) {
-    updateData.password_hash = data.password;
-    delete updateData.password;
-  }
-  delete updateData.actorId;
-  delete updateData.roleId;
-
-  const { text, values } = buildUpdateQuery("users", updateData, {
-    column: "id",
-    value: userId,
-  });
-
-  const { rows } = await pool.query(text, values);
-
-  // Update role if provided
-  if (data.roleId) {
-    await pool.query(
-      `UPDATE store_users SET role_id = $1 WHERE user_id = $2`,
-      [data.roleId, userId]
-    );
-  }
-
-  // Audit log
-  await pool.query(
-    `INSERT INTO user_audit_logs (user_id, action, actor_id, changes)
-     VALUES ($1, 'updated', $2, $3)`,
-    [userId, data.actorId, JSON.stringify(data)]
-  );
-
-  revalidatePath("/users");
-
-  return rows[0];
-}
- */

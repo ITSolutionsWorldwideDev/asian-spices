@@ -10,14 +10,24 @@ import { Eye } from "react-feather";
 import FilterBar from "./FilterBar";
 import { useToast } from "@repo/ui";
 
+// type Order = {
+//   order_id: number;
+//   customer_name: string;
+//   order_date: string;
+//   items_count: number;
+//   total_amount: number;
+//   status: string;
+//   payment_reference: string;
+// };
+
 type Order = {
-  order_id: number;
+  id: string;
+  order_number: string;
   customer_name: string;
   order_date: string;
   items_count: number;
   total_amount: number;
-  status: string;
-  payment_reference: string;
+  payment_status: string;
 };
 
 type Filters = {
@@ -41,7 +51,7 @@ export default function OrdersListComponent() {
       setLoading(true);
 
       const params = new URLSearchParams(
-        Object.entries(appliedFilters).filter(([_, v]) => v) as any
+        Object.entries(appliedFilters).filter(([_, v]) => v) as any,
       );
 
       const res = await fetch(`/api/orders?${params.toString()}`);
@@ -60,13 +70,22 @@ export default function OrdersListComponent() {
   }, []);
 
   const columns = [
+    // {
+    //   title: "Order ID",
+    //   dataIndex: "id",
+    //   render: (id: number) => <strong>#{id}</strong>,
+    // },
     {
-      title: "Order ID",
-      dataIndex: "order_id",
-      render: (id: number) => <strong>#{id}</strong>,
+      title: "Order",
+      dataIndex: "order_number",
+      render: (num: string) => <strong>#{num}</strong>,
+    },
+    {
+      title: "Date",
+      dataIndex: "created_at",
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     { title: "Customer", dataIndex: "customer_name" },
-    { title: "Date", dataIndex: "order_date" },
     { title: "Items", dataIndex: "items_count" },
     {
       title: "Total",
@@ -83,7 +102,7 @@ export default function OrdersListComponent() {
     {
       title: "Action",
       render: (_: any, record: Order) => (
-        <Link href={`/admin/orders/${record.order_id}`}>
+        <Link href={`/admin/orders/${record.id}`}>
           <Eye size={16} />
         </Link>
       ),
@@ -100,31 +119,22 @@ export default function OrdersListComponent() {
             </div>
           </div>
 
-
           <div className="card table-list-card mb-4">
             <div className="card-header flex flex-wrap justify-between items-center gap-3">
-            <FilterBar
-              onApply={(newFilters) => {
-                setFilters(newFilters);
-                fetchOrders(newFilters);
-              }}
-            />
-          </div>
-            {/* <div className="card-header flex flex-wrap justify-between items-center gap-3">
-              <div className="search-set"></div>
-              <FilterBar />
-            </div> */}
+              <FilterBar
+                onApply={(newFilters) => {
+                  setFilters(newFilters);
+                  fetchOrders(newFilters);
+                }}
+              />
+            </div>
 
             <div className="card-body">
               <div className="overflow-x-auto">
                 {loading ? (
                   <p className="text-center py-6">Loading...</p>
                 ) : (
-                  <Table
-                    columns={columns}
-                    dataSource={orders}
-                    rowKey="order_id"
-                  />
+                  <Table columns={columns} dataSource={orders} rowKey="id" />
                 )}
               </div>
             </div>
@@ -135,6 +145,12 @@ export default function OrdersListComponent() {
   );
 }
 
+{
+  /* <div className="card-header flex flex-wrap justify-between items-center gap-3">
+              <div className="search-set"></div>
+              <FilterBar />
+            </div> */
+}
 /* 
 
 

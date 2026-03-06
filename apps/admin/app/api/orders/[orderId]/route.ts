@@ -1,4 +1,78 @@
+// /app/api/orders/[orderId]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
+import { pool } from "@acme/db";
+
+export async function GET(
+  req: NextRequest,  
+  { params }: { params: Promise<{ orderId: string }> }
+) {
+  try {
+    const storeId = req.headers.get("x-store-id");
+    if (!storeId) {
+      return NextResponse.json({ error: "Store not resolved" }, { status: 400 });
+    }
+
+    const { orderId } = await params;
+
+    // 🔹 Fetch Order
+    const orderResult = await pool.query(
+      `
+      SELECT
+        o.id AS order_id,
+        o.order_number,
+        o.created_at AS order_date,
+        o.payment_status AS status,
+        o.total_amount,
+        o.subtotal,
+        o.tax_amount,
+        o.discount_amount,
+        o.shipping_amount,
+        c.name AS customer_name,
+        c.email AS customer_email
+      FROM store_orders o
+      LEFT JOIN store_customers c ON c.id = o.customer_id
+      WHERE o.id = $1 AND o.store_id = $2
+      `,
+      [orderId, storeId]
+    );
+
+    if (!orderResult.rows.length) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // 🔹 Fetch Items
+    const itemsResult = await pool.query(
+      `
+      SELECT
+        oi.id AS order_item_id,
+        oi.quantity,
+        oi.price,
+        sp.id AS product_id,
+        sp.name,
+        sp.sku
+      FROM store_order_items oi
+      LEFT JOIN store_products sp ON sp.id = oi.product_id
+      WHERE oi.order_id = $1
+      `,
+      [orderId]
+    );
+
+    return NextResponse.json({
+      order: {
+        ...orderResult.rows[0],
+        items: itemsResult.rows,
+      },
+    });
+  } catch (error) {
+    console.error("Order detail fetch failed:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch order detail" },
+      { status: 500 }
+    );
+  }
+}
+/* import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
 export async function GET(
@@ -63,4 +137,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+} */

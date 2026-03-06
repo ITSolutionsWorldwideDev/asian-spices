@@ -47,9 +47,9 @@ export default async function EditStorePage({
   return (
     <div className="page-wrapper">
       <div className="content space-y-8">
-        <h1 className="text-2xl font-bold mb-6">
+        {/* <h1 className="text-2xl font-bold mb-6">
           Edit Store
-        </h1>
+        </h1> */}
 
         <StoreForm store={store} />
 
