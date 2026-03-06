@@ -9,41 +9,36 @@ const PLATFORM_SUBDOMAIN = "admin";
 function extractSubdomain(hostname: string) {
   const host = hostname.split(":")[0];
   const parts = host.split(".");
+
+  const rootDomains = ["localhost", "vercel.app", "yourproductiondomain.com"];
+  if (parts.length <= 2 && rootDomains.some(d => host.endsWith(d))) {
+    return ""; 
+  }
+
   return parts[0];
 }
 
 export default withAuth(
   function middleware(req: NextRequest) {
     const hostname = req.headers.get("host") || "";
-    const url = req.nextUrl.clone();
+    
+    const subdomain = extractSubdomain(hostname);
+    const pathname = req.nextUrl.pathname;
 
     // 1. FIX: Development Subdomain Force
     if (process.env.NODE_ENV === "development") {
       if (!hostname.includes("admin.localhost") && !hostname.includes(".localhost")) {
+        
+        const url = req.nextUrl.clone();
         url.hostname = "admin.localhost";
         return NextResponse.redirect(url);
       }
     }
 
-    const pathname = req.nextUrl.pathname;
-
-    // ✅ DEV: Redirect localhost → admin.localhost
-    // if (process.env.NODE_ENV === "development") {
-    //   if (
-    //     hostname.startsWith("localhost") ||
-    //     hostname.startsWith("127.0.0.1")
-    //   ) {
-    //     const url = req.nextUrl.clone();
-    //     url.hostname = "admin.localhost";
-    //     return NextResponse.redirect(url);
-    //   }
-    // }
-
-    const subdomain = extractSubdomain(hostname);
+    
     const isPlatformRoute = pathname.startsWith("/platform");
 
     if (pathname.startsWith("/api")) {
-      // return NextResponse.next();
       const res = NextResponse.next();
       res.headers.set("x-tenant-subdomain", subdomain);
       return res;
@@ -77,13 +72,6 @@ export default withAuth(
         if (isPlatformSubdomain) {
           return !!token.isPlatformAdmin;
         }
-        // if (subdomain === PLATFORM_SUBDOMAIN) {
-        //   return !!token.isPlatformAdmin;
-        // }
-
-        // For other subdomains (storefronts/tenant dashboards), 
-        // allow if they have any store roles or are a platform admin
-        // return !!(token.isPlatformAdmin || token.storeRoles?.length);
         return !!(token.isPlatformAdmin || (token.storeRoles && token.storeRoles.length > 0));
       },
     },
@@ -95,6 +83,28 @@ export default withAuth(
 export const config = {
   matcher: ["/((?!_next|static|_next/image|assets|favicon.ico|favicon.png|robots.txt|.*\\.svg$|login).*)", "/api/:path*"],
 };
+
+
+
+    // ✅ DEV: Redirect localhost → admin.localhost
+    // if (process.env.NODE_ENV === "development") {
+    //   if (
+    //     hostname.startsWith("localhost") ||
+    //     hostname.startsWith("127.0.0.1")
+    //   ) {
+    //     const url = req.nextUrl.clone();
+    //     url.hostname = "admin.localhost";
+    //     return NextResponse.redirect(url);
+    //   }
+    // }
+    
+        // if (subdomain === PLATFORM_SUBDOMAIN) {
+        //   return !!token.isPlatformAdmin;
+        // }
+
+        // For other subdomains (storefronts/tenant dashboards), 
+        // allow if they have any store roles or are a platform admin
+        // return !!(token.isPlatformAdmin || token.storeRoles?.length);
 
 // export const config = {
 //   matcher: ["/((?!api|_next|static|assets|favicon.ico|login).*)"],
