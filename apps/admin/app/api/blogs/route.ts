@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
 /* ------------------------------------
    POST (create blog)
 ------------------------------------ */
-export async function POST(req: Request) {
+export async function POST(req: Request) {  
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id)

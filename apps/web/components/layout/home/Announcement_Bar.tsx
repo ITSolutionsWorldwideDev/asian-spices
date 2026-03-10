@@ -10,8 +10,8 @@ const announcements = [
 
 export default function AnnouncementBar() {
   return (
-    <div className="bg-black text-white p-3">
-      <div className="container mx-auto flex justify-around items-center lg:p-10  font-semibold flex-wrap overflow-hidden">
+    <div className="bg-black text-white p-3 ">
+      <div className="container relative  mx-auto flex justify-around items-center lg:p-10  font-semibold flex-wrap overflow-hidden">
         {announcements.map((text, index) => (
           <div key={index}>
             <span className="whitespace-nowrap">{text}</span>

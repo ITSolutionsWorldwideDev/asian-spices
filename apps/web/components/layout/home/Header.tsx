@@ -62,7 +62,7 @@ export default function Header() {
   const current = frames[index];
 
   return (
-    <section className="relative w-full h-screen overflow-hidden ">
+    <section className="relative w-full  overflow-hidden flex flex-col">
       {/* Background Image */}
       {current && (
         <>
@@ -70,7 +70,7 @@ export default function Header() {
             src={`/assets/home/homeheaderimages/${current.img}`}
             alt={current.title}
             fill
-            className="object-cover "
+            className="object-cover"
           />
 
           {/* Main Content */}
@@ -79,7 +79,7 @@ export default function Header() {
       )}
 
       {/* CENTER BOLD LINE BUTTONS */}
-      <div className="absolute bottom-10 lg:left-1/2 left-1/4  flex gap-6 container mx-auto z-50">
+      <div className="relative mt-10 mb-10 flex items-center justify-center gap-6 container mx-auto z-50">
         {frames.map((_, i) => (
           <button
             key={i}

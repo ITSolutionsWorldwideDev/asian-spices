@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
-
 /* ------------------------------------
    GET
 ------------------------------------ */
@@ -23,7 +22,7 @@ export async function GET(req: NextRequest) {
     if (id) {
       const result = await pool.query(
         `SELECT * FROM brand WHERE brand_id = $1`,
-        [id]
+        [id],
       );
 
       if (!result.rows.length) {
@@ -79,10 +78,12 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to fetch brands" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch brands" },
+      { status: 500 },
+    );
   }
 }
-
 
 /* ------------------------------------
    POST (create brand)
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
       VALUES ($1, $2, NOW(), NOW())
       RETURNING *
       `,
-      [brand, status]
+      [brand, status],
     );
 
     return NextResponse.json(result.rows[0], { status: 201 });
@@ -112,11 +113,14 @@ export async function POST(req: NextRequest) {
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Brand already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to create brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create brand" },
+      { status: 500 },
+    );
   }
 }
 
@@ -142,7 +146,7 @@ export async function PUT(req: NextRequest) {
       WHERE brand_id = $3
       RETURNING *
       `,
-      [brand, status, brand_id]
+      [brand, status, brand_id],
     );
 
     if (!result.rows.length) {
@@ -156,11 +160,14 @@ export async function PUT(req: NextRequest) {
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Brand name already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to update brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update brand" },
+      { status: 500 },
+    );
   }
 }
 
@@ -178,7 +185,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const result = await pool.query(
       `DELETE FROM brand WHERE brand_id = $1 RETURNING *`,
-      [id]
+      [id],
     );
 
     if (!result.rows.length) {
@@ -188,6 +195,9 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ message: "Brand deleted successfully" });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to delete brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete brand" },
+      { status: 500 },
+    );
   }
 }
