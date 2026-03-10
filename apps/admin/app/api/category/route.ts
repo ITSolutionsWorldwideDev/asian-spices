@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 /* ------------------------------------
    Utils
@@ -18,6 +19,9 @@ function slugify(text: string) {
    GET (list or single category)
 ------------------------------------ */
 export async function GET(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
+
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
@@ -32,12 +36,16 @@ export async function GET(req: NextRequest) {
     /* -------- Single category -------- */
     if (id) {
       const result = await pool.query(
-        `SELECT * FROM categories WHERE category_id = $1`,
-        [id]
+        `SELECT * FROM store_categories 
+       WHERE id = $1 AND store_id = $2`,
+        [id, storeId],
       );
 
       if (!result.rows.length) {
-        return NextResponse.json({ error: "Category not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Category not found" },
+          { status: 404 },
+        );
       }
 
       return NextResponse.json(result.rows[0]);
@@ -49,10 +57,10 @@ export async function GET(req: NextRequest) {
 
     if (search) {
       values.push(`%${search.toLowerCase()}%`);
-      where.push(`LOWER(category) LIKE $${values.length}`);
+      where.push(`LOWER(name) LIKE $${values.length}`);
     }
 
-    const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+    const whereClause = where.length ? ` AND ${where.join(" AND ")}` : "";
 
     let orderBy = "created_at DESC";
     if (sort === "nameAsc") orderBy = "category ASC";
@@ -62,17 +70,17 @@ export async function GET(req: NextRequest) {
     values.push(limit, offset);
 
     const dataQuery = `
-      SELECT category_id, category, categoryslug, status, created_at, updated_at
-      FROM categories
-      ${whereClause}
+      SELECT id, name, slug, status, created_at, updated_at
+      FROM store_categories
+      WHERE store_id = '${storeId}' ${whereClause}
       ORDER BY ${orderBy}
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `;
 
     const countQuery = `
       SELECT COUNT(*)::int AS count
-      FROM categories
-      ${whereClause}
+      FROM store_categories
+      WHERE store_id = '${storeId}' ${whereClause}
     `;
 
     const [dataRes, countRes] = await Promise.all([
@@ -89,7 +97,10 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch categories" },
+      { status: 500 },
+    );
   }
 }
 
@@ -97,24 +108,38 @@ export async function GET(req: NextRequest) {
    POST (create category)
 ------------------------------------ */
 export async function POST(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
   try {
     const body = await req.json();
-    const { category, status = 1 } = body;
+    const { name, status = 1 } = body;
 
-    if (!category) {
-      return NextResponse.json({ error: "Category is required" }, { status: 400 });
+    if (!name) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 },
+      );
     }
 
-    const slug = slugify(category);
+    const slug = slugify(name);
 
     const result = await pool.query(
       `
-      INSERT INTO categories (category, categoryslug, status, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
+      INSERT INTO store_categories (store_id, name, slug, status)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
       `,
-      [category, slug, status]
+      [storeId, name, slug, status],
     );
+
+    // const result = await pool.query(
+    //   `
+    //   INSERT INTO categories (category, categoryslug, status, created_at, updated_at)
+    //   VALUES ($1, $2, $3, NOW(), NOW())
+    //   RETURNING *
+    //   `,
+    //   [category, slug, status],
+    // );
 
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (err: any) {
@@ -123,11 +148,14 @@ export async function POST(req: NextRequest) {
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Category already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create category" },
+      { status: 500 },
+    );
   }
 }
 
@@ -135,32 +163,54 @@ export async function POST(req: NextRequest) {
    PUT (update category)
 ------------------------------------ */
 export async function PUT(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
   try {
     const body = await req.json();
-    const { category_id, category, status } = body;
+    const { id, name, status } = body;
 
-    if (!category_id) {
-      return NextResponse.json({ error: "Category ID required" }, { status: 400 });
+    const slug = name ? slugify(name) : undefined;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Category ID required" },
+        { status: 400 },
+      );
     }
-
-    const slug = category ? slugify(category) : undefined;
 
     const result = await pool.query(
       `
-      UPDATE categories
+      UPDATE store_categories
       SET
-        category = COALESCE($1, category),
-        categoryslug = COALESCE($2, categoryslug),
+        name = COALESCE($1, name),
+        slug = COALESCE($2, slug),
         status = COALESCE($3, status),
         updated_at = NOW()
-      WHERE category_id = $4
+      WHERE id = $4 AND store_id = $5
       RETURNING *
       `,
-      [category, slug, status, category_id]
+      [name, slug, status, id, storeId],
     );
 
+    // const result = await pool.query(
+    //   `
+    //   UPDATE categories
+    //   SET
+    //     category = COALESCE($1, category),
+    //     categoryslug = COALESCE($2, categoryslug),
+    //     status = COALESCE($3, status),
+    //     updated_at = NOW()
+    //   WHERE category_id = $4
+    //   RETURNING *
+    //   `,
+    //   [category, slug, status, category_id],
+    // );
+
     if (!result.rows.length) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json(result.rows[0]);
@@ -170,11 +220,14 @@ export async function PUT(req: NextRequest) {
     if (err.code === "23505") {
       return NextResponse.json(
         { error: "Category slug already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update category" },
+      { status: 500 },
+    );
   }
 }
 
@@ -182,26 +235,43 @@ export async function PUT(req: NextRequest) {
    DELETE (remove category)
 ------------------------------------ */
 export async function DELETE(req: NextRequest) {
+  const store = await getCurrentStoreAPI(req);
+  const storeId = store.id;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Category ID required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Category ID required" },
+      { status: 400 },
+    );
   }
 
   try {
-    const result = await pool.query(
-      `DELETE FROM categories WHERE category_id = $1 RETURNING *`,
-      [id]
-    );
+    // const result = await pool.query(
+    //   `DELETE FROM categories WHERE category_id = $1 RETURNING *`,
+    //   [id],
+    // );
 
-    if (!result.rows.length) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
-    }
+    // if (!result.rows.length) {
+    //   return NextResponse.json(
+    //     { error: "Category not found" },
+    //     { status: 404 },
+    //   );
+    // }
+
+    await pool.query(
+      `DELETE FROM store_categories 
+      WHERE id = $1 AND store_id = $2`,
+      [id, storeId]
+    );
 
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete category" },
+      { status: 500 },
+    );
   }
 }

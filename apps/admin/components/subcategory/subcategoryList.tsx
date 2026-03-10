@@ -8,36 +8,40 @@ import { TbCirclePlus, TbTrash } from "react-icons/tb";
 import { Button, useToast } from "@repo/ui";
 
 type Subcategory = {
-  subcategory_id: number;
+  id: string;
+  store_id: string;
   category_id: string;
-  category_code: string;
-  title: string;
-  description: string;
+  name: string;
+  slug: string;
   status: number;
+  created_at: string;
+  updated_at: string;
+  category?: string;
 };
 
 type Category = {
-  category_id: number;
-  category: string;
+  id: string;
+  store_id: string;
+  name: string;
+  slug: string;
 };
 
 const initialForm = {
-  subcategory_id: null as number | null,
+  id: null as string | null,
   category_id: "",
-  title: "",
-  description: "",
+  name: "",
   status: true,
 };
 
 export default function SubcategoryListComponent() {
   const [data, setData] = useState<Subcategory[]>([]);
-  const [categories, setCategory] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState(initialForm);
 
@@ -66,7 +70,7 @@ export default function SubcategoryListComponent() {
     try {
       const res = await fetch("/api/category");
       const json = await res.json();
-      setCategory(json.items || []);
+      setCategories(json.items || []);
     } catch {
       showToast("error", "Failed to load categories");
     }
@@ -89,10 +93,9 @@ export default function SubcategoryListComponent() {
   const openEditModal = (row: Subcategory) => {
     setIsEditMode(true);
     setFormData({
-      subcategory_id: row.subcategory_id,
-      category_id: String(row.category_id),
-      title: row.title,
-      description: row.description,
+      id: row.id,
+      category_id: row.category_id,
+      name: row.name,
       status: row.status === 1,
     });
     setIsModalOpen(true);
@@ -102,17 +105,16 @@ export default function SubcategoryListComponent() {
      Submit
   ------------------------------------ */
   const handleSubmit = async () => {
-    if (!formData.title || !formData.category_id) {
-      showToast("error", "Title and Category are required");
+    if (!formData.name || !formData.category_id) {
+      showToast("error", "Name and Category are required");
       return;
     }
 
     setSaving(true);
 
     const payload = {
-      category_id: Number(formData.category_id),
-      title: formData.title,
-      description: formData.description,
+      category_id: formData.category_id,
+      name: formData.name,
       status: formData.status ? 1 : 0,
     };
 
@@ -120,11 +122,7 @@ export default function SubcategoryListComponent() {
       const res = await fetch("/api/subcategory", {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          isEditMode
-            ? { subcategory_id: formData.subcategory_id, ...payload }
-            : payload
-        ),
+        body: JSON.stringify(isEditMode ? { id: formData.id, ...payload } : payload),
       });
 
       if (!res.ok) throw new Error();
@@ -164,13 +162,11 @@ export default function SubcategoryListComponent() {
      Table Columns
   ------------------------------------ */
   const columns = [
-    { title: "Code", dataIndex: "category_code" },
-    { title: "Title", dataIndex: "title" },
-    { title: "Description", dataIndex: "description" },
+    { title: "Category", dataIndex: "category" },
+    { title: "Name", dataIndex: "name" },
     {
       title: "Status",
-      render: (_: any, r: Subcategory) =>
-        r.status === 1 ? "Active" : "Inactive",
+      render: (_: any, r: Subcategory) => (r.status === 1 ? "Active" : "Inactive"),
     },
     {
       title: "Action",
@@ -179,7 +175,7 @@ export default function SubcategoryListComponent() {
           <button onClick={() => openEditModal(r)}>
             <Edit size={16} />
           </button>
-          <button onClick={() => setDeleteId(r.subcategory_id)}>
+          <button onClick={() => setDeleteId(r.id)}>
             <Trash2 size={16} />
           </button>
         </div>
@@ -217,7 +213,7 @@ export default function SubcategoryListComponent() {
                 <Table
                   columns={columns}
                   dataSource={data}
-                  rowKey="subcategory_id"
+                  rowKey="id"
                 />
               )}
             </div>
@@ -255,8 +251,8 @@ export default function SubcategoryListComponent() {
                 >
                   <option value="">Select Category</option>
                   {categories.map((c) => (
-                    <option key={c.category_id} value={c.category_id}>
-                      {c.category}
+                    <option key={c.id} value={c.id}>
+                      {c.name}
                     </option>
                   ))}
                 </select>
@@ -268,16 +264,16 @@ export default function SubcategoryListComponent() {
                 <input
                   type="text"
                   placeholder="Subcategory name"
-                  value={formData.title}
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                   className="w-full border rounded px-3 py-2 mb-4"
                 />
               </div>
 
               {/* DESCRIPTION */}
-              <div className="mb-3">
+              {/* <div className="mb-3">
                 <label className="col-form-label">Description:</label>
                 <textarea
                   placeholder="Description"
@@ -287,7 +283,7 @@ export default function SubcategoryListComponent() {
                   }
                   className="w-full border rounded px-3 py-2 mb-3"
                 />
-              </div>
+              </div> */}
 
               <label className="flex items-center gap-2 mb-4">
                 <input

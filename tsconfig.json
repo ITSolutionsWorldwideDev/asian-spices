@@ -1,7 +1,12 @@
 //tsconfig.json
 {
+  "extends": "./tsconfig.base.json",
   "files": [],
-  "references": [{ "path": "packages/db" }, { "path": "packages/auth" }],
+  "references": [
+    { "path": "packages/db" },
+    { "path": "packages/types" },
+    { "path": "packages/auth" }
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -13,15 +18,5 @@
       "@repo/ui": ["packages/ui/src/index.ts"]
     }
   },
-  "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
+  // "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
 }
-
-/* 
-"paths": {
-  "@acme/db": ["packages/db/src/index.ts"],
-  "@acme/auth": ["packages/auth/index.ts"],
-  "@acme/utils": ["packages/utils/index.ts"],
-  "@acme/types": ["packages/types/index.ts"],
-  "@acme/ui": ["packages/ui/index.ts"]
-}
-*/

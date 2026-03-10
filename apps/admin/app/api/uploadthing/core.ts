@@ -2,7 +2,8 @@
 
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@acme/auth";
+// import { authOptions } from "@acme/auth";
+import { adminAuthOptions } from "@acme/auth/admin";
 import { pool } from "@acme/db";
 
 const f = createUploadthing();
@@ -15,7 +16,8 @@ export const mediaRouter = {
     },
   })
     .middleware(async () => {
-      const session = await getServerSession(authOptions);
+      // const session = await getServerSession(authOptions);
+        const session = await getServerSession(adminAuthOptions);
       if (!session?.user?.id) throw new Error("Unauthorized");
 
       return { userId: session.user.id };

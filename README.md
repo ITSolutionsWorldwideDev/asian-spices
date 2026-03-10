@@ -1,4 +1,5 @@
-# 🛒 **xyz | Ecommerce Platform (Turborepo + Next.js)**
+<!-- // D:\project\asian-spices\README.md -->
+# 🛒 **Asian Spices | Ecommerce Platform (Turborepo + Next.js)**
 
 A modern, scalable ecommerce platform built using Turborepo, featuring a customer-facing website, a powerful admin dashboard, shared UI components, and reusable packages—designed for performance, modularity, and easy team collaboration.
 

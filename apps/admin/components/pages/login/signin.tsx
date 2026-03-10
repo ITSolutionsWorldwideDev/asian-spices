@@ -5,19 +5,37 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const PLATFORM_SUBDOMAIN = "admin";
+
 export default function SigninComponent() {
 
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Redirect if logged in
+  // ✅ If already logged in, go to dashboard
   useEffect(() => {
+
+    
+
     if (status === "authenticated") {
-      router.replace("/dashboard");
+
+      console.log('status ==== ', status);
+      
+      const hostname = window.location.hostname;
+      const subdomain = hostname.split(".")[0];
+
+      console.log('signin subdomain ====',subdomain);
+
+      if (subdomain === PLATFORM_SUBDOMAIN) {
+        router.replace("/platform/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
     }
   }, [status, router]);
 
@@ -30,7 +48,7 @@ export default function SigninComponent() {
     const email = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    console.log('session ==== ', session);
+    console.log('formData ==== ', formData);
 
     const res = await signIn("credentials", {
       redirect: false,
@@ -46,20 +64,23 @@ export default function SigninComponent() {
       return;
     }
 
-    // router.push("/"); // redirect to dashboard
-    // router.push("/dashboard");
-    router.replace("/dashboard");
+    
+    const hostname = window.location.hostname;
+    const subdomain = hostname.split(".")[0];
+
+    console.log('handleLogin subdomain ====',subdomain);
+
+    if (subdomain === PLATFORM_SUBDOMAIN) {
+      router.replace("/platform/dashboard");
+    } else {
+      router.replace("/dashboard");
+    }
   };
-  // While redirecting
-  // if (session) return null;
+
   if (status === "authenticated") return null;
   
   return (
     <>
-      {/* <div id="global-loader">
-        <div className="whirly-loader"> </div>
-      </div> */}
-      {/* <!-- Main Wrapper --> */}
       <div className="main-wrapper">
         <div className="account-content">
           <div className="login-wrapper">
@@ -111,7 +132,7 @@ export default function SigninComponent() {
                             name="password"
                           />
                           <span
-                            className={`input-group-text cursor-pointer fa toggle-password ${
+                            className={`input-group-text cursor-pointer fa toggle-password  pt-2 ${
                               isPasswordVisible ? "fa-eye-slash" : "fa-eye"
                             }`}
                             onClick={() =>
@@ -124,11 +145,12 @@ export default function SigninComponent() {
                         <button className="btn btn-login" disabled={loading}>
                           {loading ? "Signing in..." : "Sign In"}
                         </button>
+                        {errorMsg && <p className="text-red-500">{errorMsg}</p>}
                       </div>
 
 
                       <div className="my-6 flex justify-center items-center copyright-text">
-                        <p>Copyright &copy; 2025 Asian Spices</p>
+                        <p>Copyright &copy; 2026 Asian Spices</p>
                       </div>
                     </div>
                   </form>

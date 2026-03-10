@@ -9,19 +9,23 @@ import CustomerFilterBar from "./CustomerFilterBar";
 import { useToast } from "@repo/ui";
 
 type Customer = {
-  customer_id: number;
+  id: string;
+  customer_type: "B2C" | "B2B";
+  company_name?: string;
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
-  status: string;
+  credit_limit: number;
+  payment_terms: number;
   total_orders: number;
   total_spent: number;
+  created_at: string;
 };
 
 type Filters = {
   search?: string;
-  status?: string;
+  customer_type?: string;
   sort?: string;
 };
 
@@ -35,7 +39,7 @@ export default function CustomersListComponent() {
       setLoading(true);
 
       const params = new URLSearchParams(
-        Object.entries(filters).filter(([_, v]) => v) as any
+        Object.entries(filters).filter(([_, v]) => v) as any,
       );
 
       const res = await fetch(`/api/customers?${params.toString()}`);
@@ -54,6 +58,43 @@ export default function CustomersListComponent() {
   }, []);
 
   const columns = [
+    {
+      title: "Customer",
+      render: (_: any, r: Customer) =>
+        r.customer_type === "B2B"
+          ? r.company_name
+          : `${r.first_name} ${r.last_name ?? ""}`,
+    },
+    { title: "Type", dataIndex: "customer_type" },
+    { title: "Email", dataIndex: "email" },
+    { title: "Phone", dataIndex: "phone" },
+    {
+      title: "Credit Limit",
+      render: (_: any, r: Customer) =>
+        r.customer_type === "B2B"
+          ? `$${Number(r.credit_limit).toFixed(2)}`
+          : "-",
+    },
+    {
+      title: "Orders",
+      dataIndex: "total_orders",
+    },
+    {
+      title: "Spent",
+      dataIndex: "total_spent",
+      render: (v: number) => `$${Number(v).toFixed(2)}`,
+    },
+    {
+      title: "Action",
+      render: (_: any, r: Customer) => (
+        <Link href={`/customers/${r.id}`}>
+          <Eye size={16} />
+        </Link>
+      ),
+    },
+  ];
+
+  /* const columns = [
     {
       title: "Customer",
       render: (_: any, r: Customer) =>
@@ -84,16 +125,14 @@ export default function CustomersListComponent() {
         </Link>
       ),
     },
-  ];
+  ]; */
 
   return (
     <div className="page-wrapper">
       <div className="content">
         <div className="page-header mb-4">
           <h4 className="text-lg font-semibold">Store Customers</h4>
-          <p className="text-gray-500">
-            Customers registered on your store
-          </p>
+          <p className="text-gray-500">Customers registered on your store</p>
         </div>
 
         <div className="card table-list-card">

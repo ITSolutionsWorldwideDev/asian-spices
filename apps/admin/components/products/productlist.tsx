@@ -14,15 +14,15 @@ import ProductImportModal from "./ProductImportModal";
    Types
 ------------------------------------ */
 type Product = {
-  product_id: number;
+  id: number;
   name: string;
   sku: string;
   item_code: string;
   category: string;
   subcategory: string;
   brand: string;
-  price: string;
-  quantity: string;
+  price: number;
+  quantity: number;
   status: number;
 };
 
@@ -89,7 +89,7 @@ export default function ProductListComponent() {
     }
   };
 
-  const columns = [
+  /* const columns = [
     {
       title: "SKU",
       dataIndex: "sku",
@@ -100,10 +100,10 @@ export default function ProductListComponent() {
       dataIndex: "name",
       render: (text: string, record: any) => (
         <div className="flex items-center">
-          {/* <Link href="#" className="avatar avatar-md mr-2">
+          <Link href="#" className="avatar avatar-md mr-2">
             <img src={record.productImage} alt="product" />
-          </Link> */}
-          <Link href={`products/${record.product_id}`}>{text}</Link>
+          </Link>
+          <Link href={`products/${record.id}`}>{text}</Link>
         </div>
       ),
       sorter: (a: any, b: any) => a.product.localeCompare(b.product),
@@ -142,10 +142,10 @@ export default function ProductListComponent() {
       dataIndex: "action",
       render: (text: any, record: any) => (
         <div className="flex gap-2">
-          <Link href={`products/${record.product_id}`} className="p-2">
+          <Link href={`products/${record.id}`} className="p-2">
             <Eye size={16} />
           </Link>
-          <Link href={`products/${record.product_id}/edit`} className="p-2">
+          <Link href={`products/${record.id}/edit`} className="p-2">
             <Edit size={16} />
           </Link>
           <button
@@ -160,7 +160,78 @@ export default function ProductListComponent() {
         </div>
       ),
     },
-  ];
+  ]; */
+
+  const columns = [
+  // {
+  //   title: "SKU",
+  //   dataIndex: "sku",
+  //   sorter: (a: Product, b: Product) => a.sku.localeCompare(b.sku),
+  // },
+  {
+    title: "Product",
+    dataIndex: "name",
+    render: (text: string, record: Product) => (
+      <Link href={`products/${record.id}`} className="text-blue-600 hover:underline">
+        {text}
+      </Link>
+    ),
+    sorter: (a: Product, b: Product) => a.name.localeCompare(b.name),
+  },
+  {
+    title: "Category",
+    dataIndex: "category",
+    sorter: (a: Product, b: Product) => a.category.localeCompare(b.category),
+  },
+  {
+    title: "Brand",
+    dataIndex: "brand",
+    sorter: (a: Product, b: Product) => a.brand.localeCompare(b.brand),
+  },
+  {
+    title: "Price",
+    dataIndex: "price",
+    sorter: (a: Product, b: Product) => a.price - b.price,
+    render: (price: number) => `$${price.toLocaleString()}`,
+  },
+  {
+    title: "Qty",
+    dataIndex: "quantity",
+    sorter: (a: Product, b: Product) => a.quantity - b.quantity,
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    render: (s: number) => (
+      <span className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${s ? "bg-green-600" : "bg-red-600"}`}>
+        {s ? "Active" : "Inactive"}
+      </span>
+    ),
+  },
+  {
+    title: "Action",
+    dataIndex: "action",
+    render: (_: any, record: Product) => (
+      <div className="flex gap-2">
+        <Link href={`products/${record.id}`} className="p-2 hover:text-blue-600">
+          <Eye size={16} />
+        </Link>
+        <Link href={`products/${record.id}/edit`} className="p-2 hover:text-yellow-600">
+          <Edit size={16} />
+        </Link>
+        <button
+          onClick={() => {
+            setSelectedId(record.id);
+            setShowDeleteModal(true);
+          }}
+          className="p-2 text-red-500 hover:text-red-700"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    ),
+  },
+];
 
   return (
     <>
@@ -207,7 +278,7 @@ export default function ProductListComponent() {
                   <Table
                     columns={columns}
                     dataSource={products}
-                    rowKey="product_id"
+                    rowKey="id"
                   />
                 )}
               </div>

@@ -1,19 +1,14 @@
 // apps/admin/app/api/products/[id]/images/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { requireStorePermission } from "@/lib/auth/guards";
+import { PERMISSIONS } from "@/lib/auth/permissions";
 import { pool } from "@acme/db";
-
-// interface Params {
-//   params: { id: string };
-// }
-
-// export async function POST(req: NextRequest, { params }: Params) {
-//   try {
-//     const { mediaIds, primaryMediaId } = await req.json();
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
 
   try {
@@ -39,9 +34,52 @@ export async function POST(
 }
 
 export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+  
+) {
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+
+  const { id } = await params;
+  const { images } = await req.json();
+  // images = [{ url, alt_text, is_primary, sort_order }]
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `DELETE FROM store_product_images WHERE product_id=$1`,
+      [id]
+    );
+
+    for (const img of images) {
+      await client.query(
+        `
+        INSERT INTO store_product_images
+        (product_id, url, alt_text, is_primary, sort_order)
+        VALUES ($1,$2,$3,$4,$5)
+        `,
+        [id, img.url, img.alt_text, img.is_primary, img.sort_order]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+/* export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
   const { mediaIds, primaryMediaId } = await req.json();
 
@@ -73,4 +111,4 @@ export async function PUT(
   } finally {
     client.release();
   }
-}
+} */

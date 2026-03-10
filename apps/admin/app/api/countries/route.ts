@@ -1,0 +1,34 @@
+// apps/admin/app/api/countries/route.ts
+import { NextResponse } from "next/server";
+import { pool } from "@acme/db";
+
+export async function GET() {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, iso2 FROM countries 
+       ORDER BY name ASC`,
+    );
+
+    if (!result.rows.length) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(result.rows);
+
+    // const result = await pool.query(
+    //   `SELECT id, name, iso2 FROM countries
+    //  WHERE is_active = true
+    //  ORDER BY name ASC`,
+    // );
+    // return NextResponse.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Failed to fetch countries" },
+      { status: 500 },
+    );
+  }
+}

@@ -13,9 +13,14 @@ import { Button, useToast } from "@repo/ui";
    Types
 ------------------------------------ */
 type Brand = {
-  brand_id: number;
+  brand_id: string;
   name: string;
-  status: number;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export default function BrandListComponent() {
@@ -26,13 +31,15 @@ export default function BrandListComponent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
-    brand_id: null as number | null,
+    brand_id: null as string | null,
     name: "",
+    description: "",
+    logo_url: "",
     status: true,
   });
 
@@ -65,6 +72,8 @@ export default function BrandListComponent() {
     setFormData({
       brand_id: null,
       name: "",
+      description: "",
+      logo_url: "",
       status: true,
     });
     setIsModalOpen(true);
@@ -75,7 +84,9 @@ export default function BrandListComponent() {
     setFormData({
       brand_id: record.brand_id,
       name: record.name,
-      status: record.status === 1,
+      description: record.description || "",
+      logo_url: record.logo_url || "",
+      status: record.status,
     });
     setIsModalOpen(true);
   };
@@ -86,32 +97,17 @@ export default function BrandListComponent() {
   const handleSubmit = async () => {
     try {
       const payload = {
-        brand: formData.name,
-        status: formData.status ? 1 : 0,
+        name: formData.name,
+        description: formData.description,
+        logo_url: formData.logo_url,
+        status: formData.status,
       };
-
-      /* if (isEditMode && formData.brand_id) {
-        await fetch("/api/brand", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            brand_id: formData.brand_id,
-            ...payload,
-          }),
-        });
-      } else {
-        await fetch("/api/brand", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } */
 
       const res = await fetch("/api/brand", {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isEditMode ? { brand_id: formData.brand_id, ...payload } : payload
+          isEditMode ? { brand_id: formData.brand_id, ...payload } : payload,
         ),
       });
 
@@ -157,7 +153,7 @@ export default function BrandListComponent() {
     {
       title: "Status",
       render: (_: any, record: Brand) =>
-        record.status === 1 ? (
+        record.status ? (
           <span className="text-green-600 font-medium">Active</span>
         ) : (
           <span className="text-red-600 font-medium">Inactive</span>
@@ -256,6 +252,25 @@ export default function BrandListComponent() {
                   className="w-full border rounded px-3 py-2 mb-4"
                 />
               </div>
+
+              <textarea
+                placeholder="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                className="w-full border rounded px-3 py-2 mb-3"
+              />
+
+              <input
+                type="text"
+                placeholder="Logo URL"
+                value={formData.logo_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, logo_url: e.target.value })
+                }
+                className="w-full border rounded px-3 py-2 mb-3"
+              />
 
               <label className="flex items-center gap-2 mb-4">
                 <input

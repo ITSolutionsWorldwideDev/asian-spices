@@ -1,5 +1,7 @@
 // apps/admin/components/products/addproduct.tsx
+
 "use client";
+
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, useState } from "react";
 import Select, { SingleValue } from "react-select";
@@ -25,15 +27,21 @@ interface ProductFormProps {
   productId?: string;
 }
 
+type Countries = {
+  id: number;
+  name: string;
+  iso2: string;
+};
+
 type Category = {
-  category_id: number;
-  category: string;
+  id: number;
+  name: string;
 };
 
 type Subcategory = {
-  subcategory_id: number;
+  id: number;
   category_id: number;
-  title: string;
+  name: string;
 };
 
 type Brand = {
@@ -50,6 +58,11 @@ type MediaItem = {
 type Option = {
   value: number;
   label: string;
+};
+
+type TierPrice = {
+  min_quantity: number;
+  price: number;
 };
 
 // ------------------ Utils ------------------
@@ -129,13 +142,13 @@ export default function AddProductComponent({
   mode = "create",
   productId,
 }: ProductFormProps) {
-  const route = all_routes;
   const router = useRouter();
 
   const { showToast } = useToast();
 
   type FormErrors = Partial<Record<keyof typeof formData | "media", string>>;
 
+  const [countries, setCountries] = useState<Countries[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -149,18 +162,23 @@ export default function AddProductComponent({
     slug: "",
     sku: "",
     item_code: "",
+    country_id: null as number | null,
     category_id: null as number | null,
     subcategory_id: null as number | null,
     brand_id: null as number | null,
-    country_of_origin: "",
+    // country_of_origin: "",
     description: "",
-    price: "",
-    quantity: "",
-    discount_type_id: null as number | null,
-    discount_value: "",
+    price: 0,
+    quantity: 0,
+    discount_type: "",
+    discount_value: 0,
+    status: 1,
   });
 
   const [name, setName] = useState(formData.name);
+  const [b2bPrices, setB2bPrices] = useState<TierPrice[]>([]);
+  // const [images, setImages] = useState<ImageItem[]>([]);
+  // const [imageInput, setImageInput] = useState("");
   // const [price, setPrice] = useState(formData.price);
   // const [quantity, setQuantity] = useState(formData.quantity);
 
@@ -171,6 +189,10 @@ export default function AddProductComponent({
 
   /* ------------------ Fetch Data ------------------ */
   useEffect(() => {
+    fetch("/api/countries")
+      .then((res) => res.json())
+      .then((data) => setCountries(data));
+
     fetch("/api/category")
       .then((r) => r.json())
       .then((d) => setCategories(d.items || []));
@@ -188,9 +210,9 @@ export default function AddProductComponent({
       .then((d) => setMedia(d || []));
   }, []);
 
-  const discounttype = [
-    { value: 1, label: "Percentage" },
-    { value: 2, label: "Cash" },
+  const discounttypeOption = [
+    { value: "Percentage", label: "Percentage" },
+    { value: "Cash", label: "Cash" },
   ];
 
   const [accordionOpen, setAccordionOpen] = useState(true);
@@ -232,9 +254,14 @@ export default function AddProductComponent({
   }, [mode]);
 
   /* ------------------ Select Options ------------------ */
+  const countriesOptions: Option[] = countries.map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
+
   const categoryOptions: Option[] = categories.map((c) => ({
-    value: c.category_id,
-    label: c.category,
+    value: c.id,
+    label: c.name,
   }));
 
   const brandOptions: Option[] = brands.map((b) => ({
@@ -245,9 +272,12 @@ export default function AddProductComponent({
   const subcategoryOptions: Option[] = subcategories
     .filter((s) => s.category_id === formData.category_id)
     .map((s) => ({
-      value: s.subcategory_id,
-      label: s.title,
+      value: s.id,
+      label: s.name,
     }));
+
+  const selectedCountry =
+    countriesOptions.find((c) => Number(c.value) === formData.country_id) || null;
 
   const selectedCategory =
     categoryOptions.find((c) => c.value === formData.category_id) || null;
@@ -283,6 +313,42 @@ export default function AddProductComponent({
     return Object.keys(newErrors).length === 0;
   };
 
+  /* ---------------- B2B ---------------- */
+
+  const addTier = () => {
+    setB2bPrices([...b2bPrices, { min_quantity: 1, price: 0 }]);
+  };
+
+  const updateTier = (index: number, field: keyof TierPrice, value: number) => {
+    const updated = [...b2bPrices];
+    updated[index][field] = value;
+    setB2bPrices(updated);
+  };
+
+  const removeTier = (index: number) => {
+    setB2bPrices(b2bPrices.filter((_, i) => i !== index));
+  };
+
+  /* ---------------- Discount ---------------- */
+
+  const calculateSalePrice = () => {
+    const { price, discount_type, discount_value } = formData;
+
+    if (!discount_type || !discount_value) return price;
+
+    if (discount_type === "percentage") {
+      return price - (price * discount_value) / 100;
+    }
+
+    if (discount_type === "fixed") {
+      return price - discount_value;
+    }
+
+    return price;
+  };
+
+  const salePrice = calculateSalePrice();
+
   // ------------------------------------
   //   Submit
   // ------------------------------------
@@ -295,6 +361,11 @@ export default function AddProductComponent({
     try {
       setSaving(true);
 
+      const payload = {
+        ...formData,
+        b2b_prices: b2bPrices,
+      };
+
       const url =
         mode === "edit" ? `/api/products/${productId}` : `/api/products`;
 
@@ -303,7 +374,7 @@ export default function AddProductComponent({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Product creation failed");
@@ -312,7 +383,7 @@ export default function AddProductComponent({
 
       // 2️⃣ Attach images
       // if (selectedMedia.length > 0) {
-      await fetch(`/api/products/${product.product_id}/images`, {
+      await fetch(`/api/products/${product.id}/images`, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -324,13 +395,12 @@ export default function AddProductComponent({
 
       showToast(
         "success",
-        mode === "edit" ? "Product updated" : "Product created"
+        mode === "edit" ? "Product updated" : "Product created",
       );
 
       setTimeout(() => {
         router.push("/products");
       }, 3000);
-
     } catch (err) {
       console.error(err);
       showToast("error", "Action failed");
@@ -351,7 +421,7 @@ export default function AddProductComponent({
             setSelectedMedia((prev) =>
               isSelected
                 ? prev.filter((id) => id !== item.media_id)
-                : [...prev, item.media_id]
+                : [...prev, item.media_id],
             );
             if (!primaryMedia) setPrimaryMedia(item.media_id);
           }}
@@ -394,15 +464,17 @@ export default function AddProductComponent({
           slug: data.slug,
           sku: data.sku,
           item_code: data.item_code,
+          country_id: data.country_id,
           category_id: data.category_id,
           subcategory_id: data.subcategory_id,
           brand_id: data.brand_id,
-          country_of_origin: data.country_of_origin,
+          // country_of_origin: data.country_of_origin,
           description: data.description,
-          price: String(data.price),
-          quantity: String(data.quantity),
-          discount_type_id: data.discount_type_id,
-          discount_value: data.discount_value,
+          price: Number(data.price),
+          quantity: Number(data.quantity),
+          discount_type: data.discount_type,
+          discount_value: Number(data.discount_value),
+          status: data.status,
         });
 
         setSelectedMedia(data.images?.map((i: any) => i.media_id) || []);
@@ -422,7 +494,9 @@ export default function AddProductComponent({
       <div className="content max-w-6xl mx-auto">
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
-            <h4 className="text-2xl font-semibold">{mode === "edit" ? "Update/View" : "Create"} Product</h4>
+            <h4 className="text-2xl font-semibold">
+              {(mode === "edit" || mode === "view") ? "Update/View" : "Create"} Product
+            </h4>
           </div>
         </div>
 
@@ -598,7 +672,22 @@ export default function AddProductComponent({
                     <label className="block mb-1 font-medium">
                       Country of Origin
                     </label>
-                    <input
+
+                    <Select
+                      classNamePrefix="react-select"
+                      options={countriesOptions}
+                      value={selectedCountry}
+                      isDisabled={isView}
+                      placeholder="Select Country"
+                      onChange={(opt: SingleValue<Option>) =>
+                        setFormData({
+                          ...formData,
+                          country_id: opt?.value ?? null,
+                        })
+                      }
+                    />
+
+                    {/* <input
                       type="text"
                       disabled={isView}
                       value={formData.country_of_origin || ""}
@@ -609,7 +698,7 @@ export default function AddProductComponent({
                         }))
                       }
                       className="w-full border rounded p-2 pr-20"
-                    />
+                    /> */}
                   </div>
                 </div>
 
@@ -648,11 +737,11 @@ export default function AddProductComponent({
                     <input
                       type="number"
                       disabled={isView}
-                      value={formData.quantity || ""}
+                      value={formData.quantity || 0}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          quantity: e.target.value,
+                          quantity: Number(e.target.value),
                         }))
                       }
                       className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -672,11 +761,11 @@ export default function AddProductComponent({
                     <input
                       type="number"
                       disabled={isView}
-                      value={formData.price || ""}
+                      value={formData.price || 0}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          price: e.target.value,
+                          price: Number(e.target.value),
                         }))
                       }
                       className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -690,6 +779,71 @@ export default function AddProductComponent({
                   </div>
                 </div>
 
+                <div>
+                  <h3 className="font-medium mb-3">B2B Tier Pricing</h3>
+
+                  <table className="w-full border">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 text-left">Min Quantity</th>
+                        <th className="p-2 text-left">Price</th>
+                        <th className="p-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {b2bPrices.map((tier, index) => (
+                        <tr key={index} className="border-t">
+                          <td className="p-2">
+                            <input
+                              type="number"
+                              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                              value={tier.min_quantity}
+                              onChange={(e) =>
+                                updateTier(
+                                  index,
+                                  "min_quantity",
+                                  Number(e.target.value),
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="p-2">
+                            <input
+                              type="number"
+                              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                              value={tier.price}
+                              onChange={(e) =>
+                                updateTier(
+                                  index,
+                                  "price",
+                                  Number(e.target.value),
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="p-2">
+                            <button
+                              type="button"
+                              onClick={() => removeTier(index)}
+                              className="text-red-600"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <button
+                    type="button"
+                    onClick={addTier}
+                    className="mt-3 px-4 py-2 bg-gray-200 rounded"
+                  >
+                    Add Tier
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 text-sm font-medium">
@@ -698,14 +852,14 @@ export default function AddProductComponent({
                     <Select
                       classNamePrefix="react-select"
                       isDisabled={isView}
-                      options={discounttype}
-                      value={discounttype.find(
-                        (d) => d.value === formData.discount_type_id
+                      options={discounttypeOption}
+                      value={discounttypeOption.find(
+                        (d) => d.value === formData.discount_type,
                       )}
                       onChange={(opt) =>
                         setFormData((prev) => ({
                           ...prev,
-                          discount_type_id: opt?.value ?? null,
+                          discounttype: opt?.value ?? null,
                         }))
                       }
                       placeholder="Choose"
@@ -723,7 +877,7 @@ export default function AddProductComponent({
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          discount_value: e.target.value,
+                          discount_value: Number(e.target.value),
                         }))
                       }
                       className="w-full rounded border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -732,6 +886,56 @@ export default function AddProductComponent({
                       step="0.01"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm mb-1">
+                      Final Sale Price
+                    </label>
+                    <input
+                      className="w-full rounded border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                      value={salePrice.toFixed(2)}
+                      readOnly
+                    />
+                  </div>
+
+                  {/* 
+                  
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+  <div>
+    <label className="block text-sm mb-1">Discount Type</label>
+    <select
+      className="input"
+      value={formData.discount_type}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          discount_type: e.target.value,
+        })
+      }
+    >
+      <option value="">No Discount</option>
+      <option value="percentage">Percentage (%)</option>
+      <option value="fixed">Fixed Amount</option>
+    </select>
+  </div>
+
+  <div>
+    <label className="block text-sm mb-1">Discount Value</label>
+    <input
+      type="number"
+      className="input"
+      value={formData.discount_value}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          discount_value: Number(e.target.value),
+        })
+      }
+      disabled={!formData.discount_type}
+    />
+  </div>
+</div>
+                  */}
                 </div>
               </div>
             </Accordion>
