@@ -1,11 +1,11 @@
-// app/(platform)/layout.tsx
+// app/(platform)/platform/layout.tsx
 
 import PlatformHeader from "@/components/platform/Header";
 import PlatformSidebar from "@/components/platform/Sidebar";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { ToastProvider } from "@repo/ui";
 
-import "../../layout.css";
+import "../layout.css";
 
 export default async function PlatformLayout({
   children,

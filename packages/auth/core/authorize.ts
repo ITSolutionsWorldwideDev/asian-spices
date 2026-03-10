@@ -16,8 +16,9 @@ export async function authorizeUser(email: string, password: string) {
   if (!isValid) throw new Error("Invalid credentials");
 
   const rolesRes = await runQuery(
-    `SELECT su.store_id, r.key AS role
+    `SELECT su.store_id, r.key AS role, s.slug
      FROM store_users su
+     JOIN stores s ON s.id = su.store_id
      JOIN roles r ON r.id = su.role_id
      WHERE su.user_id = $1`,
     [user.id]

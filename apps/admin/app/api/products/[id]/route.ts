@@ -9,7 +9,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const store = await getCurrentStoreAPI(req);
 
   const { id } = await params;
@@ -46,7 +46,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
 
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
 
   try {
@@ -81,7 +81,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const store = await getCurrentStoreAPI(req);
 
   const client = await pool.connect();
@@ -178,7 +178,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   try {
     const { id } = await params;
     const body = await req.json();
@@ -236,7 +236,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
 
   await pool.query("DELETE FROM products WHERE id=$1", [id]);

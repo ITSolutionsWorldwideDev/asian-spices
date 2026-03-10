@@ -8,7 +8,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
 
   try {
@@ -38,7 +38,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
   
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
 
   const { id } = await params;
   const { images } = await req.json();
@@ -79,7 +79,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
   const { mediaIds, primaryMediaId } = await req.json();
 

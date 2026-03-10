@@ -19,9 +19,17 @@ export default function SigninComponent() {
 
   // ✅ If already logged in, go to dashboard
   useEffect(() => {
+
+    
+
     if (status === "authenticated") {
+
+      console.log('status ==== ', status);
+      
       const hostname = window.location.hostname;
       const subdomain = hostname.split(".")[0];
+
+      console.log('signin subdomain ====',subdomain);
 
       if (subdomain === PLATFORM_SUBDOMAIN) {
         router.replace("/platform/dashboard");
@@ -30,14 +38,6 @@ export default function SigninComponent() {
       }
     }
   }, [status, router]);
-  /* 
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.replace("/dashboard");
-      // router.replace("/admin/dashboard");
-    }
-  }, [status, router]); 
-  */
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,12 +48,12 @@ export default function SigninComponent() {
     const email = formData.get("username") as string;
     const password = formData.get("password") as string;
 
+    console.log('formData ==== ', formData);
+
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
-      // callbackUrl: "/dashboard"
-      // callbackUrl: "/admin/dashboard"
     });
 
     console.log('res ==== ', res);
@@ -64,11 +64,11 @@ export default function SigninComponent() {
       return;
     }
 
-
-    // router.replace(res?.url || "/dashboard");
     
     const hostname = window.location.hostname;
     const subdomain = hostname.split(".")[0];
+
+    console.log('handleLogin subdomain ====',subdomain);
 
     if (subdomain === PLATFORM_SUBDOMAIN) {
       router.replace("/platform/dashboard");

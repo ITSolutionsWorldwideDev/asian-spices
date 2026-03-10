@@ -5,21 +5,26 @@ import type { Session } from "next-auth";
 
 export function createCallbacks(maxIdleTime: number) {
   return {
-    async jwt({ token, user }: { token: JWT; user?: any }){
+    async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
         token.userId = user.id;
         token.email = user.email;
-        
+
         token.isPlatformAdmin = user.isPlatformAdmin ?? user.is_platform_admin;
-        token.storeRoles = user.storeRoles;
+        // token.storeRoles = user.storeRoles;
+        token.storeRoles = user.storeRoles?.map((role: any) => ({
+          store_id: role.store_id,
+          role: role.role,
+          slug: role.slug, // Map the slug here
+        }));
+
       }
 
       token.lastActiveAt = (token.lastActiveAt as number) || Date.now();
       return token;
     },
 
-    async session({ session, token }: { session: Session; token: JWT }){
-
+    async session({ session, token }: { session: Session; token: JWT }) {
       const now = Date.now();
       const lastActive = (token.lastActiveAt as number) || now;
       const expired = now - lastActive > maxIdleTime;
@@ -31,52 +36,9 @@ export function createCallbacks(maxIdleTime: number) {
         session.user.storeRoles = (token.storeRoles as any[]) || [];
       }
 
-
-      // const expired =
-      //   token.lastActiveAt &&
-      //   Date.now() - token.lastActiveAt > maxIdleTime;
-
-      // session.user = {
-      //   id: token.userId,
-      //   email: token.email,
-      //   isPlatformAdmin: token.isPlatformAdmin,
-      //   storeRoles: token.storeRoles
-      // };
-
       session.expired = Boolean(expired);
       return session;
-    }
+    },
   };
 }
 
-
-// export const callbacks = {
-//   async jwt({ token, user }: { token: JWT; user?: any }) {
-//     if (user) {
-//       token.userId = user.id;
-//       token.email = user.email;
-//       token.isPlatformAdmin = user.isPlatformAdmin;
-//       token.storeRoles = user.storeRoles;
-//       token.lastActiveAt = Date.now();
-//     }
-//     return token;
-//   },
-
-//   async session({ session, token }: { session: Session; token: JWT }) {
-//     const MAX_IDLE_TIME = 30 * 60 * 1000; // admin default
-
-//     const expired =
-//       token.lastActiveAt &&
-//       Date.now() - token.lastActiveAt > MAX_IDLE_TIME;
-
-//     session.user = {
-//       id: token.userId,
-//       email: token.email,
-//       isPlatformAdmin: token.isPlatformAdmin,
-//       storeRoles: token.storeRoles
-//     };
-
-//     (session as any).expired = Boolean(expired);
-//     return session;
-//   }
-// };

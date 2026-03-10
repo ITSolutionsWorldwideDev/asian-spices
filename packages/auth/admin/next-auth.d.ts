@@ -11,7 +11,19 @@ declare module "next-auth" {
       storeRoles?: {
         store_id: string;
         role: string;
+        slug: string;
       }[];
     };
+  }
+
+  // the JWT token interface
+  interface JWT {
+    id: string;
+    isPlatformAdmin?: boolean;
+    storeRoles?: {
+      store_id: string;
+      role: string;
+      slug: string; // Add this line
+    }[];
   }
 }

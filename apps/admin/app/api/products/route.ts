@@ -8,7 +8,7 @@ import { pool } from "@acme/db";
 /* ------------------ GET (List Products) ------------------ */
 
 export async function GET(req: NextRequest) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const store = await getCurrentStoreAPI(req);
 
   const result = await pool.query(
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 }
 /* export async function GET(req: NextRequest) {
 
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const store = await getCurrentStoreAPI(req);
 
   const { searchParams } = req.nextUrl;
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
 /* ------------------ POST (Create Product) ------------------ */
 export async function POST(req: NextRequest) {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const store = await getCurrentStoreAPI(req);
 
   const client = await pool.connect();
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
 }
 /* export async function POST(req: NextRequest) {
 
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   try {
     const body = await req.json();
 

@@ -6,16 +6,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsLeft } from "react-feather";
 import { signOut, useSession } from "next-auth/react";
+import { useStore } from "../store-context";
 
-export default function StoreHeader({
+/* export default function StoreHeader({
   storeId,
   storeName,
 }: {
   storeId: string;
   storeName: string;
-}) {
+}) { */
+export default function StoreHeader(){
   const { data: session } = useSession();
   const pathname = usePathname();
+
+  const store = useStore();
+
+  const storeId = store.id;
+  const storeName = store.name;
 
   const [toggle, setToggle] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);

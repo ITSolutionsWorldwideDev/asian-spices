@@ -13,16 +13,25 @@ export default async function Home() {
 
   const headersList = await headers();
   const subdomain = headersList.get("x-tenant-subdomain");
+  const isPlatform = headersList.get("x-platform");
 
-  console.log('subdomain === ',subdomain);
+  console.log("Home subdomain === ", subdomain);
+
+  if (isPlatform === "true") {
+    redirect("/platform/dashboard");
+  }
 
   // ✅ Platform user
   if (subdomain === PLATFORM_SUBDOMAIN) {
     redirect("/platform/dashboard");
   }
 
-  // ✅ Store user
-  redirect("/dashboard");
+  if (subdomain && subdomain !== PLATFORM_SUBDOMAIN) {
+    redirect(`/store/${subdomain}/dashboard`);
+  }
+
+  // fallback
+  redirect("/login");
 }
 
 /* import { redirect } from "next/navigation";

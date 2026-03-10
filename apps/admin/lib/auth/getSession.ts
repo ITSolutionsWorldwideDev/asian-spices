@@ -8,9 +8,4 @@ export async function getSessionUser() {
 
   return session?.user ?? null;
 
-  // if (!session?.user) {
-  //   redirect("/login");
-  // }
-
-  // return session.user;
 }

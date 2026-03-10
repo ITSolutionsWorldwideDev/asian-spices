@@ -22,20 +22,3 @@ export const adminAuthOptions: NextAuthOptions = {
     signIn: "/login"
   }
 };
-
-/* import type { NextAuthOptions } from "next-auth";
-import { providers } from "../core/providers";
-import { callbacks } from "../core/callbacks";
-
-export const adminAuthOptions: NextAuthOptions = {
-  providers,
-  callbacks,
-  session: {
-    strategy: "jwt", // TS now knows this is correct
-    maxAge: 30 * 60,
-  },
-  pages: {
-    signIn: "/admin/login",
-  },
-};
- */

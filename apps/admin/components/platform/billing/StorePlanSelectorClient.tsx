@@ -2,7 +2,8 @@
 "use client";
 
 import { useTransition } from "react";
-import { assignPlanToStore } from "@/app/(platform)/platform/billing/actions";
+// import { assignPlanToStore } from "@/app/(platform)/platform/billing/actions";
+import { assignPlanToStore } from "@/app/platform/billing/actions";
 import { useToast } from "@repo/ui";
 
 export default function StorePlanSelectorClient({

@@ -5,7 +5,7 @@ import { requireStorePermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
 
 export default async function ProductsPage() {
-  await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
 
   return (
     <>

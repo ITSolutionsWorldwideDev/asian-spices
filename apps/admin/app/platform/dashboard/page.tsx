@@ -10,9 +10,11 @@ import Link from "next/link";
  * Visible only to platform admins / owners
  */
 export default async function PlatformDashboard() {
+  
+  console.log('adminAuthOptions ==== ',adminAuthOptions);
+
   const session = await getServerSession(adminAuthOptions);
 
-  // console.log('session ==== ',session);
 
   if (!session) {
     redirect("/login");

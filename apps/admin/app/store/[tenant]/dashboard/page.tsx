@@ -1,11 +1,19 @@
-// apps/admin/app/(store)/dashboard/page.tsx
+// apps/admin/app/(store)/[tenant]/dashboard/page.tsx
+
 import { requireStoreAccess } from "@/lib/auth/guards";
 import { getStoreDashboardData } from "@/lib/services/storeDashboard";
 
 export const revalidate = 60;
 
-export default async function StoreDashboard() {
-  const store = await requireStoreAccess();
+export default async function StoreDashboard({ 
+  params 
+}: { 
+  params: Promise<{ tenant: string }> 
+}) {
+  
+  const { tenant } = await params;
+
+  const store = await requireStoreAccess(tenant);
 
   const {
     totalProducts,
