@@ -20,6 +20,8 @@ export default function TabSwitching() {
 
   const [formData, setFormData] = useState([]);
   const [activeStep, setActiveStep] = useState(1);
+ 
+ 
   const stepComponents = (
     formData: any,
     setFormData: any,
@@ -72,7 +74,7 @@ export default function TabSwitching() {
     <div className="w-full p-4 sm:p-8">
       {/* Stepper - scrollable on mobile */}
       <div className="w-full overflow-x-auto pb-2">
-        <div className="flex items-center justify-between relative min-w-[560px] max-w-6xl mx-auto px-2">
+        <div className="flex items-center justify-between relative min-w-140 max-w-6xl mx-auto px-2">
           {/* Background Line */}
           <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-300 -z-10" />
 

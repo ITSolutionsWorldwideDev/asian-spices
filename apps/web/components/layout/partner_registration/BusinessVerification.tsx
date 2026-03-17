@@ -1,21 +1,24 @@
-"use client";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  MapPin,
-  Volume2,
-} from "lucide-react";
-
-
-
+import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
+// import { useReadAloud } from "./SpeakLoud";
+import ReadAloudBtn from "./ReadAloudBtn";
+import { useFormValidator } from "@/hooks/FormValidator";
 export default function BusinessVerification({
   formData,
   setFormData,
   activeStep,
   setActiveStep,
 }: any) {
-  
+  const requiredFields = [
+    "kvk_number",
+    "company_name",
+    "chamber_of_commerce_number",
+    "country",
+    "street",
+    "house_number",
+    "postal_code",
+    "city",
+  ];
+  const { validateForm } = useFormValidator(requiredFields, formData);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
@@ -24,48 +27,48 @@ export default function BusinessVerification({
     }));
   };
 
-  console.log(formData);
+  // const validateForm = () => {
+  //   for (let field of requiredFields) {
+  //     if (!formData[field] || formData[field].trim() === "") {
+  //       console.log(`Field ${field} is required but missing.`);
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // };
+
+  // console.log(formData);
   return (
-    <div>
-      <div className=" bg-gray-100 flex items-start justify-center pt-10 px-10">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full  p-8">
+    <div id="business-verification">
+      <div className="bg-gray-100 flex items-start justify-center pt-10 px-4 sm:px-6 lg:px-10">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full  p-6 sm:p-8">
           {/* Header */}
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-2">
             Company Registration
           </h1>
-          <p className="text-gray-500 text-sm mb-3">
+          <p className="text-gray-500 text-xs sm:text-sm mb-3">
             Search for your company using either the company name or Chamber of
             Commerce number.
           </p>
 
           {/* Read aloud */}
-          <button className="flex items-center gap-1.5 text-blue-600 text-sm mb-6 hover:underline">
-            <Volume2 size={16} />
-            Read aloud
-          </button>
-
-        
+          <ReadAloudBtn ID={"business-verification"} />
 
           {/* Search Field */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {/* {activeTab === "name" ? "Company Name" :  */}
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             KVK Number
-            {/* // } */}
           </label>
-          <div className="flex gap-3 mb-6">
-            
-         
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <input
-              // type="text"
-              // value={formData.kvkNumber}
               onChange={(e) => handleChange("kvk_number", e.target.value)}
-              // onKeyDown={handleKeyDown}
               placeholder="12345678"
-              className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm"
+              className="flex-1 border border-gray-300 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm "
+              required
             />
           </div>
         </div>
       </div>
+
       <div className=" bg-gray-100 flex justify-center py-10 px-4">
         <div className="w-full max-w-3xl">
           {/* Title */}
@@ -112,9 +115,6 @@ export default function BusinessVerification({
                 // value={formData.country}
                 onChange={(e) => handleChange("country", e.target.value)}
               />
-             
-          
-          
             </div>
           </div>
           {/* Registered Address */}
@@ -138,13 +138,12 @@ export default function BusinessVerification({
                   onChange={(e) => handleChange("house_number", e.target.value)}
                 />
 
-
-             
-         
                 <InputField
                   label="Addition (Optional)"
                   // value={formData.Addition}
-                  onChange={(e) => handleChange("additional_address", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("additional_address", e.target.value)
+                  }
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -161,19 +160,27 @@ export default function BusinessVerification({
               </div>
             </div>
           </div>
-         
-         
+
           {/* Buttons */}
-          <div className="flex justify-between mt-6">
+          <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
             <button
-              className="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50"
+              className="flex items-center justify-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 w-full sm:w-auto"
               onClick={() => setActiveStep(activeStep - 1)}
             >
               <ArrowLeft size={16} /> Back
             </button>
             <button
-              className="flex items-center gap-2 bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
-              onClick={() => setActiveStep(activeStep + 1)}
+              className="flex items-center justify-center gap-2 bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 w-full sm:w-auto"
+              onClick={() => {
+                if (validateForm()) {
+                  setActiveStep(activeStep + 1);
+                } else {
+                  alert(
+                    "Please fill in all required fields before continuing.",
+                  );
+                }
+                // setActiveStep(activeStep + 1)
+              }}
             >
               Continue <ArrowRight size={16} />
             </button>

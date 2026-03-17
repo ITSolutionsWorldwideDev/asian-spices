@@ -8,12 +8,13 @@ import {
   VolumeX,
 } from "lucide-react";
 import { useState } from "react";
-import Prerequisities from "./Prerequisites";
-import BusinessVerification from "./BusinessVerification";
+import ReadAloudBtn from "./ReadAloudBtn";
+// import Prerequisities from "./Prerequisites";
+// import BusinessVerification from "./BusinessVerification";
 
 export default function Prerequisites({ setActiveStep, activeStep }: any) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [activeComponent, setActiveComponent] = useState("main");
+  // const [activeComponent, setActiveComponent] = useState("main");
   const handleReadAloud = () => {
     // If already speaking, stop it
     if (isSpeaking) {
@@ -57,17 +58,9 @@ export default function Prerequisites({ setActiveStep, activeStep }: any) {
                 <span className="font-semibold">10 minutes</span>.
               </p>
 
-              <button
-                onClick={handleReadAloud}
-                className="mt-4 text-[#155DFC] hover:underline text-sm flex items-center justify-center gap-3 mx-auto"
-              >
-                {isSpeaking ? (
-                  <VolumeX className="size-[20]" />
-                ) : (
-                  <Volume2 className="size-[20]" />
-                )}
-                {isSpeaking ? "Stop" : "Read aloud"}
-              </button>
+              <div className="flex items-center justify-center mt-3">
+                <ReadAloudBtn ID={"content-to-read"} />
+              </div>
             </div>
 
             {/* Card Section */}

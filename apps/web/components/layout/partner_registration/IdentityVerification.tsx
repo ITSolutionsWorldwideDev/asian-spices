@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ReadAloudBtn from "./ReadAloudBtn";
 
 const banks = [
   "ABN AMRO",
@@ -48,7 +49,7 @@ export default function IdentityVerification({
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-6">
+    <div className="min-h-screen bg-gray-100 flex justify-center p-6" id="identity-verification">
       <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
         <div>
@@ -59,7 +60,7 @@ export default function IdentityVerification({
             Verify your identity securely through your bank using iDIN.
           </p>
           <p className="text-blue-500 text-sm mt-2 cursor-pointer">
-            🔊 Read aloud
+            <ReadAloudBtn ID={"identity-verification"} />
           </p>
         </div>
 

@@ -2,59 +2,66 @@
 
 import { useState } from "react";
 import { ChartBar, FileChartColumn } from "lucide-react";
-
+import { useReadAloud } from "@/hooks/SpeakLoud";
+import ReadAloudBtn from "./ReadAloudBtn";
 export default function DocumentUploadPage({
   formData,
   setFormData,
   activeStep,
   setActiveStep,
 }: any) {
-  const [chamberFiles, setChamberFiles] = useState<File[]>([]);
-  const [poaFiles, setPoaFiles] = useState<File[]>([]);
-
+  const [chamberFiles, setChamberFiles] = useState<
+    { name: string; size: number; type: string }[]
+  >([]);
+  const [poaFiles, setPoaFiles] = useState<
+    { name: string; size: number; type: string }[]
+  >([]);
+  // const { isSpeaking, handleReadAloud } = useReadAloud();
   console.log(chamberFiles);
   console.log(poaFiles);
-  console.log("dfa", formData);
+  // console.log("dfa", formData);
+  // console.log(formData.chamberFiles);
+  // console.log(formData.power_of_attorney_document);
   // Format file size
+
   const formatSize = (size: number) => {
     if (size < 1024) return size + " B";
     if (size < 1024 * 1024) return (size / 1024).toFixed(1) + " KB";
     return (size / (1024 * 1024)).toFixed(1) + " MB";
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
-  const handleFileChange = (
+
+  // const handleChange = (field: string, value: string) => {
+  //   setFormData((prev: any) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }));
+  // };
+  const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "chamber" | "poa",
   ) => {
     if (!e.target.files) return;
 
-    const files = Array.from(e.target.files);
+    const fileObjects = Array.from(e.target.files).map((file) => ({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    }));
+    const base64s = await Promise.all(
+      Array.from(e.target.files).map((file) => fileToBase64(file)),
+    );
 
     if (type === "chamber") {
-      // setChamberFiles((prev) => {
-      //   const updatedFiles = [...prev, ...files];
-
-      //   if (updatedFiles.length > 5) {
-      //     alert("You can only upload a maximum of 5 files.");
-      //     return prev;
-      //   }
-      //   setFormData((prevForm: any) => ({
-      //     ...prevForm,
-      //     chamberFiles: updatedFiles,
-      //   }));
-
-      //   return updatedFiles;
-      // });
-
-      // console.log(formData);
-
-      const updatedFiles = [...chamberFiles, ...files];
+      const updatedFiles = [...chamberFiles, ...fileObjects];
 
       if (updatedFiles.length > 5) {
         alert("You can only upload a maximum of 5 files.");
@@ -62,20 +69,16 @@ export default function DocumentUploadPage({
         setFormData((prevForm: any) => ({
           ...prevForm,
           chamber_of_commerce_extract_document: [...chamberFiles],
-          // poaFiles: poaFiles,
         }));
-        
       } else {
         setChamberFiles(updatedFiles);
         setFormData((prevForm: any) => ({
           ...prevForm,
-          chamberFiles: [...chamberFiles, ...updatedFiles],
-          // poaFiles: poaFiles,
+          chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
         }));
       }
     } else {
-      // setPoaFiles((prev) => {
-      const totalfiles = [...poaFiles, ...files];
+      const totalfiles = [...poaFiles, ...fileObjects];
       if (totalfiles.length > 5) {
         alert("You can only upload a maximum of 5 files.");
         return poaFiles;
@@ -84,10 +87,11 @@ export default function DocumentUploadPage({
       setPoaFiles(totalfiles);
       setFormData((prevForm: any) => ({
         ...prevForm,
-        power_of_attorney_document: [...poaFiles, ...totalfiles],
+        power_of_attorney_document: [
+          ...(prevForm.power_of_attorney_document || []),
+          ...base64s,
+        ],
       }));
-      // return totalfiles;
-      // });
     }
   };
 
@@ -108,7 +112,7 @@ export default function DocumentUploadPage({
   }: {
     title: string;
     description: string;
-    files: File[];
+    files: { name: string; size: number; type: string }[];
     type: "chamber" | "poa";
     required?: boolean;
   }) => (
@@ -166,7 +170,7 @@ export default function DocumentUploadPage({
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-6">
+    <div className="bg-gray-100 flex justify-center p-6" id="document-upload">
       <div className="w-full max-w-3xl bg-white rounded-xl shadow-md p-8 space-y-8">
         {/* Header */}
         <div>
@@ -175,6 +179,9 @@ export default function DocumentUploadPage({
             Upload the required business documents to verify your company and
             authority.
           </p>
+          <div className="mt-3">
+            <ReadAloudBtn ID={"document-upload"} />
+          </div>
         </div>
 
         {/* Alert */}
@@ -222,9 +229,9 @@ export default function DocumentUploadPage({
           </button>
 
           <button
-            disabled={chamberFiles.length === 0}
+            disabled={chamberFiles.length === 0 || poaFiles.length === 0}
             className={`px-6 py-2 rounded-lg text-white transition ${
-              chamberFiles.length === 0
+              chamberFiles.length === 0 || poaFiles.length === 0
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-orange-500 hover:bg-orange-600"
             }`}

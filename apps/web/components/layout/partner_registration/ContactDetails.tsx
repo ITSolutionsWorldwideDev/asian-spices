@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
+import ReadAloudBtn from "./ReadAloudBtn";
+import { useFormValidator } from "@/hooks/FormValidator";
 export default function ContactDetails({
   formData,
   setFormData,
@@ -16,9 +17,18 @@ export default function ContactDetails({
       [field]: value,
     }));
   };
+  const requiredFields = [
+    "first_name",
+    "middle_name",
+    "last_name",
+    "business_phone_number",
+    "business_email_address",
+    "vat_number",
+  ];
+  const { validateForm } = useFormValidator(requiredFields, formData);
   console.log(formData);
   return (
-    <div className=" bg-gray-100 flex justify-center p-6">
+    <div className=" bg-gray-100 flex justify-center p-6" id="contact">
       <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
         <div>
@@ -30,7 +40,7 @@ export default function ContactDetails({
             confirmations.
           </p>
           <p className="text-blue-500 text-sm mt-2 cursor-pointer">
-            🔊 Read aloud
+            <ReadAloudBtn ID="contact" />
           </p>
         </div>
 
@@ -46,7 +56,7 @@ export default function ContactDetails({
               <input
                 type="text"
                 // value={formData.Fname}
-                onChange={(e) => handleChange(" first_name", e.target.value)}
+                onChange={(e) => handleChange("first_name", e.target.value)}
                 placeholder="Sheetal"
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
@@ -213,7 +223,15 @@ export default function ContactDetails({
                 ? "bg-orange-500 hover:bg-orange-600"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
-            onClick={() => setActiveStep(activeStep + 1)}
+            onClick={() => {
+              if (validateForm()) {
+                setActiveStep(activeStep + 1);
+
+                return;
+              } else {
+                alert("Please fill in all required fields.");
+              }
+            }}
           >
             Continue →
           </button>
