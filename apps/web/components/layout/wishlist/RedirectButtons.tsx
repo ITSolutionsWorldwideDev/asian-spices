@@ -32,10 +32,10 @@ const RedirectButtons = () => {
             </button>
           </Link>
 
-          <Link href={'/'}>
-          <button className="px-5 py-2 bg-[#FF6900] text-white rounded-md hover:bg-orange-600 transition flex  items-center justify-center">
-            View Cart <ArrowRight className="ml-3" />
-          </button>
+          <Link href={"/"}>
+            <button className="px-5 py-2 bg-[#FF6900] text-white rounded-md hover:bg-orange-600 transition flex  items-center justify-center">
+              View Cart <ArrowRight className="ml-3" />
+            </button>
           </Link>
         </div>
       </div>

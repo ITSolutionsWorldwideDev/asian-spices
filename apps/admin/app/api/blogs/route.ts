@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
           LEFT JOIN media m ON m.media_id = b.featured_image_id
           WHERE blog_id = $1
           ORDER BY b.created_at DESC`,
-        [id]
+        [id],
       );
 
       if (!result.rows.length) {
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
     console.error(err);
     return NextResponse.json(
       { error: "Failed to fetch blogs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     if (!body.title || !body.slug || !body.content) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { error: "Failed to create blog" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -199,7 +199,7 @@ export async function PUT(req: Request) {
     if (!id) {
       return NextResponse.json(
         { error: "Blog ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -208,7 +208,7 @@ export async function PUT(req: Request) {
     if (!body.title || !body.slug || !body.content) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -262,7 +262,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(
       { error: "Failed to update blog" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -281,7 +281,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const result = await pool.query(
       `DELETE FROM blog WHERE blog_id = $1 RETURNING *`,
-      [id]
+      [id],
     );
 
     if (!result.rows.length) {
@@ -293,7 +293,7 @@ export async function DELETE(req: NextRequest) {
     console.error(err);
     return NextResponse.json(
       { error: "Failed to delete blog" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

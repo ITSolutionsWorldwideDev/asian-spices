@@ -15,6 +15,8 @@ import Link from "next/link";
 // import Nav from "@/components/ui/Nav";
 import EmptyWishList from "./EmptyWishList";
 import RedirectButtons from "./RedirectButtons";
+import ProductCard from "@/components/ui/ProductCard";
+import ProductDesc from "@/components/ui/ProductDesc";
 // import Footer from "@/components/ui/Footer";
 
 export default function WishList() {
@@ -250,9 +252,13 @@ export default function WishList() {
                         <ShoppingCart size={16} />
                         Add to Cart
                       </button>
-                      <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer">
-                        View Details
-                      </button>
+
+                      <Link href={"/product"}>
+                        <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer w-full">
+                          View Details
+                          {/* <ProductCar d item={wishlist} /> */}
+                        </button>
+                      </Link>
                       <button
                         onClick={() => removeFromWishlist(item.id)}
                         className=" md:absolute top-0 right-0 md:w-fit border-2 border-[#E5E7EB]  shadow-md text-black rounded-xl bg-white px-3 py-3 hover:bg-red-50 transition-colors"
