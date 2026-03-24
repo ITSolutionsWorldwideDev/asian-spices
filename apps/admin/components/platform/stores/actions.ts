@@ -1,4 +1,5 @@
-// apps/admin/app/(platform)/platform/stores/actions.ts
+// apps/admin/components/platform/stores/actions.ts
+
 "use server";
 
 import { pool } from "@acme/db";
@@ -115,64 +116,6 @@ export async function createStore(formData: FormData) {
     client.release();
   }
 }
-/* export async function createStore(formData: FormData) {
-  const user = await requirePlatformAdmin();
-
-  const name = formData.get("name") as string;
-  const slug = formData.get("slug") as string;
-  const ownerUserId = formData.get("ownerUserId") as string;
-
-  if (!name || !slug || !ownerUserId) {
-    throw new Error("Missing required fields");
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query("BEGIN");
-
-    const { rows } = await client.query(
-      `
-      INSERT INTO stores (name, slug, status)
-      VALUES ($1, $2, 'active')
-      RETURNING id
-      `,
-      [name, slug],
-    );
-
-    const storeId = rows[0].id;
-
-    const roleRes = await client.query(
-      `SELECT id FROM roles WHERE key = 'admin' AND scope = 'store'`,
-    );
-
-    await client.query(
-      `
-      INSERT INTO store_users (store_id, user_id, role_id)
-      VALUES ($1, $2, $3)
-      `,
-      [storeId, ownerUserId, roleRes.rows[0].id],
-    );
-
-    await logAudit({
-      actorId: user.id,
-      action: "store.create",
-      entity: "store",
-      entityId: storeId,
-      metadata: { name, slug },
-    });
-
-    await client.query("COMMIT");
-
-    revalidatePath("/platform/stores");
-  } catch (e) {
-    await client.query("ROLLBACK");
-    throw e;
-  } finally {
-    client.release();
-  }
-} */
-
 export async function setStoreStatus(
   storeId: string,
   status: "active" | "suspended",
@@ -294,6 +237,66 @@ export async function saveStore(
 
   redirect("/platform/stores");
 }
+
+
+/* export async function createStore(formData: FormData) {
+  const user = await requirePlatformAdmin();
+
+  const name = formData.get("name") as string;
+  const slug = formData.get("slug") as string;
+  const ownerUserId = formData.get("ownerUserId") as string;
+
+  if (!name || !slug || !ownerUserId) {
+    throw new Error("Missing required fields");
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const { rows } = await client.query(
+      `
+      INSERT INTO stores (name, slug, status)
+      VALUES ($1, $2, 'active')
+      RETURNING id
+      `,
+      [name, slug],
+    );
+
+    const storeId = rows[0].id;
+
+    const roleRes = await client.query(
+      `SELECT id FROM roles WHERE key = 'admin' AND scope = 'store'`,
+    );
+
+    await client.query(
+      `
+      INSERT INTO store_users (store_id, user_id, role_id)
+      VALUES ($1, $2, $3)
+      `,
+      [storeId, ownerUserId, roleRes.rows[0].id],
+    );
+
+    await logAudit({
+      actorId: user.id,
+      action: "store.create",
+      entity: "store",
+      entityId: storeId,
+      metadata: { name, slug },
+    });
+
+    await client.query("COMMIT");
+
+    revalidatePath("/platform/stores");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+} */
+
 
 /* export async function saveStore(
   storeId: string | undefined,

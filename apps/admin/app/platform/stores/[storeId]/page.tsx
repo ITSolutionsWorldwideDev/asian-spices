@@ -1,4 +1,5 @@
-// apps/admin/app/(platform)/platform/stores/[storeId]/page.tsx
+// apps/admin/app/platform/stores/[storeId]/page.tsx
+
 
 import { pool } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";

@@ -15,6 +15,11 @@ const PLATFORM_MENU = [
     link: "/platform/dashboard"
   },
   {
+    label: "Partners",
+    icon: "building-store",
+    link: "/platform/partners"
+  },
+  {
     label: "Stores",
     icon: "building-store",
     link: "/platform/stores"

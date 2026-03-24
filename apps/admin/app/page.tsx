@@ -15,7 +15,7 @@ export default async function Home() {
   const subdomain = headersList.get("x-tenant-subdomain");
   const isPlatform = headersList.get("x-platform");
 
-  console.log("Home subdomain === ", subdomain);
+  // console.log("Home subdomain === ", subdomain);
 
   if (isPlatform === "true") {
     redirect("/platform/dashboard");

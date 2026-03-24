@@ -1,4 +1,5 @@
-// apps/admin/app/(platform)/platform/stores/StoreCard.tsx
+// apps/admin/components/platform/stores/StoreCard.tsx
+
 "use client";
 
 import Link from "next/link";
