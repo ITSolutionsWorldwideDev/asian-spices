@@ -55,8 +55,6 @@ export default function LoginScreen() {
         password,
       });
 
-      console.log(response.data);
-
       router.replace("/home");
     } catch (error: any) {
       Alert.alert("Login Failed", error?.response?.data?.message || "Error");

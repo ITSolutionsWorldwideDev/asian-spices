@@ -4,6 +4,12 @@ import { pool } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import PartnerDetail from "@/components/platform/partners/PartnerDetail";
 
+import { notFound } from "next/navigation";
+
+function isUUID(id: string) {
+  return /^[0-9a-fA-F-]{36}$/.test(id);
+}
+
 export default async function PartnerDetailPage({
   params,
 }: {
@@ -13,17 +19,23 @@ export default async function PartnerDetailPage({
 
   const { id } = await params;
 
-  if (!id) {
-    throw new Error("Partner ID is required");
+  if (!id || !isUUID(id)) {
+    return notFound();
   }
+
+//   console.log("Partner id === ", id);
+
+  //   if (!id) {
+  //     throw new Error("Partner ID is required");
+  //   }
 
   const { rows } = await pool.query(
     `
     SELECT *
     FROM partner_registration
-    WHERE id = $1
+    WHERE partner_id = $1
     `,
-    [id]
+    [id],
   );
 
   const partner = rows[0];

@@ -204,8 +204,8 @@ export async function PUT(req: NextRequest) {
         val(body.state),
         val(body.postal_code),
         val(body.country),
-        body.latitude,
-        body.longitude,
+        num(body.latitude),
+        num(body.longitude),
       ]
     );
 

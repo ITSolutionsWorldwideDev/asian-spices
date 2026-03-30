@@ -45,13 +45,14 @@ export async function createStoreFromPartner(partner: any) {
     const passwordHash = await hash(tempPassword, 10);
 
     await client.query(
-      `INSERT INTO users (id, email, password_hash, name)
-       VALUES ($1, $2, $3, $4)`,
+      `INSERT INTO users (id, email, password_hash, name,store_id)
+       VALUES ($1, $2, $3, $4,$5)`,
       [
         userId,
         partner.business_email_address,
         passwordHash,
         `${partner.first_name} ${partner.last_name}`,
+        storeId
       ]
     );
 

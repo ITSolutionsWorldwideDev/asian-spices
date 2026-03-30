@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, context: RouteContext) {
   await requirePlatformAdmin();
   const { id } = await context.params;
 
-  const result = await pool.query(`SELECT * FROM partner_registration WHERE id = $1`, [
+  const result = await pool.query(`SELECT * FROM partner_registration WHERE partner_id = $1`, [
     id,
   ]);
 

@@ -44,7 +44,7 @@ export default async function PartnersPage({
   const { rows } = await pool.query(
     `
     SELECT 
-      id,
+      partner_id,
       company_name,
       business_email_address,
       status,

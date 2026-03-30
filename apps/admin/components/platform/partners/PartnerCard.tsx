@@ -4,12 +4,17 @@
 
 import Link from "next/link";
 import { Check, X } from "react-feather";
+import { useState } from "react";
 
 export default function PartnerCard({
   partner,
   onApprove,
   onReject,
 }: any) {
+
+  const [showReject, setShowReject] = useState(false);
+  const [reason, setReason] = useState("");
+
   return (
     <div className="bg-white rounded-lg shadow-sm border p-4 flex flex-col justify-between">
       <div>
@@ -30,7 +35,7 @@ export default function PartnerCard({
 
       <div className="flex justify-between items-center mt-4">
         <Link
-          href={`/platform/partners/${partner.id}`}
+          href={`/platform/partners/${partner.partner_id}`}
           className="text-xs text-blue-600"
         >
           View
@@ -41,12 +46,30 @@ export default function PartnerCard({
             <button onClick={onApprove}>
               <Check size={14} />
             </button>
-            <button onClick={onReject}>
+            <button onClick={() => setShowReject(true)}>{/* onClick={onReject}  */}
               <X size={14} />
             </button>
           </div>
         )}
       </div>
+      
+      {showReject && (
+        <div className="mt-3 space-y-2">
+          <textarea
+            placeholder="Reason..."
+            className="w-full border p-2 text-xs"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+
+          <button
+            className="btn btn-danger w-full"
+            onClick={() => onReject(reason)}
+          >
+            Confirm Reject
+          </button>
+        </div>
+      )}
     </div>
   );
 }

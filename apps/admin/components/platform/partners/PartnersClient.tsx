@@ -22,11 +22,13 @@ export default function PartnersClient({
     (state, action: any) => {
       if (action.type === "status") {
         return state.map((p: any) =>
-          p.id === action.id ? { ...p, status: action.status } : p
+          p.partner_id === action.partner_id
+            ? { ...p, status: action.status }
+            : p,
         );
       }
       return state;
-    }
+    },
   );
 
   return (
@@ -47,30 +49,31 @@ export default function PartnersClient({
       {loading ? (
         <p className="text-center py-6">Loading...</p>
       ) : optimisticPartners.length === 0 ? (
-        <p className="text-center py-10 text-gray-500">
-          No applications found
-        </p>
+        <p className="text-center py-10 text-gray-500">No applications found</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {optimisticPartners.map((partner: any) => (
             <PartnerCard
-              key={partner.id}
+              key={partner.partner_id}
               partner={partner}
               onApprove={async () => {
                 updateOptimistic({
                   type: "status",
-                  id: partner.id,
+                  partner_id: partner.partner_id,
                   status: "approved",
                 });
-                await approvePartner(partner.id);
+                await approvePartner(partner.partner_id);
               }}
-              onReject={async () => {
+              onReject={async (reason: string) => {
                 updateOptimistic({
                   type: "status",
-                  id: partner.id,
+                  partner_id: partner.partner_id,
                   status: "rejected",
                 });
-                await rejectPartner(partner.id);
+                await rejectPartner(
+                  partner.partner_id,
+                  reason || "No reason provided",
+                );
               }}
             />
           ))}

@@ -20,8 +20,6 @@ function slugify(text: string) {
 ------------------------------------ */
 export async function GET(req: NextRequest) {
   const store = await getCurrentStoreAPI(req);
-
-  console.log('store === ',store);
   const storeId = store.id;
 
   const { searchParams } = new URL(req.url);

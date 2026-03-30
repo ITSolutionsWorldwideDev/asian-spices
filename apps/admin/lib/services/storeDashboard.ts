@@ -4,8 +4,6 @@ import { pool } from "@acme/db";
 import { cache } from "react";
 
 export const getStoreDashboardData = cache(async (storeId: string) => {
-  console.log("storeId ==== ", storeId);
-
   const [
     productsRes,
     ordersRes,
@@ -17,7 +15,6 @@ export const getStoreDashboardData = cache(async (storeId: string) => {
     pendingOrdersRes,
     recentOrdersRes,
   ] = await Promise.all([
-
     pool.query(`SELECT COUNT(*) FROM products WHERE store_id = $1`, [storeId]),
 
     pool.query(`SELECT COUNT(*) FROM orders WHERE store_id = $1`, [storeId]),

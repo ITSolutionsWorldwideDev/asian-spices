@@ -64,8 +64,6 @@ export default function SignUp() {
         password,
       });
 
-      console.log(res.data);
-
       Alert.alert("Success", "Account created!");
       router.replace("/login");
     } catch (err: any) {
