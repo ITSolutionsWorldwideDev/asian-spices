@@ -184,6 +184,8 @@ export default function AddProductComponent({
   const [selectedMedia, setSelectedMedia] = useState<number[]>([]);
   const [primaryMedia, setPrimaryMedia] = useState<number | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
   const [slugTouched, setSlugTouched] = useState(false);
 
   const handleChange = useCallback(
@@ -258,6 +260,22 @@ export default function AddProductComponent({
       setSlugTouched(false);
     }
   }, [mode]);
+
+  // useEffect(() => {
+  //   if (!discountType) {
+  //     setValue("discount_value", null);
+  //   }
+  // }, [discountType]);
+
+  useEffect(() => {
+    if (!primaryMedia && selectedMedia.length > 0) {
+      setPrimaryMedia(selectedMedia[0]);
+    }
+  }, [selectedMedia, primaryMedia]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   /* ------------------ Select Options ------------------ */
   // const countriesOptions: Option[] = countries.map((c) => ({
@@ -426,6 +444,59 @@ export default function AddProductComponent({
   };
 
   const mediaGrid = useMemo(() => {
+      // If in view mode, only show selected media
+      const itemsToRender =
+        mode === "view"
+          ? media.filter((item) => selectedMedia.includes(item.media_id))
+          : media;
+
+          console.log("selectedMedia 2=== ", selectedMedia);
+    console.log("itemsToRender2 === ", itemsToRender);
+  
+      return itemsToRender.map((item) => {
+        const isSelected = selectedMedia.includes(item.media_id);
+        const isPrimary = primaryMedia === item.media_id;
+  
+        return (
+          <div
+            key={item.media_id}
+            onClick={() => {
+              if (mode === "edit") {
+                setSelectedMedia((prev) =>
+                  isSelected
+                    ? prev.filter((id) => id !== item.media_id)
+                    : [...prev, item.media_id],
+                );
+                if (!primaryMedia) setPrimaryMedia(item.media_id);
+              }
+            }}
+            className={`relative cursor-pointer rounded border bg-white p-1 transition ${
+              isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
+            }`}
+          >
+            <Image
+              src={getThumb(item.file_url, 200)}
+              alt={item.file_name}
+              width={200}
+              height={200}
+              className="rounded object-cover"
+            />
+  
+            {isPrimary && (
+              <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+                Primary
+              </span>
+            )}
+  
+            {isSelected && mode === "edit" && (
+              <div className="absolute inset-0 rounded bg-blue-500/10" />
+            )}
+          </div>
+        );
+      });
+    }, [media, selectedMedia, primaryMedia, mode]);
+
+  /* const mediaGrid = useMemo(() => {
     return media.map((item) => {
       const isSelected = selectedMedia.includes(item.media_id);
       const isPrimary = primaryMedia === item.media_id;
@@ -451,21 +522,21 @@ export default function AddProductComponent({
             className="rounded object-cover"
           />
 
-          {/* Primary Badge */}
+
           {isPrimary && (
             <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
               Primary
             </span>
           )}
 
-          {/* Selection Overlay */}
+  
           {isSelected && (
             <div className="absolute inset-0 rounded bg-blue-500/10" />
           )}
         </div>
       );
     });
-  }, [media, selectedMedia, primaryMedia]);
+  }, [media, selectedMedia, primaryMedia]); */
 
   useEffect(() => {
     if (!productId || mode === "create") return;

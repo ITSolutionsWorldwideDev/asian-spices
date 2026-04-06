@@ -39,34 +39,6 @@ export async function GET(req: NextRequest) {
     []
   );
 
-  // const result = await pool.query(
-  //   `
-  //   SELECT 
-  //     p.*,
-  //     c.name AS category,
-  //     sc.name AS subcategory,
-  //     b.name AS brand,
-  //     pi.url AS primary_image,
-  //     (
-  //       SELECT price
-  //       FROM store_product_prices spp
-  //       WHERE spp.product_id = p.id
-  //         AND spp.customer_type = 'B2C'
-  //       ORDER BY min_quantity ASC
-  //       LIMIT 1
-  //     ) AS b2c_price
-  //   FROM store_products p
-  //   LEFT JOIN store_categories c ON c.id = p.category_id
-  //   LEFT JOIN store_subcategories sc ON sc.id = p.subcategory_id
-  //   LEFT JOIN store_brands b ON b.brand_id = p.brand_id
-  //   LEFT JOIN store_product_images pi 
-  //     ON pi.product_id = p.id AND pi.is_primary = true
-  //   WHERE p.store_id = $1
-  //   ORDER BY p.created_at DESC
-  //   `,
-  //   [store.id]
-  // );
-
   return NextResponse.json({ items: result.rows });
 }
 
@@ -160,7 +132,11 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     await client.query("ROLLBACK");
     return NextResponse.json(
-      { error: "Failed to create product", detail: e.message },
+      { 
+        error: "Failed to create product", 
+        detail: e.message,
+        code: e.code,
+      },
       { status: 500 }
     );
   } finally {
@@ -170,6 +146,34 @@ export async function POST(req: NextRequest) {
 
 
 
+
+  // const result = await pool.query(
+  //   `
+  //   SELECT 
+  //     p.*,
+  //     c.name AS category,
+  //     sc.name AS subcategory,
+  //     b.name AS brand,
+  //     pi.url AS primary_image,
+  //     (
+  //       SELECT price
+  //       FROM store_product_prices spp
+  //       WHERE spp.product_id = p.id
+  //         AND spp.customer_type = 'B2C'
+  //       ORDER BY min_quantity ASC
+  //       LIMIT 1
+  //     ) AS b2c_price
+  //   FROM store_products p
+  //   LEFT JOIN store_categories c ON c.id = p.category_id
+  //   LEFT JOIN store_subcategories sc ON sc.id = p.subcategory_id
+  //   LEFT JOIN store_brands b ON b.brand_id = p.brand_id
+  //   LEFT JOIN store_product_images pi 
+  //     ON pi.product_id = p.id AND pi.is_primary = true
+  //   WHERE p.store_id = $1
+  //   ORDER BY p.created_at DESC
+  //   `,
+  //   [store.id]
+  // );
 
 
     // const product = await client.query(

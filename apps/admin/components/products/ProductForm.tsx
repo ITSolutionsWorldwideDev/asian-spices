@@ -176,7 +176,7 @@ export default function ProductFormComponent({
       brand_id: null,
       country_ids: [],
       description: "",
-      health_benefits:"",
+      health_benefits: "",
       price: 0,
       quantity: 0,
       discount_type: null,
@@ -406,9 +406,15 @@ export default function ProductFormComponent({
         body: JSON.stringify(payload),
       });
 
-      const product = await res.json();
+      const result = await res.json();
 
-      await fetch(`/api/products/${product.id}/images`, {
+      if (!res.ok) {
+        throw new Error(result?.detail || result?.error);
+      }
+
+      // const product = await res.json();
+
+      const imgRes = await fetch(`/api/products/${result.id}/images`, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -416,6 +422,11 @@ export default function ProductFormComponent({
           primaryMediaId: primaryMedia,
         }),
       });
+
+      if (!imgRes.ok) {
+        const err = await imgRes.json();
+        throw new Error(err?.detail || err?.error);
+      }
 
       showToast("success", "Saved successfully");
       router.push("/products");
@@ -444,7 +455,7 @@ export default function ProductFormComponent({
         <div
           key={item.media_id}
           onClick={() => {
-            if (mode === "edit") {
+            if (mode === "edit" || mode === "create") {
               setSelectedMedia((prev) =>
                 isSelected
                   ? prev.filter((id) => id !== item.media_id)
@@ -471,53 +482,13 @@ export default function ProductFormComponent({
             </span>
           )}
 
-          {isSelected && mode === "edit" && (
+          {isSelected && (mode === "edit" || mode === "create") && (
             <div className="absolute inset-0 rounded bg-blue-500/10" />
           )}
         </div>
       );
     });
   }, [media, selectedMedia, primaryMedia, mode]);
-
-  /* const mediaGrid = useMemo(() => {
-    return media.map((item) => {
-      const isSelected = selectedMedia.includes(item.media_id);
-      const isPrimary = primaryMedia === item.media_id;
-
-      return (
-        <div
-          key={item.media_id}
-          onClick={() => {
-            setSelectedMedia((prev) =>
-              isSelected
-                ? prev.filter((id) => id !== item.media_id)
-                : [...prev, item.media_id],
-            );
-            if (!primaryMedia) setPrimaryMedia(item.media_id);
-          }}
-          className={`relative cursor-pointer rounded border bg-white p-1 transition ${isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"} `}
-        >
-          <Image
-            src={getThumb(item.file_url, 200)}
-            alt={item.file_name}
-            width={200}
-            height={200}
-            className="rounded object-cover"
-          />
-
-          {isPrimary && (
-            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
-              Primary
-            </span>
-          )}
-
-          {isSelected && (
-            <div className="absolute inset-0 rounded bg-blue-500/10" />
-          )}
-        </div>
-      );
-    });
-  }, [media, selectedMedia, primaryMedia]); */
 
   const safeNumber = (val: any) => {
     const n = Number(val);
@@ -847,7 +818,9 @@ export default function ProductFormComponent({
                 </div>
 
                 <div>
-                  <label className="block mb-1 font-medium">Health Benefits</label>
+                  <label className="block mb-1 font-medium">
+                    Health Benefits
+                  </label>
 
                   <Controller
                     control={control}
@@ -861,9 +834,6 @@ export default function ProductFormComponent({
                     disabled={isView}
                   />
                 </div>
-
-
-                
               </div>
             </Accordion>
 
@@ -987,7 +957,7 @@ export default function ProductFormComponent({
                       ]}
                       isDisabled={isView}
                     />
-                    
+
                     {errors.discount_type && (
                       <p className="text-sm text-red-600 mt-1">
                         {errors.discount_type.message as string}
@@ -1131,3 +1101,43 @@ export default function ProductFormComponent({
     </div>
   );
 }
+
+/* const mediaGrid = useMemo(() => {
+    return media.map((item) => {
+      const isSelected = selectedMedia.includes(item.media_id);
+      const isPrimary = primaryMedia === item.media_id;
+
+      return (
+        <div
+          key={item.media_id}
+          onClick={() => {
+            setSelectedMedia((prev) =>
+              isSelected
+                ? prev.filter((id) => id !== item.media_id)
+                : [...prev, item.media_id],
+            );
+            if (!primaryMedia) setPrimaryMedia(item.media_id);
+          }}
+          className={`relative cursor-pointer rounded border bg-white p-1 transition ${isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"} `}
+        >
+          <Image
+            src={getThumb(item.file_url, 200)}
+            alt={item.file_name}
+            width={200}
+            height={200}
+            className="rounded object-cover"
+          />
+
+          {isPrimary && (
+            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+              Primary
+            </span>
+          )}
+
+          {isSelected && (
+            <div className="absolute inset-0 rounded bg-blue-500/10" />
+          )}
+        </div>
+      );
+    });
+  }, [media, selectedMedia, primaryMedia]); */
