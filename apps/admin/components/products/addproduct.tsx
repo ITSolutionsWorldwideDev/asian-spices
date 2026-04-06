@@ -1035,7 +1035,7 @@ export default function AddProductComponent({
             </Accordion>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 my-4">
             <Link href="/products" className="btn btn-secondary">
               Cancel
             </Link>

@@ -10,26 +10,66 @@ export async function POST(
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   const { id } = await params;
+  const client = await pool.connect();
 
   try {
-    const { mediaIds, primaryMediaId } = await req.json();
+    await client.query("BEGIN");
+    // const { mediaIds, primaryMediaId } = await req.json();
 
-    await pool.query(`DELETE FROM product_images WHERE product_id=$1`, [id]);
+    const body = await req.json();
 
-    for (const mediaId of mediaIds) {
-      await pool.query(
-        `INSERT INTO product_images(product_id, media_id, is_primary)
-         VALUES ($1, $2, $3)`,
-        [id, mediaId, mediaId === primaryMediaId],
+    const images = body.images || []; // { url, alt_text, is_primary, sort_order }
+    const mediaIds: string[] = body.mediaIds || [];
+    const primaryMediaId: string | null = body.primaryMediaId || null;
+
+    if (mediaIds.length) {
+      await client.query(
+        `DELETE FROM store_product_images WHERE product_id=$1`,
+        [id],
       );
+
+      for (const mediaId of mediaIds) {
+        await client.query(
+          `INSERT INTO store_product_images
+           (product_id, url, is_primary)
+           VALUES ($1, $2, $3)`,
+          [id, mediaId, mediaId === primaryMediaId],
+        );
+      }
     }
 
+    if (images.length) {
+      await client.query(
+        `DELETE FROM store_product_images WHERE product_id=$1`,
+        [id],
+      );
+
+      for (const img of images) {
+        await client.query(
+          `INSERT INTO store_product_images
+           (product_id, url, alt_text, is_primary, sort_order)
+           VALUES ($1,$2,$3,$4,$5)`,
+          [
+            id,
+            img.url,
+            img.alt_text || "",
+            !!img.is_primary,
+            img.sort_order || 0,
+          ],
+        );
+      }
+    }
+
+    await client.query("COMMIT");
     return NextResponse.json({ success: true });
   } catch (e: any) {
+    await client.query("ROLLBACK");
     return NextResponse.json(
       { error: "Failed to attach images", detail: e.message },
       { status: 500 },
     );
+  } finally {
+    client.release();
   }
 }
 
