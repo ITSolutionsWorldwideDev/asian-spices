@@ -1,9 +1,7 @@
 // apps/admin/components/products/addproduct.tsx
 
 "use client";
-
-/* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Select, { SingleValue } from "react-select";
 import { Info, LifeBuoy, Figma, PlusCircle, X } from "react-feather";
 import TextEditorNew from "@/core/common/texteditor/texteditor";
@@ -168,6 +166,7 @@ export default function AddProductComponent({
     brand_id: null as number | null,
     // country_of_origin: "",
     description: "",
+    health_benefits: "",
     price: 0,
     quantity: 0,
     discount_type: "",
@@ -175,7 +174,7 @@ export default function AddProductComponent({
     status: 1,
   });
 
-  const [name, setName] = useState(formData.name);
+  // const [name, setName] = useState(formData.name);
   const [b2bPrices, setB2bPrices] = useState<TierPrice[]>([]);
   // const [images, setImages] = useState<ImageItem[]>([]);
   // const [imageInput, setImageInput] = useState("");
@@ -186,6 +185,13 @@ export default function AddProductComponent({
   const [primaryMedia, setPrimaryMedia] = useState<number | null>(null);
 
   const [slugTouched, setSlugTouched] = useState(false);
+
+  const handleChange = useCallback(
+    (field: keyof typeof formData, value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   /* ------------------ Fetch Data ------------------ */
   useEffect(() => {
@@ -254,10 +260,19 @@ export default function AddProductComponent({
   }, [mode]);
 
   /* ------------------ Select Options ------------------ */
-  const countriesOptions: Option[] = countries.map((c) => ({
-    value: c.id,
-    label: c.name,
-  }));
+  // const countriesOptions: Option[] = countries.map((c) => ({
+  //   value: c.id,
+  //   label: c.name,
+  // }));
+
+  const countriesOptions = useMemo(
+    () =>
+      countries.map((c) => ({
+        value: c.id,
+        label: c.name,
+      })),
+    [countries],
+  );
 
   const categoryOptions: Option[] = categories.map((c) => ({
     value: c.id,
@@ -277,7 +292,8 @@ export default function AddProductComponent({
     }));
 
   const selectedCountry =
-    countriesOptions.find((c) => Number(c.value) === formData.country_id) || null;
+    countriesOptions.find((c) => Number(c.value) === formData.country_id) ||
+    null;
 
   const selectedCategory =
     categoryOptions.find((c) => c.value === formData.category_id) || null;
@@ -354,7 +370,7 @@ export default function AddProductComponent({
   // ------------------------------------
   const handleSubmit = async () => {
     if (mode !== "view" && !validateForm()) {
-      showToast("error", "Please fix validation errors");
+      showToast("error", "Please fix validation errors"); //  errors
       return;
     }
 
@@ -470,6 +486,7 @@ export default function AddProductComponent({
           brand_id: data.brand_id,
           // country_of_origin: data.country_of_origin,
           description: data.description,
+          health_benefits: data.health_benefits,
           price: Number(data.price),
           quantity: Number(data.quantity),
           discount_type: data.discount_type,
@@ -495,7 +512,8 @@ export default function AddProductComponent({
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
             <h4 className="text-2xl font-semibold">
-              {(mode === "edit" || mode === "view") ? "Update/View" : "Create"} Product
+              {mode === "edit" || mode === "view" ? "Update/View" : "Create"}{" "}
+              Product
             </h4>
           </div>
         </div>
@@ -524,8 +542,12 @@ export default function AddProductComponent({
                       type="text"
                       disabled={isView}
                       value={formData.name || ""}
-                      onChange={(e) => setName(e.target.value)}
-                      onBlur={() => setFormData((prev) => ({ ...prev, name }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
                     />
                     {errors.name && (
@@ -718,6 +740,24 @@ export default function AddProductComponent({
 
                   <p className="text-gray-500 text-sm mt-1">Maximum 60 Words</p>
                 </div>
+
+                <div>
+                  <label className="block mb-1 font-medium">Health Benefits</label>
+
+                  <MemoTextEditor
+                    value={formData.health_benefits}
+                    readOnly={isView}
+                    onChange={(val: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        health_benefits: val,
+                      }))
+                    }
+                  />
+                </div>
+
+
+                
               </div>
             </Accordion>
 
@@ -864,6 +904,9 @@ export default function AddProductComponent({
                       }
                       placeholder="Choose"
                     />
+                    {errors.discount_type && (
+                      <p className="text-red-600 text-sm">{errors.discount_type}</p>
+                    )}
                   </div>
 
                   <div>
@@ -885,6 +928,9 @@ export default function AddProductComponent({
                       min={0}
                       step="0.01"
                     />
+                    {errors.discount_value && (
+                      <p className="text-red-600 text-sm">{errors.discount_value}</p>
+                    )}
                   </div>
 
                   <div>
@@ -897,45 +943,6 @@ export default function AddProductComponent({
                       readOnly
                     />
                   </div>
-
-                  {/* 
-                  
-                  <div className="grid grid-cols-3 gap-4 mt-4">
-  <div>
-    <label className="block text-sm mb-1">Discount Type</label>
-    <select
-      className="input"
-      value={formData.discount_type}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          discount_type: e.target.value,
-        })
-      }
-    >
-      <option value="">No Discount</option>
-      <option value="percentage">Percentage (%)</option>
-      <option value="fixed">Fixed Amount</option>
-    </select>
-  </div>
-
-  <div>
-    <label className="block text-sm mb-1">Discount Value</label>
-    <input
-      type="number"
-      className="input"
-      value={formData.discount_value}
-      onChange={(e) =>
-        setFormData({
-          ...formData,
-          discount_value: Number(e.target.value),
-        })
-      }
-      disabled={!formData.discount_type}
-    />
-  </div>
-</div>
-                  */}
                 </div>
               </div>
             </Accordion>
@@ -978,4 +985,45 @@ export default function AddProductComponent({
       </div>
     </div>
   );
+}
+
+{
+  /* 
+                  
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+  <div>
+    <label className="block text-sm mb-1">Discount Type</label>
+    <select
+      className="input"
+      value={formData.discount_type}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          discount_type: e.target.value,
+        })
+      }
+    >
+      <option value="">No Discount</option>
+      <option value="percentage">Percentage (%)</option>
+      <option value="fixed">Fixed Amount</option>
+    </select>
+  </div>
+
+  <div>
+    <label className="block text-sm mb-1">Discount Value</label>
+    <input
+      type="number"
+      className="input"
+      value={formData.discount_value}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          discount_value: Number(e.target.value),
+        })
+      }
+      disabled={!formData.discount_type}
+    />
+  </div>
+</div>
+                  */
 }

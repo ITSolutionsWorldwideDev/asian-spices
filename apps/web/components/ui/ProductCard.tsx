@@ -47,7 +47,7 @@ export default function ProductCard({ item }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addToCart);
   // console.log(addToCart)
   const items = useWishlistStore((state) => state.items);
-  console.log(item);
+  // console.log(item);
 
   const [showAll, setShowAll] = useState(false);
 

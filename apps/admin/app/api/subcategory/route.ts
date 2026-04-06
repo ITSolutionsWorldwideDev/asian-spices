@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import { getCurrentStoreAPI } from "@/lib/auth/guards";
+// import { getCurrentStoreAPI } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 
 /* ------------------------------------
    Utils
@@ -48,26 +49,31 @@ function slugify(text: string) {
    GET
 ------------------------------------ */
 export async function GET(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  // await requirePlatformAdmin();
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
   try {
     if (id) {
-      // const res = await pool.query(
-      //   `SELECT * FROM subcategories WHERE subcategory_id = $1`,
-      //   [id]
-      // );
 
       const res = await pool.query(
         `SELECT s.*, c.name AS category
         FROM store_subcategories s
         JOIN store_categories c ON c.id = s.category_id
-        WHERE s.id = $1 AND s.store_id = $2`,
-        [id, storeId]
+        WHERE s.id = $1`,
+        [id]
       );
+
+      // const res = await pool.query(
+      //   `SELECT s.*, c.name AS category
+      //   FROM store_subcategories s
+      //   JOIN store_categories c ON c.id = s.category_id
+      //   WHERE s.id = $1 AND s.store_id = $2`,
+      //   [id, storeId]
+      // );
 
       if (!res.rows.length) {
         return NextResponse.json({ error: "Subcategory not found" }, { status: 404 });
@@ -76,21 +82,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(res.rows[0]);
     }
 
-    // const res = await pool.query(`
-    //   SELECT s.*, c.category
-    //   FROM subcategories s
-    //   JOIN categories c ON c.category_id = s.category_id
-    //   ORDER BY s.created_at DESC
-    // `);
-
     const res = await pool.query(
       ` SELECT s.*, c.name AS category
         FROM store_subcategories s
         JOIN store_categories c ON c.id = s.category_id
-        WHERE s.store_id = $1
         ORDER BY s.created_at DESC`,
-        [storeId]
+        []
       );
+
+    // const res = await pool.query(
+    //   ` SELECT s.*, c.name AS category
+    //     FROM store_subcategories s
+    //     JOIN store_categories c ON c.id = s.category_id
+    //     WHERE s.store_id = $1
+    //     ORDER BY s.created_at DESC`,
+    //     [storeId]
+    //   );
 
     return NextResponse.json({ items: res.rows });
 
@@ -104,8 +111,9 @@ export async function GET(req: NextRequest) {
    POST
 ------------------------------------ */
 export async function POST(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
 
   try {
     const { category_id, name, status = 1 } = await req.json();
@@ -117,23 +125,22 @@ export async function POST(req: NextRequest) {
 
     const res = await pool.query(
       `INSERT INTO store_subcategories
-       (store_id, category_id, name, slug, status, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+       (category_id, name, slug, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, NOW(), NOW())
        RETURNING *`,
-      [storeId, category_id, name, slug, status]
+      [category_id, name, slug, status]
     );
+
+    // const res = await pool.query(
+    //   `INSERT INTO store_subcategories
+    //    (store_id, category_id, name, slug, status, created_at, updated_at)
+    //    VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+    //    RETURNING *`,
+    //   [storeId, category_id, name, slug, status]
+    // );
 
     return NextResponse.json(res.rows[0], { status: 201 });
 
-    // const res = await pool.query(
-    //   `
-    //   INSERT INTO subcategories
-    //   (category_id, category_code, title, description, status, created_at, updated_at)
-    //   VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-    //   RETURNING *
-    //   `,
-    //   [category_id, category_code, title, description || null, status]
-    // );
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Failed to create subcategory" }, { status: 500 });
@@ -144,8 +151,10 @@ export async function POST(req: NextRequest) {
    PUT
 ------------------------------------ */
 export async function PUT(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  
+  await requirePlatformAdmin();
 
   try {
     const { id, name, status } = await req.json();
@@ -162,10 +171,22 @@ export async function PUT(req: NextRequest) {
          slug = COALESCE($2, slug),
          status = COALESCE($3, status),
          updated_at = NOW()
-       WHERE id = $4 AND store_id = $5
+       WHERE id = $4
        RETURNING *`,
-      [name, slug, status, id, storeId]
+      [name, slug, status, id]
     );
+
+    // const res = await pool.query(
+    //   `UPDATE store_subcategories
+    //    SET
+    //      name = COALESCE($1, name),
+    //      slug = COALESCE($2, slug),
+    //      status = COALESCE($3, status),
+    //      updated_at = NOW()
+    //    WHERE id = $4 AND store_id = $5
+    //    RETURNING *`,
+    //   [name, slug, status, id, storeId]
+    // );
 
     if (!res.rows.length) {
       return NextResponse.json({ error: "Subcategory not found" }, { status: 404 });
@@ -182,8 +203,11 @@ export async function PUT(req: NextRequest) {
    DELETE
 ------------------------------------ */
 export async function DELETE(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  
+  await requirePlatformAdmin();
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -192,10 +216,16 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
+
     const res = await pool.query(
-      `DELETE FROM store_subcategories WHERE id = $1 AND store_id = $2 RETURNING *`,
-      [id, storeId]
+      `DELETE FROM store_subcategories WHERE id = $1 RETURNING *`,
+      [id]
     );
+
+    // const res = await pool.query(
+    //   `DELETE FROM store_subcategories WHERE id = $1 AND store_id = $2 RETURNING *`,
+    //   [id, storeId]
+    // );
 
     if (!res.rows.length) {
       return NextResponse.json({ error: "Subcategory not found" }, { status: 404 });

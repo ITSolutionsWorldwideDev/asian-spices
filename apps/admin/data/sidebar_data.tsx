@@ -36,27 +36,7 @@ export const SidebarData: SidebarItem[] = [
     submenu: true,
     submenuHdr: "Inventory",
     submenuItems: [
-      {
-        label: "Category",
-        link: "/category",
-        icon: "list-details",
-        submenu: false,
-      },
-      {
-        label: "Sub Category",
-        link: "/sub-categories",
-        icon: "carousel-vertical",
-        submenu: false,
-      },
-      { label: "Brands", link: "/brand", icon: "triangles", submenu: false },
-      { label: "Products", link: "/products", icon: "box", submenu: false },
-      {
-        label: "Create Product",
-        link: "/products/new",
-        icon: "table-plus",
-        submenu: false,
-      },
-      { label: "Media", link: "/media", icon: "table-plus", submenu: false },
+      { label: "Products Catalog", link: "/products-catalog", icon: "box", submenu: false },
     ],
   },
   {

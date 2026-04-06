@@ -1,3 +1,4 @@
+// apps/admin/app/platform/products/page.tsx
 // apps/admin/app/(store)/products/page.tsx
 
 import ProductListComponent from "@/components/products/productlist";

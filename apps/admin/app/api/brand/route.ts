@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import { getCurrentStoreAPI } from "@/lib/auth/guards";
+// import { getCurrentStoreAPI } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 
 /* ------------------------------------
    Utils
@@ -19,8 +20,9 @@ function slugify(text: string) {
    GET
 ------------------------------------ */
 export async function GET(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  // await requirePlatformAdmin();
 
   const { searchParams } = new URL(req.url);
 
@@ -35,10 +37,16 @@ export async function GET(req: NextRequest) {
   try {
     /* -------- Single brand -------- */
     if (id) {
+      // const result = await pool.query(
+      //   `SELECT * FROM store_brands
+      //    WHERE brand_id = $1 AND store_id = $2`,
+      //   [id, storeId],
+      // );
+
       const result = await pool.query(
         `SELECT * FROM store_brands
-         WHERE brand_id = $1 AND store_id = $2`,
-        [id, storeId],
+         WHERE brand_id = $1`,
+        [id],
       );
 
       if (!result.rows.length) {
@@ -69,7 +77,7 @@ export async function GET(req: NextRequest) {
     const dataQuery = `
       SELECT *
       FROM store_brands
-      WHERE store_id = '${storeId}' ${whereClause}
+      WHERE 1 = 1 ${whereClause}
       ORDER BY ${orderBy}
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `;
@@ -77,8 +85,22 @@ export async function GET(req: NextRequest) {
     const countQuery = `
       SELECT COUNT(*)::int AS count
       FROM store_brands
-      WHERE store_id = '${storeId}' ${whereClause}
+      WHERE 1 = 1 ${whereClause}
     `;
+
+    // const dataQuery = `
+    //   SELECT *
+    //   FROM store_brands
+    //   WHERE store_id = '${storeId}' ${whereClause}
+    //   ORDER BY ${orderBy}
+    //   LIMIT $${values.length - 1} OFFSET $${values.length}
+    // `;
+
+    // const countQuery = `
+    //   SELECT COUNT(*)::int AS count
+    //   FROM store_brands
+    //   WHERE store_id = '${storeId}' ${whereClause}
+    // `;
 
     const [dataRes, countRes] = await Promise.all([
       pool.query(dataQuery, values),
@@ -105,8 +127,9 @@ export async function GET(req: NextRequest) {
    POST (create brand)
 ------------------------------------ */
 export async function POST(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
 
   try {
     const { name, description, logo_url, status = true } = await req.json();
@@ -123,12 +146,22 @@ export async function POST(req: NextRequest) {
     const result = await pool.query(
       `
       INSERT INTO store_brands
-      (store_id, name, slug, description, logo_url, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      (name, slug, description, logo_url, status, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
       `,
-      [storeId, name, slug, description || null, logo_url || null, status],
+      [name, slug, description || null, logo_url || null, status],
     );
+
+    // const result = await pool.query(
+    //   `
+    //   INSERT INTO store_brands
+    //   (store_id, name, slug, description, logo_url, status, created_at, updated_at)
+    //   VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    //   RETURNING *
+    //   `,
+    //   [storeId, name, slug, description || null, logo_url || null, status],
+    // );
 
     return NextResponse.json(result.rows[0], { status: 201 });
     
@@ -153,8 +186,9 @@ export async function POST(req: NextRequest) {
    PUT (update brand)
 ------------------------------------ */
 export async function PUT(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
 
   try {
     const { brand_id, name, description, logo_url, status } = await req.json();
@@ -176,11 +210,27 @@ export async function PUT(req: NextRequest) {
         status = COALESCE($5, status),
         updated_at = NOW()
       WHERE brand_id = $6
-        AND store_id = $7
       RETURNING *
       `,
-      [name, slug, description, logo_url, status, brand_id, storeId],
+      [name, slug, description, logo_url, status, brand_id],
     );
+
+    // const result = await pool.query(
+    //   `
+    //   UPDATE store_brands
+    //   SET
+    //     name = COALESCE($1, name),
+    //     slug = COALESCE($2, slug),
+    //     description = COALESCE($3, description),
+    //     logo_url = COALESCE($4, logo_url),
+    //     status = COALESCE($5, status),
+    //     updated_at = NOW()
+    //   WHERE brand_id = $6
+    //     AND store_id = $7
+    //   RETURNING *
+    //   `,
+    //   [name, slug, description, logo_url, status, brand_id, storeId],
+    // );
 
     if (!result.rows.length) {
       return NextResponse.json(
@@ -212,8 +262,9 @@ export async function PUT(req: NextRequest) {
    DELETE (remove brand)
 ------------------------------------ */
 export async function DELETE(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -227,11 +278,19 @@ export async function DELETE(req: NextRequest) {
       `
       DELETE FROM store_brands
       WHERE brand_id = $1
-        AND store_id = $2
       RETURNING *
       `,
-      [id, storeId],
+      [id],
     );
+    // const result = await pool.query(
+    //   `
+    //   DELETE FROM store_brands
+    //   WHERE brand_id = $1
+    //     AND store_id = $2
+    //   RETURNING *
+    //   `,
+    //   [id, storeId],
+    // );
 
     if (!result.rows.length) {
       return NextResponse.json(

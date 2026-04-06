@@ -1,4 +1,4 @@
-// apps/admin/app/(store)/sub-categories/page.tsx
+// apps/admin/app/platform/sub-categories/page.tsx
 
 import SubcategoryListComponent from "@/components/subcategory/subcategoryList";
 

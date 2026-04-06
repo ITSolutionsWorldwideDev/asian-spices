@@ -16,7 +16,7 @@ const SpicesPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("http://localhost:3003/api/products"); // calling backend API route
+        const res = await fetch("api/products"); // calling backend API route
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
         console.log(data);
