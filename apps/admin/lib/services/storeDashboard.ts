@@ -15,11 +15,11 @@ export const getStoreDashboardData = cache(async (storeId: string) => {
     pendingOrdersRes,
     recentOrdersRes,
   ] = await Promise.all([
-    pool.query(`SELECT COUNT(*) FROM products WHERE store_id = $1`, [storeId]),
+    pool.query(`SELECT COUNT(*) FROM store_product_catalog WHERE store_id = $1`, [storeId]),
 
-    pool.query(`SELECT COUNT(*) FROM orders WHERE store_id = $1`, [storeId]),
+    pool.query(`SELECT COUNT(*) FROM store_orders WHERE store_id = $1`, [storeId]),
 
-    pool.query(`SELECT COUNT(*) FROM customers WHERE store_id = $1`, [storeId]),
+    pool.query(`SELECT COUNT(*) FROM store_customers WHERE store_id = $1`, [storeId]),
 
     pool.query(`SELECT COUNT(*) FROM store_users WHERE store_id = $1`, [
       storeId,
@@ -27,39 +27,39 @@ export const getStoreDashboardData = cache(async (storeId: string) => {
 
     pool.query(
       `SELECT COALESCE(SUM(total_amount),0) AS total
-       FROM orders
-       WHERE store_id = $1 AND status = 'completed'`,
+       FROM store_orders
+       WHERE store_id = $1 AND order_status = 'completed'`,
       [storeId],
     ),
 
     pool.query(
       `SELECT COALESCE(SUM(total_amount),0) AS total
-       FROM orders
+       FROM store_orders
        WHERE store_id = $1
-         AND status = 'completed'
+         AND order_status = 'completed'
          AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW())`,
       [storeId],
     ),
 
     pool.query(
       `SELECT COUNT(*)
-       FROM orders
-       WHERE store_id = $1
+       FROM store_orders
+       WHERE store_id IS NULL
          AND DATE(created_at) = CURRENT_DATE`,
-      [storeId],
+      [],
     ),
 
     pool.query(
       `SELECT COUNT(*)
-       FROM orders
+       FROM store_orders
        WHERE store_id = $1
-         AND status = 'pending'`,
+         AND order_status = 'pending'`,
       [storeId],
     ),
 
     pool.query(
-      `SELECT order_id, total_amount, status, created_at
-       FROM orders
+      `SELECT id, total_amount, order_status, created_at
+       FROM store_orders
        WHERE store_id = $1
        ORDER BY created_at DESC
        LIMIT 5`,
