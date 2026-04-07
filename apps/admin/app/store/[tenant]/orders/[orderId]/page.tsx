@@ -1,4 +1,5 @@
-// apps/admin/app/(admin)/orders/[orderId]/page.tsx
+// apps/admin/app/store/[tenant]/orders/[orderId]/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,37 +8,15 @@ import { ChevronLeft, Package, User, CreditCard, Truck } from "react-feather";
 import { useToast } from "@repo/ui";
 import Link from "next/link";
 
-// type OrderItem = {
-//   order_item_id: string;
-//   product_id: string;
-//   name: string;
-//   sku: string;
-//   quantity: number;
-//   price: number;
-//   image?: string;
-// };
-
-// type OrderDetail = {
-//   order_id: string;
-//   order_date: string;
-//   status: string;
-//   total_amount: number;
-//   shipping_address: string;
-//   payment_method: string;
-//   payment_reference: string;
-//   customer_name: string;
-//   customer_email: string;
-//   items: OrderItem[];
-// };
-
 type OrderItem = {
-  id: string;
+  order_item_id: string;
   product_id: string;
   name: string;
   sku: string;
   quantity: number;
+  fulfilled_quantity: number;
+  available_stock?: number;
   price: number;
-  image?: string;
 };
 
 type OrderDetail = {
@@ -63,18 +42,13 @@ export default function OrderDetailPage() {
   const { showToast } = useToast();
 
   useEffect(() => {
-    // const fetchOrder = async () => {
-    //   const res = await fetch(`/api/orders/${orderId}`);
-    //   const data = await res.json();
-    //   setOrder(data.order);
-    //   setLoading(false);
-    // };
-
     const fetchOrder = async () => {
       try {
         const res = await fetch(`/api/orders/${orderId}`);
         if (!res.ok) throw new Error("Order not found");
         const data = await res.json();
+
+        console.log("data.order === ", data.order);
         setOrder(data.order);
       } catch (err) {
         showToast("error", "Could not load order details");
@@ -93,16 +67,82 @@ export default function OrderDetailPage() {
 
   const total = Number(order.total_amount);
 
+  const updateQty = (itemId: string, value: string) => {
+    if (!order) return;
+
+    const qty = parseInt(value || "0", 10);
+
+    setOrder((prev) => {
+      if (!prev) return prev;
+
+      const updatedItems = prev.items.map((item) => {
+        if (item.order_item_id !== itemId) return item;
+
+        const safeQty = Math.max(0, Math.min(qty, item.quantity));
+
+        return {
+          ...item,
+          fulfilled_quantity: safeQty,
+        };
+      });
+
+      return {
+        ...prev,
+        items: updatedItems,
+      };
+    });
+  };
+
+  const isFullPossible = order.items.every(
+    (i) => (i.available_stock ?? 0) >= i.quantity,
+  );
+
+  const handleAction = async (action: "full" | "partial" | "reject") => {
+    try {
+      setLoading(true);
+
+      const payload: any = { action };
+
+      // for partial → send current fulfilled qty OR default logic
+      if (action === "partial") {
+        payload.items = order?.items.map((item) => ({
+          item_id: item.order_item_id,
+          fulfilled_quantity: item.fulfilled_quantity || item.quantity, // default
+        }));
+      }
+
+      const res = await fetch(`/api/orders/${orderId}/allocate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      showToast("success", `Order ${action} processed`);
+
+      // refresh
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="page-wrapper p-6 space-y-6">
       {/* Top Navigation */}
-      <div className="mb-6 flex items-center justify-between bg-gray-50 min-h-screen">
+      <div className="mb-6 flex items-center justify-between bg-gray-50">
         <Link
           href="/orders"
           className="flex items-center text-sm text-gray-600 hover:text-primary transition"
         >
           <ChevronLeft size={16} className="mr-1" /> Back to Orders
         </Link>
+
         <div className="flex gap-2">
           <span
             className={`badge ${order.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"} px-3 py-1 rounded-full text-xs font-medium uppercase`}
@@ -142,11 +182,16 @@ export default function OrderDetailPage() {
                     <th className="p-4 text-center">Price</th>
                     <th className="p-4 text-center">Qty</th>
                     <th className="p-4 text-right">Total</th>
+                    <th className="p-4 text-center">Ordered</th>
+                    <th className="p-4 text-center">Fulfilled</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {order.items.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition">
+                    <tr
+                      key={item.order_item_id}
+                      className="hover:bg-gray-50 transition"
+                    >
                       <td className="p-4">
                         <div className="font-medium text-gray-900">
                           {item.name}
@@ -162,6 +207,73 @@ export default function OrderDetailPage() {
                       <td className="p-4 text-right font-medium">
                         ${(Number(item.price) * item.quantity).toFixed(2)}
                       </td>
+                      <td className="p-4 text-center">{item.quantity}</td>
+
+                      <td className="p-4 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {/* Quantity Input */}
+                          <input
+                            type="number"
+                            min={0}
+                            max={item.quantity}
+                            value={item.fulfilled_quantity}
+                            onChange={(e) =>
+                              updateQty(item.order_item_id, e.target.value)
+                            }
+                            className={`w-20 text-center border rounded px-2 py-1 ${
+                              item.available_stock !== undefined &&
+                              item.fulfilled_quantity > item.available_stock
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            }`}
+                          />
+
+                          {/* Max Button */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateQty(
+                                item.order_item_id,
+                                String(
+                                  Math.min(
+                                    item.quantity,
+                                    item.available_stock ?? item.quantity,
+                                  ),
+                                ),
+                              )
+                            }
+                            className="text-xs text-blue-500 hover:underline"
+                          >
+                            Max
+                          </button>
+
+                          {/* Stock Info */}
+                          {item.available_stock !== undefined && (
+                            <span
+                              className={`text-xs ${
+                                item.available_stock === 0
+                                  ? "text-red-500"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              Available: {item.available_stock}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* <td className="p-4 text-center">
+                        <input
+                          type="number"
+                          min={0}
+                          max={item.quantity}
+                          value={item.fulfilled_quantity}
+                          onChange={(e) =>
+                            updateQty(item.order_item_id, e.target.value)
+                          }
+                          className="w-20 text-center border rounded"
+                        />
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -226,6 +338,30 @@ export default function OrderDetailPage() {
             </p>
             <button className="mt-4 w-full py-2 bg-primary text-white text-sm rounded hover:bg-primary/90 transition">
               Update Shipping Status
+            </button>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <button
+              disabled={!isFullPossible}
+              onClick={() => handleAction("full")}
+              className="btn btn-success disabled:opacity-50"
+            >
+              Accept Full
+            </button>
+
+            <button
+              onClick={() => handleAction("partial")}
+              className="btn btn-warning"
+            >
+              Partial
+            </button>
+
+            <button
+              onClick={() => handleAction("reject")}
+              className="btn btn-danger"
+            >
+              Reject
             </button>
           </div>
         </div>

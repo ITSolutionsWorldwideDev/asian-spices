@@ -38,10 +38,10 @@ export async function GET(req: NextRequest) {
     }
 
     // 👤 Customer filter
-    if (customer) {
-      values.push(`%${customer}%`);
-      where += ` AND c.company_name ILIKE $${values.length}`;
-    }
+    // if (customer) {
+    //   values.push(`%${customer}%`);
+    //   where += ` AND c.company_name ILIKE $${values.length}`;
+    // }
 
     // 📦 Product filter
     if (product) {

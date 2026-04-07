@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import { getCurrentStoreAPI } from "@/lib/auth/guards";
+import { getCurrentStoreAPI, requireAuth } from "@/lib/auth/guards";
 
 export async function POST(req: NextRequest) {
   const client = await pool.connect();
@@ -11,13 +11,12 @@ export async function POST(req: NextRequest) {
     await client.query("BEGIN");
 
     const body = await req.json();
-
     const { action = "ASSIGN", selection, filters, data = {} } = body;
-    // const { selection, filters, data } = body; 
-    // data = { price?: number, quantity?: number }
 
     const store = await getCurrentStoreAPI(req);
     const store_id = store.id;
+
+    const sessionDetails = await requireAuth();
 
     /* ------------------------------------
        Build WHERE clause
@@ -114,14 +113,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Flatten selection.ids for ANY()
     let selectionParam: string[] | undefined;
     if (selection?.ids?.length) {
-      selectionParam = selection.ids; // keep as string[]
+      selectionParam = selection.ids;
     }
 
-    // Build query parameters
-    const queryValues: any[] = [store_id, ...updateValues]; // store_id = $1, updates = $2, $3...
+    const queryValues: any[] = [store_id, ...updateValues];
 
     let whereClause = "WHERE 1=1";
     if (filters?.search)
@@ -152,36 +149,13 @@ export async function POST(req: NextRequest) {
             updated_at = now()
     `;
 
-    // console.log('query === ',query);
-    // console.log('queryValues === ',queryValues);
-
     await client.query(query, queryValues);
-
-    // const query = `
-    //   INSERT INTO store_product_catalog (store_id, product_id, price, quantity, status)
-    //   SELECT
-    //     $1,
-    //     p.id,
-    //     COALESCE(spc.price, 0),
-    //     COALESCE(spc.quantity, 0),
-    //     COALESCE(spc.status, 1)
-    //   FROM store_products p
-    //   LEFT JOIN store_product_catalog spc
-    //     ON spc.product_id = p.id AND spc.store_id = $1
-    //   ${where}
-    //   ON CONFLICT (store_id, product_id)
-    //   DO UPDATE SET
-    //     ${setUpdates.join(", ")},
-    //     updated_at = now()
-    // `;
-
-    // await client.query(query, [store_id, ...values.slice(1), ...updateValues]);
 
     /* ------------
        AUDIT LOG
     --------------- */
 
-    const actor_id = store.user_id || store.owner_id;
+    const actor_id = sessionDetails.id; // store.user_id || store.owner_id;
 
     await client.query(
       `
@@ -209,11 +183,6 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "Bulk operation successful",
     });
-
-    // return NextResponse.json({
-    //   success: true,
-    //   message: "Catalog updated successfully",
-    // });
   } catch (e: any) {
     await client.query("ROLLBACK");
 
@@ -228,51 +197,3 @@ export async function POST(req: NextRequest) {
     client.release();
   }
 }
-// if (action === "UPDATE") {
-//   const updateFields: string[] = [];
-//   const updateValues: any[] = [store_id];
-
-// else {
-//   if (selection?.type === "INCLUDE") {
-//     await client.query("COMMIT");
-//     return NextResponse.json({
-//       success: true,
-//       message: "No items selected",
-//     });
-//   }
-// }
-
-//   let i = 2;
-
-//   if (data.price !== undefined) {
-//     updateFields.push(`price = $${i++}`);
-//     updateValues.push(data.price);
-//   }
-
-//   if (data.quantity !== undefined) {
-//     updateFields.push(`quantity = $${i++}`);
-//     updateValues.push(data.quantity);
-//   }
-
-//   if (data.status !== undefined) {
-//     updateFields.push(`status = $${i++}`);
-//     updateValues.push(data.status);
-//   }
-
-//   if (!updateFields.length) {
-//     throw new Error("No fields to update");
-//   }
-
-//   await client.query(
-//     `
-//     UPDATE store_product_catalog spc
-//     SET ${updateFields.join(", ")}, updated_at = now()
-
-//     FROM store_products p
-//     ${where}
-
-//     AND spc.product_id = p.id
-//     AND spc.store_id = $1
-//     `,
-//     [...updateValues, ...values],
-//   );

@@ -1,4 +1,5 @@
-// apps/admin/components/orders/ordersList.tsx
+// apps/components/orders/ordersList.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import FilterBar from "./FilterBar";
 import { useToast } from "@repo/ui";
 
 type Order = {
-  id: string;
+  order_id: string;
   order_number: string;
   city: string;
   order_date: string;
@@ -80,7 +81,7 @@ export default function OrdersListComponent() {
     {
       title: "Total",
       dataIndex: "total_amount",
-      render: (v: number) => `$${v.toFixed(2)}`,
+      // render: (v: number) => `$${v.toFixed(2)}`,
     },
     {
       title: "Status",
@@ -92,7 +93,7 @@ export default function OrdersListComponent() {
     {
       title: "Action",
       render: (_: any, record: Order) => (
-        <Link href={`/admin/orders/${record.id}`}>
+        <Link href={`/orders/${record.order_id}`}>
           <Eye size={16} />
         </Link>
       ),
@@ -124,7 +125,7 @@ export default function OrdersListComponent() {
                 {loading ? (
                   <p className="text-center py-6">Loading...</p>
                 ) : (
-                  <Table columns={columns} dataSource={orders} rowKey="id" />
+                  <Table columns={columns} dataSource={orders} rowKey="order_id" />
                 )}
               </div>
             </div>
