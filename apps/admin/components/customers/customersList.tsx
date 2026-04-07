@@ -147,7 +147,7 @@ export default function CustomersListComponent() {
               <Table
                 columns={columns}
                 dataSource={customers}
-                rowKey="customer_id"
+                rowKey="id"
               />
             )}
           </div>

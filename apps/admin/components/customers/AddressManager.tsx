@@ -56,7 +56,7 @@ export default function AddressManager({
 
   return (
     <div className="space-y-4">
-      {addresses.map((a) => (
+      {addresses?.map((a) => (
         <div key={a.id} className="flex justify-between items-center border p-2">
           <div>
             <strong>{a.label}</strong>: {a.address_line1}, {a.city}, {a.country}{" "}

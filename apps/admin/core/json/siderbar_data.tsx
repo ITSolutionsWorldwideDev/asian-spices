@@ -1047,12 +1047,12 @@ export const SidebarData = [
           },
         ],
       },
-      {
-        label: "Logout",
-        link: "/signin",
-        icon: "logout",
-        showSubRoute: false,
-      },
+      // {
+      //   label: "Logout",
+      //   link: "/signin",
+      //   icon: "logout",
+      //   showSubRoute: false,
+      // },
     ],
   },
 

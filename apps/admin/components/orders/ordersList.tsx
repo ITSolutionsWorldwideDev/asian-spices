@@ -73,7 +73,7 @@ export default function OrdersListComponent() {
     },
     {
       title: "Date",
-      dataIndex: "created_at",
+      dataIndex: "order_date",
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     { title: "City", dataIndex: "city" },

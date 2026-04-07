@@ -16,6 +16,12 @@ export default function ProductsCatalogComponent() {
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null,
+  );
+  const [productDetail, setProductDetail] = useState<any>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+
   const [allSelected, setAllSelected] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -140,6 +146,24 @@ export default function ProductsCatalogComponent() {
     setBulk({ ...bulk, ids: newIds });
   };
 
+  const openProductModal = async (productId: string) => {
+    try {
+      setSelectedProductId(productId);
+      setModalLoading(true);
+
+      const res = await fetch(`/api/store/catalog/${productId}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      setProductDetail(data.product);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setBulk({
@@ -163,9 +187,20 @@ export default function ProductsCatalogComponent() {
   ------------------------------------ */
 
   const columns = [
+    // {
+    //   title: "Name",
+    //   dataIndex: "name",
+    // },
     {
       title: "Name",
-      dataIndex: "name",
+      render: (_: any, record: CatalogProduct) => (
+        <button
+          onClick={() => openProductModal(record.product_id)}
+          className="text-blue-600 hover:underline text-left"
+        >
+          {record.name}
+        </button>
+      ),
     },
     {
       title: "Price",
@@ -207,25 +242,6 @@ export default function ProductsCatalogComponent() {
     },
   ];
 
-  /* ------------------------------------
-     Bulk Save
-  ------------------------------------ */
-
-  /* const handleBulkSave = async () => {
-    await fetch("/api/store/catalog/bulk", {
-      method: "POST",
-      body: JSON.stringify({
-        selection: {
-          type: bulk.type,
-          ids: Array.from(bulk.ids),
-        },
-        filters, // IMPORTANT for server-side selection
-      }),
-    });
-
-    alert("Updated successfully");
-  }; */
-
   return (
     <div className="page-wrapper">
       <div className="content">
@@ -241,13 +257,6 @@ export default function ProductsCatalogComponent() {
                 fetchProducts(f, 1);
               }}
             />
-
-            {/* <button
-              onClick={handleBulkSave}
-              className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Save Changes
-            </button> */}
           </div>
         </div>
 
@@ -306,6 +315,64 @@ export default function ProductsCatalogComponent() {
                   }}
                 />
               </>
+            )}
+
+            {selectedProductId && (
+              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div className="bg-white w-full max-w-xl rounded-lg shadow-lg p-6 relative">
+                  {/* Close */}
+                  <button
+                    onClick={() => {
+                      setSelectedProductId(null);
+                      setProductDetail(null);
+                    }}
+                    className="absolute top-2 right-2 text-gray-500"
+                  >
+                    ✕
+                  </button>
+
+                  {modalLoading ? (
+                    <p className="text-center py-6">Loading...</p>
+                  ) : productDetail ? (
+                    <div className="space-y-3">
+                      <h2 className="text-xl font-bold">
+                        {productDetail.name}
+                      </h2>
+
+                      <p className="text-sm text-gray-500">
+                        SKU: {productDetail.sku}
+                      </p>
+
+                      <p className="text-sm text-gray-600">
+                        Description: {productDetail.description || "No description"}
+                      </p>
+
+                      <p className="text-sm text-gray-600">
+                        Health Benefits: {productDetail.health_benefits || ""}
+                      </p>
+
+                      <div className="flex justify-between text-sm">
+                        <span>Price:</span>
+                        <strong>
+                          ${Number(productDetail.price).toFixed(2)}
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span>Stock:</span>
+                        <strong>{productDetail.quantity}</strong>
+                      </div>
+
+                      <div className="text-xs text-gray-400">
+                        Created:{" "}
+                        {new Date(productDetail.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center text-red-500">Failed to load</p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>

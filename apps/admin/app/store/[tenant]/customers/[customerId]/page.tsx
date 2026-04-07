@@ -8,7 +8,6 @@ import Link from "next/link";
 import CustomerForm from "@/components/customers/CustomerForm";
 import AddressManager from "@/components/customers/AddressManager";
 
-
 /* 
 export type CustomerType = "B2C" | "B2B";
 
@@ -38,6 +37,8 @@ type Customer = {
   last_name: string;
   email: string;
   phone: string;
+  city: string;
+  postcode: string;
   credit_limit?: number;
   payment_terms?: number;
   status: string;
@@ -97,68 +98,70 @@ export default function CustomerDetailPage() {
   if (!customer) return <p className="p-6">Customer not found</p>;
 
   return (
-    <div className="page-wrapper p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">
-          {customer.first_name} {customer.last_name}
-        </h2>
+    <div className="page-wrapper ">
+      <div className="content space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">
+            {customer.first_name} {customer.last_name}
+          </h2>
 
-        <StatusToggle customer={customer} onUpdate={fetchCustomer} />
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="card p-4">Orders: {customer.total_orders}</div>
-        <div className="card p-4">
-          Spent: ${customer.total_spent.toFixed(2)}
+          <StatusToggle customer={customer} onUpdate={fetchCustomer} />
         </div>
-        <div className="card p-4">Status: {customer.status}</div>
-      </div>
 
-      {/* Edit Customer Form */}
-      <div className="card p-4">
-        <h4 className="font-semibold mb-3">Edit Customer</h4>
-        <CustomerForm initialData={customer} onSaved={fetchCustomer} />
-      </div>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="card p-4">Orders: {customer.total_orders}</div>
+          <div className="card p-4">
+            Spent: ${Number(customer.total_spent)?.toFixed(2)}
+          </div>
+          <div className="card p-4">Status: {customer.status}</div>
+        </div>
 
-      {/* Multi-Address Manager */}
-      <div className="card p-4">
-        <h4 className="font-semibold mb-3">Addresses</h4>
-        <AddressManager
-          customerId={customer.id}
-          addresses={addresses}
-          onUpdate={fetchCustomer}
-        />
-      </div>
+        {/* Edit Customer Form */}
+        <div className="card p-4">
+          <h4 className="font-semibold mb-3">Edit Customer</h4>
+          <CustomerForm initialData={customer} onSaved={fetchCustomer} />
+        </div>
 
-      {/* Orders */}
-      <div className="card p-4">
-        <h4 className="font-semibold mb-3">Order History</h4>
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr key={o.id}>
-                <td>
-                  <Link href={`/admin/orders/${o.id}`}>
-                    #{o.order_number}
-                  </Link>
-                </td>
-                <td>{new Date(o.created_at).toLocaleDateString()}</td>
-                <td>{o.status}</td>
-                <td>${o.total_amount.toFixed(2)}</td>
+        {/* Multi-Address Manager */}
+        <div className="card p-4">
+          <h4 className="font-semibold mb-3">Addresses</h4>
+          <AddressManager
+            customerId={customer.id}
+            addresses={addresses}
+            onUpdate={fetchCustomer}
+          />
+        </div>
+
+        {/* Orders */}
+        <div className="card p-4">
+          <h4 className="font-semibold mb-3">Order History</h4>
+          <table className="w-full border">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <tr key={o.id}>
+                  <td>
+                    <Link href={`/orders/${o.id}`}>
+                      #{o.order_number}
+                    </Link>
+                  </td>
+                  <td>{new Date(o.created_at).toLocaleDateString()}</td>
+                  <td>{o.status}</td>
+                  <td>${Number(o.total_amount).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

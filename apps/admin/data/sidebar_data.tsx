@@ -45,7 +45,7 @@ export const SidebarData: SidebarItem[] = [
     submenu: true,
     submenuItems: [
       { label: "Orders", link: "/orders", icon: "file-invoice", submenu: false },
-      { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
+      // { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
     ],
   },
   {
@@ -84,7 +84,7 @@ export const SidebarData: SidebarItem[] = [
     submenuHdr: "Settings",
     submenuItems: [
       { label: "Store Settings", link: "/settings", icon: "settings", submenu: false },
-      { label: "Logout", link: "/signin", icon: "logout", submenu: false },
+      // { label: "Logout", link: "/signin", icon: "logout", submenu: false },
     ],
   },
 ];

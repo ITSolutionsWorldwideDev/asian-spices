@@ -38,7 +38,18 @@ export async function GET(
         o.discount_amount,
         o.shipping_amount,
         c.company_name AS customer_name,
-        c.email AS customer_email
+        c.email AS customer_email,
+        c.city AS customer_city,
+        c.postcode AS customer_postcode,
+        o.weight,
+        o.length,
+        o.width,
+        o.height,
+        o.boxes,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.shipped_at
       FROM store_orders o
       LEFT JOIN store_customers c ON c.id = o.customer_id
       WHERE o.id = $1 AND o.store_id = $2
