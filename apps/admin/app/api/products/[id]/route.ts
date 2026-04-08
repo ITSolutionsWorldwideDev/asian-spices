@@ -1,29 +1,39 @@
 // apps/admin/app/api/products/[id]/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentStoreAPI, requireStorePermission } from "@/lib/auth/guards";
 import { PERMISSIONS } from "@/lib/auth/permissions";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { pool } from "@acme/db";
 
 /* ------------------ GET (Single Product) ------------------ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  const store = await getCurrentStoreAPI(req);
+  // const store = await getCurrentStoreAPI(req);
+  await requirePlatformAdmin();
 
   const { id } = await params;
 
   const product = await pool.query(
     `
     SELECT * FROM store_products
-    WHERE id = $1 AND store_id = $2
+    WHERE id = $1
     `,
-    [id, store.id],
+    [id],
   );
 
   if (!product.rows.length)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const countries = await pool.query(
+    `SELECT country_id FROM store_product_countries WHERE product_id = $1`,
+    [id],
+  );
+
+  const country_ids = countries.rows.map((c) => c.country_id);
 
   const prices = await pool.query(
     `SELECT * FROM store_product_prices WHERE product_id=$1`,
@@ -39,50 +49,18 @@ export async function GET(
     ...product.rows[0],
     prices: prices.rows,
     images: images.rows,
+    country_ids: country_ids,
   });
 }
-/* export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-
-  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  const { id } = await params;
-
-  try {
-    const product = await pool.query(
-      `SELECT * FROM products WHERE product_id = $1`,
-      [id]
-    );
-
-    if (!product.rows.length) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    const images = await pool.query(
-      `SELECT media_id FROM product_images WHERE product_id = $1`,
-      [id]
-    );
-
-    return NextResponse.json({
-      ...product.rows[0],
-      images: images.rows,
-    });
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: "Failed to fetch product", detail: e.message },
-      { status: 500 }
-    );
-  }
-} */
 
 /* ------------------ PUT (Update Product) ------------------ */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  const store = await getCurrentStoreAPI(req);
+  // const store = await getCurrentStoreAPI(req);
+  await requirePlatformAdmin();
 
   const client = await pool.connect();
   const { id } = await params;
@@ -108,9 +86,9 @@ export async function PUT(
         discount_type=$11,
         discount_value=$12,
         status=$13,
-        country_id=$14,
+        health_benefits=$14,
         updated_at=NOW()
-      WHERE id=$15 AND store_id=$16
+      WHERE id=$15
       RETURNING *
       `,
       [
@@ -126,12 +104,33 @@ export async function PUT(
         body.quantity,
         body.discount_type,
         body.discount_value,
-        body.status,
-        body.country_id,
+        body.status ?? 1,
+        body.health_benefits,
         id,
-        store.id,
       ],
     );
+
+
+    /* ---------------- Countries (MULTI) ---------------- */
+
+    // delete old
+    await client.query(
+      `DELETE FROM store_product_countries WHERE product_id = $1`,
+      [id],
+    );
+
+    // insert new
+    if (body.country_ids?.length) {
+      const values = body.country_ids
+        .map((_: any, i: number) => `($1, $${i + 2})`)
+        .join(",");
+
+      await client.query(
+        `INSERT INTO store_product_countries (product_id, country_id)
+         VALUES ${values}`,
+        [id, ...body.country_ids],
+      );
+    }
 
     /* Remove old prices */
     await client.query(`DELETE FROM store_product_prices WHERE product_id=$1`, [
@@ -174,69 +173,13 @@ export async function PUT(
     client.release();
   }
 }
-/* export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  try {
-    const { id } = await params;
-    const body = await req.json();
-
-    const result = await pool.query(
-      `UPDATE products SET
-        name=$1,
-        slug=$2,
-        sku=$3,
-        item_code=$4,
-        category_id=$5,
-        subcategory_id=$6,
-        brand_id=$7,
-        country_of_origin=$8,
-        description=$9,
-        price=$10,
-        quantity=$11,
-        discount_type_id=$12,
-        discount_value=$13,
-        updated_at=NOW()
-       WHERE product_id=$14
-       RETURNING *`,
-      [
-        body.name,
-        body.slug,
-        body.sku,
-        body.item_code,
-        body.category_id,
-        body.subcategory_id,
-        body.brand_id,
-        body.country_of_origin,
-        body.description,
-        body.price,
-        body.quantity,
-        body.discount_type_id,
-        body.discount_value,
-        id,
-      ]
-    );
-
-    if (result.rowCount === 0) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(result.rows[0], { status: 201 });
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: "Failed to update product", detail: e.message },
-      { status: 500 }
-    );
-  }
-} */
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  await requirePlatformAdmin();
   const { id } = await params;
 
   await pool.query("DELETE FROM products WHERE id=$1", [id]);

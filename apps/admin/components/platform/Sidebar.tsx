@@ -10,36 +10,106 @@ import { ChevronsLeft } from "react-feather";
 
 const PLATFORM_MENU = [
   {
-    label: "Dashboard",
-    icon: "layout-grid",
-    link: "/platform/dashboard"
+    label: "Main",
+    submenuHdr: "Main",
+    submenuItems: [
+      {
+        label: "Dashboard",
+        icon: "layout-grid",
+        link: "/platform/dashboard",
+        submenu: false,
+      },
+      {
+        label: "Partners",
+        icon: "building-store",
+        link: "/platform/partners",
+      },
+      {
+        label: "Stores",
+        icon: "building-store",
+        link: "/platform/stores",
+      },
+      {
+        label: "Users & Roles",
+        icon: "users",
+        link: "/platform/users",
+      },
+      {
+        label: "Billing",
+        icon: "credit-card",
+        link: "/platform/billing",
+      },
+      {
+        label: "Settings",
+        icon: "settings-cog",
+        link: "/platform/settings",
+      },
+      {
+        label: "Currencies",
+        icon: "currency-euro",
+        link: "/platform/currencies",
+      },
+      {
+        label: "Currency Rates",
+        icon: "exchange",
+        link: "/platform/currency-rates",
+      },
+
+      
+    ],
   },
+
+  // {
+  //   label: "Dashboard",
+  //   icon: "layout-grid",
+  //   link: "/platform/dashboard",
+  // },
+
   {
-    label: "Stores",
-    icon: "building-store",
-    link: "/platform/stores"
+    label: "Inventory",
+    submenu: true,
+    submenuHdr: "Inventory",
+    submenuItems: [
+      {
+        label: "Category",
+        link: "/category",
+        icon: "list-details",
+        submenu: false,
+      },
+      {
+        label: "Sub Category",
+        link: "/sub-categories",
+        icon: "carousel-vertical",
+        submenu: false,
+      },
+      { label: "Brands", link: "/brand", icon: "triangles", submenu: false },
+      { label: "Products", link: "/products", icon: "box", submenu: false },
+      {
+        label: "Create Product",
+        link: "/products/new",
+        icon: "table-plus",
+        submenu: false,
+      },
+      { label: "Media", link: "/media", icon: "table-plus", submenu: false },
+    ],
   },
-  {
-    label: "Users & Roles",
-    icon: "users",
-    link: "/platform/users"
-  },
-  {
-    label: "Billing",
-    icon: "credit-card",
-    link: "/platform/billing"
-  },
-  {
-    label: "Settings",
-    icon: "settings-cog",
-    link: "/platform/settings"
-  }
 ];
 
 export default function PlatformSidebar() {
   const pathname = usePathname();
+
+  const [subOpen, setSubOpen] = useState("");
+  const [subSidebar, setSubSidebar] = useState("");
   const [toggle, setToggle] = useState(false);
   const [expandMenus, setExpandMenus] = useState(false);
+
+  const toggleSidebar = (title: string) => {
+    setSubOpen(subOpen === title ? "" : title);
+  };
+
+  const toggleSubSidebar = (title: string) => {
+    setSubSidebar(subSidebar === title ? "" : title);
+  };
 
   const handleSidebar = () => {
     document.body.classList.toggle("mini-sidebar");
@@ -75,7 +145,7 @@ export default function PlatformSidebar() {
           <ChevronsLeft />
         </button>
       </div>
-      <PerfectScrollbar>
+      {/* <PerfectScrollbar>
         <div className="sidebar-inner slimscroll">
           <div id="sidebar-menu" className="sidebar-menu">
             <ul>
@@ -90,54 +160,35 @@ export default function PlatformSidebar() {
             </ul>
           </div>
         </div>
+      </PerfectScrollbar> */}
+      <PerfectScrollbar>
+        <div className="sidebar-inner slimscroll">
+          <div id="sidebar-menu" className="sidebar-menu">
+            <ul>
+              {PLATFORM_MENU.map((mainItem, idx) => (
+                <li key={idx} className="submenu-open">
+                  <h6 className="submenu-hdr">{mainItem.submenuHdr}</h6>
+                  <ul>
+                    {mainItem.submenuItems?.map((item, i) => (
+                      <li key={i} className={item.submenu ? "submenu" : ""}>
+                        <Link
+                          href={item.link || "#"}
+                          className={`${pathname === item.link ? "active" : ""}`}
+                          onClick={() => toggleSidebar(item.label)}
+                        >
+                          <i className={`ti ti-${item.icon} me-2`} />
+                          <span>{item.label}</span>
+                          {item.submenu && <span className="menu-arrow" />}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </PerfectScrollbar>
     </div>
   );
 }
-
-/* "use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const PLATFORM_MENU = [
-  {
-    label: "Dashboard",
-    href: "/dashboard"
-  },
-  {
-    label: "Stores",
-    href: "/stores"
-  },
-  {
-    label: "Users & Roles",
-    href: "/users"
-  },
-  {
-    label: "Billing",
-    href: "/billing"
-  },
-  {
-    label: "Settings",
-    href: "/settings"
-  }
-];
-
-export default function PlatformSidebar() {
-  const pathname = usePathname();
-
-  return (
-    <aside className="sidebar">
-      <ul>
-        {PLATFORM_MENU.map(item => (
-          <li
-            key={item.href}
-            className={pathname.startsWith(item.href) ? "active" : ""}
-          >
-            <Link href={item.href}>{item.label}</Link>
-          </li>
-        ))}
-      </ul>
-    </aside>
-  );
-} */

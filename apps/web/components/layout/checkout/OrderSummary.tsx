@@ -9,7 +9,7 @@ export default function OrderSummary({
   //   tax,
   total,
 }: any) {
-  console.log(items);
+  // console.log(items);
 
   let deliverDiffer = total < 50 ? 50 - total : undefined;
 

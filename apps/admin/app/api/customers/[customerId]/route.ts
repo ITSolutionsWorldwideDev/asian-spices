@@ -23,9 +23,12 @@ export async function GET(
         c.last_name,
         c.email,
         c.phone,
+        c.city,
+        c.postcode,
         c.credit_limit,
         c.payment_terms,
         c.created_at,
+        c.status,
 
         COUNT(o.id) AS total_orders,
         COALESCE(SUM(o.total_amount), 0) AS total_spent

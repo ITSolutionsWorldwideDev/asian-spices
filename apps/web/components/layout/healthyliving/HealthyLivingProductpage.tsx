@@ -280,7 +280,7 @@ const HealthyLivingProductpage = ({ slug }: props) => {
           title1={"Spices Category"}
           title2={"Stores"}
         />
-        <ProductCard item={products} />
+        <ProductCard  />
       </div>
 
       <RegisterOnApp />

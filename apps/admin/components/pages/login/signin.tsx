@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 const PLATFORM_SUBDOMAIN = "admin";
 
 export default function SigninComponent() {
-
   const { status } = useSession();
   const router = useRouter();
 
@@ -17,19 +16,10 @@ export default function SigninComponent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // ✅ If already logged in, go to dashboard
   useEffect(() => {
-
-    
-
     if (status === "authenticated") {
-
-      console.log('status ==== ', status);
-      
       const hostname = window.location.hostname;
       const subdomain = hostname.split(".")[0];
-
-      console.log('signin subdomain ====',subdomain);
 
       if (subdomain === PLATFORM_SUBDOMAIN) {
         router.replace("/platform/dashboard");
@@ -48,15 +38,11 @@ export default function SigninComponent() {
     const email = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    console.log('formData ==== ', formData);
-
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
     });
-
-    console.log('res ==== ', res);
 
     if (res?.error) {
       setErrorMsg(res.error);
@@ -64,11 +50,8 @@ export default function SigninComponent() {
       return;
     }
 
-    
     const hostname = window.location.hostname;
     const subdomain = hostname.split(".")[0];
-
-    console.log('handleLogin subdomain ====',subdomain);
 
     if (subdomain === PLATFORM_SUBDOMAIN) {
       router.replace("/platform/dashboard");
@@ -78,7 +61,7 @@ export default function SigninComponent() {
   };
 
   if (status === "authenticated") return null;
-  
+
   return (
     <>
       <div className="main-wrapper">
@@ -132,7 +115,7 @@ export default function SigninComponent() {
                             name="password"
                           />
                           <span
-                            className={`input-group-text cursor-pointer fa toggle-password  pt-2 ${
+                            className={`input-group-text cursor-pointer fa toggle-password bg-none  pt-2 ${
                               isPasswordVisible ? "fa-eye-slash" : "fa-eye"
                             }`}
                             onClick={() =>
@@ -147,7 +130,6 @@ export default function SigninComponent() {
                         </button>
                         {errorMsg && <p className="text-red-500">{errorMsg}</p>}
                       </div>
-
 
                       <div className="my-6 flex justify-center items-center copyright-text">
                         <p>Copyright &copy; 2026 Asian Spices</p>

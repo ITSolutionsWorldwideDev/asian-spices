@@ -1,4 +1,5 @@
-// apps/admin/app/(platform)/platform/stores/StoresClient.tsx
+// apps/admin/components/platform/stores/StoresClient.tsx
+
 "use client";
 
 import Link from "next/link";

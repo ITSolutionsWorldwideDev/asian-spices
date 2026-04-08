@@ -5,7 +5,7 @@ import { pool } from "@acme/db";
 export async function GET() {
   try {
     const result = await pool.query(
-      `SELECT id, name, iso2 FROM countries 
+      `SELECT country_id as id, country_name as  name, country_code as iso2 FROM countries 
        ORDER BY name ASC`,
     );
 

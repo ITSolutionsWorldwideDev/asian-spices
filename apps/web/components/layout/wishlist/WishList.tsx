@@ -29,10 +29,10 @@ export default function WishList() {
   console.log(wishlist);
   const totalValue = wishlist.reduce((acc, item) => acc + (item.price || 0), 0);
 
-  const potentialSavings = wishlist.reduce((acc, item) => {
-    if (!item.oldPrice || !item.price) return acc;
-    return acc + (item.oldPrice - item.price);
-  }, 0);
+  // const potentialSavings = wishlist.reduce((acc, item) => {
+  //   if (!item.oldPrice || !item.price) return acc;
+  //   return acc + (item.oldPrice - item.price);
+  // }, 0);
 
   const itemsInWishlist = wishlist.length;
 
@@ -130,7 +130,7 @@ export default function WishList() {
                   <div>
                     <p className="text-sm text-gray-600">Potential Savings</p>
                     <p className="text-3xl font-bold text-[#00A63E]">
-                      ${potentialSavings.toFixed(2)}
+                      {/* ${potentialSavings.toFixed(2)} */}
                     </p>
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export default function WishList() {
                 <div className="flex flex-col sm:flex-row gap-5">
                   {/* IMAGE with Badge */}
                   <div className="relative h-32 w-32 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    {item.oldPrice && item.price && (
+                    {/* {item.oldPrice && item.price && (
                       <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md z-10">
                         {item.off ||
                           `${Math.round(
@@ -156,10 +156,10 @@ export default function WishList() {
                               100,
                           )}% OFF`}
                       </div>
-                    )}
+                    )} */}
                     <Image
                       src={`/assets/home/premium_collection/${item.image}`}
-                      alt={item.title}
+                      alt={item.name}
                       width={128}
                       height={128}
                       className="object-cover h-full w-full"
@@ -169,10 +169,10 @@ export default function WishList() {
                   {/* DETAILS */}
                   <div className="flex-1 flex flex-col sm:flex-row justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.title}</h3>
+                      <h3 className="font-semibold text-lg">{item.name}</h3>
 
                       {/* Rating */}
-                      {item.rating && (
+                      {/* {item.rating && (
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex items-center gap-1">
                             {[...Array(5)].map((_, i) => (
@@ -184,27 +184,27 @@ export default function WishList() {
                                     : "text-gray-300"
                                 }`}
                               />
-                            ))}
+                            ))} */}
                           </div>
-                          {item.reviews && (
+                          {/* {item.reviews && (
                             <span className="text-sm text-gray-500">
                               ({item.reviews})
                             </span>
-                          )}
+                          )} */}
 
-                          {item.tag && (
+                          {/* {item.tag && (
                             <span className="inline-block text-xs px-2 py-1 rounded-full border border-[#E5E7EB] text-black">
                               {item.tag}
                             </span>
-                          )}
+                          )} */}
 
-                          {item.weight && (
+                          {/* {item.weight && (
                             <span className="inline-block text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                               {item.weight}
                             </span>
-                          )}
+                          )} */}
                         </div>
-                      )}
+                      {/* )} */}
 
                       {item.price && (
                         // console.log(item)
@@ -212,11 +212,11 @@ export default function WishList() {
                           <p className="font-bold text-2xl text-orange-500">
                             ${item.price.toFixed(2)}
                           </p>
-                          {item.oldPrice && (
+                          {/* {item.oldPrice && (
                             <p className="text-sm text-gray-400 line-through">
                               ${item.oldPrice.toFixed(2)}
                             </p>
-                          )}
+                          )} */}
                         </div>
                       )}
 
@@ -244,7 +244,7 @@ export default function WishList() {
                           // image: string;
                           // weight?: string;
                           // oldPrice: number | null;
-                          addToCart(item);
+                          // addToCart(item);
                           removeFromWishlist(item.id);
                         }}
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6900] text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
@@ -269,8 +269,8 @@ export default function WishList() {
                     </div>
                     {/* </div> */}
                   </div>
-                </div>
-              </div>
+                // </div>
+              // </div>
             ))}
           </div>
           <RedirectButtons />

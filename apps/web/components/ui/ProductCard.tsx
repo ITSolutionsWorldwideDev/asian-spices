@@ -34,7 +34,7 @@ interface ProductCardProps {
   item: Product[];
 }
 
-export default function ProductCard({ item }: ProductCardProps) {
+export default function ProductCard() {
   const path = usePathname();
   const pathname = path.startsWith("/") ? path.slice(1) : path;
   console.log(pathname);
@@ -190,7 +190,7 @@ export default function ProductCard({ item }: ProductCardProps) {
 
       {/* See More/See Less Button */}
 
-      {item.length > 8 && (
+      {productData.length > 8 && (
         <div className="flex justify-center mt-8 mb-10">
           <button
             onClick={() => setShowAll(!showAll)}

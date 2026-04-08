@@ -227,7 +227,8 @@ const spices = () => {
           title1={"Spices Category"}
           title2={"Stores"}
         />
-        <ProductCard item={products} />
+        <ProductCard />
+        {/* <ProductCard item={products} /> */}
       </div>
 
       <RegisterOnApp />

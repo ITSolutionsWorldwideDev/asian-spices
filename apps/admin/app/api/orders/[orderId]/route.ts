@@ -2,18 +2,27 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 export async function GET(
-  req: NextRequest,  
-  { params }: { params: Promise<{ orderId: string }> }
+  req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> },
 ) {
   try {
-    const storeId = req.headers.get("x-store-id");
+    const store = await getCurrentStoreAPI(req);
+    const storeId = store.id;
+
     if (!storeId) {
-      return NextResponse.json({ error: "Store not resolved" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Store not resolved" },
+        { status: 400 },
+      );
     }
 
     const { orderId } = await params;
+
+    // console.log('storeId === ',storeId);
+    // console.log('orderId === ',orderId);
 
     // 🔹 Fetch Order
     const orderResult = await pool.query(
@@ -28,13 +37,24 @@ export async function GET(
         o.tax_amount,
         o.discount_amount,
         o.shipping_amount,
-        c.name AS customer_name,
-        c.email AS customer_email
+        c.company_name AS customer_name,
+        c.email AS customer_email,
+        c.city AS customer_city,
+        c.postcode AS customer_postcode,
+        o.weight,
+        o.length,
+        o.width,
+        o.height,
+        o.boxes,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.shipped_at
       FROM store_orders o
       LEFT JOIN store_customers c ON c.id = o.customer_id
       WHERE o.id = $1 AND o.store_id = $2
       `,
-      [orderId, storeId]
+      [orderId, storeId],
     );
 
     if (!orderResult.rows.length) {
@@ -47,15 +67,17 @@ export async function GET(
       SELECT
         oi.id AS order_item_id,
         oi.quantity,
-        oi.price,
         sp.id AS product_id,
         sp.name,
-        sp.sku
+        sp.sku,  
+        oi.fulfilled_quantity,
+        sp.quantity as available_stock,
+        oi.price
       FROM store_order_items oi
       LEFT JOIN store_products sp ON sp.id = oi.product_id
       WHERE oi.order_id = $1
       `,
-      [orderId]
+      [orderId],
     );
 
     return NextResponse.json({
@@ -68,7 +90,7 @@ export async function GET(
     console.error("Order detail fetch failed:", error);
     return NextResponse.json(
       { error: "Failed to fetch order detail" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

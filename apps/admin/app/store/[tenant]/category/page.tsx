@@ -1,9 +1,0 @@
-import CategoryListComponent from "@/components/category/categoryList";
-
-export default function CategoryList() {
-  return (
-    <>
-      <CategoryListComponent />
-    </>
-  );
-}

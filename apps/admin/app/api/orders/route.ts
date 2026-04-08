@@ -2,14 +2,21 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
 
-    const storeId = req.headers.get("x-store-id"); // 👈 from middleware
+    const store = await getCurrentStoreAPI(req);
+    const storeId = store.id;
+
+    // const storeId = req.headers.get("x-store-id"); // 👈 from middleware
     if (!storeId) {
-      return NextResponse.json({ error: "Store not resolved" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Store not resolved" },
+        { status: 400 },
+      );
     }
 
     const search = searchParams.get("search");
@@ -26,15 +33,15 @@ export async function GET(req: NextRequest) {
       values.push(`%${search}%`);
       where += ` AND (
         o.order_number ILIKE $${values.length}
-        OR c.name ILIKE $${values.length}
+        OR c.company_name ILIKE $${values.length}
       )`;
     }
 
     // 👤 Customer filter
-    if (customer) {
-      values.push(`%${customer}%`);
-      where += ` AND c.name ILIKE $${values.length}`;
-    }
+    // if (customer) {
+    //   values.push(`%${customer}%`);
+    //   where += ` AND c.company_name ILIKE $${values.length}`;
+    // }
 
     // 📦 Product filter
     if (product) {
@@ -60,14 +67,14 @@ export async function GET(req: NextRequest) {
         o.created_at AS order_date,
         o.payment_status AS status,
         o.total_amount,
-        c.name AS customer_name,
+        c.company_name AS customer_name,
         COUNT(DISTINCT oi.id) AS items_count
       FROM store_orders o
       LEFT JOIN store_customers c ON c.id = o.customer_id
       LEFT JOIN store_order_items oi ON oi.order_id = o.id
       LEFT JOIN store_products sp ON sp.id = oi.product_id
       ${where}
-      GROUP BY o.id, c.name
+      GROUP BY o.id, c.company_name
       ${orderBy}
     `;
 
@@ -78,7 +85,7 @@ export async function GET(req: NextRequest) {
     console.error("Orders listing fetch failed:", error);
     return NextResponse.json(
       { error: "Failed to fetch orders listing" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

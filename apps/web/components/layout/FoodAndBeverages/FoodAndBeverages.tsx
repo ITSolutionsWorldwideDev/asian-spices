@@ -200,7 +200,7 @@ const FoodAndBeverages = () => {
           title1={"Kitchens Category"}
           title2={"Stores"}
         />
-        <ProductCard item={products} />
+        <ProductCard  />
       </div>
       <RegisterOnApp />
       <Reviews />

@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
         c.last_name,
         c.email,
         c.phone,
+        c.city,
+        c.postcode,
         c.credit_limit,
         c.payment_terms,
         c.created_at,

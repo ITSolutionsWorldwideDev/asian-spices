@@ -21,7 +21,7 @@ const KitchenAppliancesPage = () => {
       reviews: 324,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich fdsajfk jfsakdjf kfjdsnfljasdnf fasdjfnlasdjf `,
-       weight:'5g'
+      weight: "5g",
     },
     {
       id: 2,
@@ -35,7 +35,7 @@ const KitchenAppliancesPage = () => {
       reviews: 256,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
     {
       id: 3,
@@ -49,7 +49,7 @@ const KitchenAppliancesPage = () => {
       reviews: 412,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
     {
       id: 4,
@@ -63,9 +63,8 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
-
 
     {
       id: 5,
@@ -79,7 +78,7 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
 
     {
@@ -94,7 +93,7 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
 
     {
@@ -109,7 +108,7 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
 
     {
@@ -124,7 +123,7 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
 
     {
@@ -139,7 +138,7 @@ const KitchenAppliancesPage = () => {
       reviews: 189,
       left: 24,
       description: `Premium quality organic turmeric from Kerala, India. Rich... `,
-     weight:'5g'
+      weight: "5g",
     },
   ];
 
@@ -201,7 +200,7 @@ const KitchenAppliancesPage = () => {
           title1={"Kitchens Category"}
           title2={"Stores"}
         />
-        <ProductCard item={products} />
+        <ProductCard />
       </div>
       <RegisterOnApp />
       <Reviews />

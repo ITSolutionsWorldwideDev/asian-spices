@@ -18,7 +18,7 @@ interface ProductTabsProps {
 
 type Tab = (typeof tabs)[number];
 
-export default function ProductTabs({id}: ProductTabsProps) {
+export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab>("Description");
 // console.log(id)
   return (
@@ -112,7 +112,7 @@ export default function ProductTabs({id}: ProductTabsProps) {
           </div>
         )}
 
-        {activeTab === "write a review" && <WriteReviewForm id={id} />}
+        {/* {activeTab === "write a review" && <WriteReviewForm id={id} />} */}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-// apps/admin/app/(platform)/platform/stores/FiltersBar.tsx
+// apps/admin/components/platform/stores/FiltersBar.tsx
+
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";

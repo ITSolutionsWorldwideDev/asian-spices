@@ -36,27 +36,7 @@ export const SidebarData: SidebarItem[] = [
     submenu: true,
     submenuHdr: "Inventory",
     submenuItems: [
-      {
-        label: "Category",
-        link: "/category",
-        icon: "list-details",
-        submenu: false,
-      },
-      {
-        label: "Sub Category",
-        link: "/sub-categories",
-        icon: "carousel-vertical",
-        submenu: false,
-      },
-      { label: "Brands", link: "/brand", icon: "triangles", submenu: false },
-      { label: "Products", link: "/products", icon: "box", submenu: false },
-      {
-        label: "Create Product",
-        link: "/products/new",
-        icon: "table-plus",
-        submenu: false,
-      },
-      { label: "Media", link: "/media", icon: "table-plus", submenu: false },
+      { label: "Products Catalog", link: "/products-catalog", icon: "box", submenu: false },
     ],
   },
   {
@@ -64,8 +44,9 @@ export const SidebarData: SidebarItem[] = [
     submenuHdr: "Sales",
     submenu: true,
     submenuItems: [
+      { label: "Orders Queue", link: "/orders-queue", icon: "file-invoice", submenu: false },
       { label: "Orders", link: "/orders", icon: "file-invoice", submenu: false },
-      { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
+      // { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
     ],
   },
   {
@@ -104,7 +85,7 @@ export const SidebarData: SidebarItem[] = [
     submenuHdr: "Settings",
     submenuItems: [
       { label: "Store Settings", link: "/settings", icon: "settings", submenu: false },
-      { label: "Logout", link: "/signin", icon: "logout", submenu: false },
+      // { label: "Logout", link: "/signin", icon: "logout", submenu: false },
     ],
   },
 ];

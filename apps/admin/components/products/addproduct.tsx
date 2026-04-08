@@ -1,9 +1,7 @@
 // apps/admin/components/products/addproduct.tsx
 
 "use client";
-
-/* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Select, { SingleValue } from "react-select";
 import { Info, LifeBuoy, Figma, PlusCircle, X } from "react-feather";
 import TextEditorNew from "@/core/common/texteditor/texteditor";
@@ -168,6 +166,7 @@ export default function AddProductComponent({
     brand_id: null as number | null,
     // country_of_origin: "fgdf",
     description: "",
+    health_benefits: "",
     price: 0,
     quantity: 0,
     discount_type: "",
@@ -175,8 +174,12 @@ export default function AddProductComponent({
     status: 1,
   });
 
+<<<<<<< HEAD
   console.log(formData);
   const [name, setName] = useState(formData.name);
+=======
+  // const [name, setName] = useState(formData.name);
+>>>>>>> 5e9b8226ea385fc2afb0c173893ebdcb1e2ad46b
   const [b2bPrices, setB2bPrices] = useState<TierPrice[]>([]);
   // const [images, setImages] = useState<ImageItem[]>([]);
   // const [imageInput, setImageInput] = useState("");
@@ -186,7 +189,16 @@ export default function AddProductComponent({
   const [selectedMedia, setSelectedMedia] = useState<number[]>([]);
   const [primaryMedia, setPrimaryMedia] = useState<number | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
   const [slugTouched, setSlugTouched] = useState(false);
+
+  const handleChange = useCallback(
+    (field: keyof typeof formData, value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   /* ------------------ Fetch Data ------------------ */
   useEffect(() => {
@@ -254,11 +266,36 @@ export default function AddProductComponent({
     }
   }, [mode]);
 
+  // useEffect(() => {
+  //   if (!discountType) {
+  //     setValue("discount_value", null);
+  //   }
+  // }, [discountType]);
+
+  useEffect(() => {
+    if (!primaryMedia && selectedMedia.length > 0) {
+      setPrimaryMedia(selectedMedia[0]);
+    }
+  }, [selectedMedia, primaryMedia]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   /* ------------------ Select Options ------------------ */
-  const countriesOptions: Option[] = countries.map((c) => ({
-    value: c.id,
-    label: c.name,
-  }));
+  // const countriesOptions: Option[] = countries.map((c) => ({
+  //   value: c.id,
+  //   label: c.name,
+  // }));
+
+  const countriesOptions = useMemo(
+    () =>
+      countries.map((c) => ({
+        value: c.id,
+        label: c.name,
+      })),
+    [countries],
+  );
 
   const categoryOptions: Option[] = categories.map((c) => ({
     value: c.id,
@@ -356,7 +393,7 @@ export default function AddProductComponent({
   // ------------------------------------
   const handleSubmit = async () => {
     if (mode !== "view" && !validateForm()) {
-      showToast("error", "Please fix validation errors");
+      showToast("error", "Please fix validation errors"); //  errors
       return;
     }
 
@@ -412,6 +449,59 @@ export default function AddProductComponent({
   };
 
   const mediaGrid = useMemo(() => {
+      // If in view mode, only show selected media
+      const itemsToRender =
+        mode === "view"
+          ? media.filter((item) => selectedMedia.includes(item.media_id))
+          : media;
+
+          console.log("selectedMedia 2=== ", selectedMedia);
+    console.log("itemsToRender2 === ", itemsToRender);
+  
+      return itemsToRender.map((item) => {
+        const isSelected = selectedMedia.includes(item.media_id);
+        const isPrimary = primaryMedia === item.media_id;
+  
+        return (
+          <div
+            key={item.media_id}
+            onClick={() => {
+              if (mode === "edit") {
+                setSelectedMedia((prev) =>
+                  isSelected
+                    ? prev.filter((id) => id !== item.media_id)
+                    : [...prev, item.media_id],
+                );
+                if (!primaryMedia) setPrimaryMedia(item.media_id);
+              }
+            }}
+            className={`relative cursor-pointer rounded border bg-white p-1 transition ${
+              isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
+            }`}
+          >
+            <Image
+              src={getThumb(item.file_url, 200)}
+              alt={item.file_name}
+              width={200}
+              height={200}
+              className="rounded object-cover"
+            />
+  
+            {isPrimary && (
+              <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+                Primary
+              </span>
+            )}
+  
+            {isSelected && mode === "edit" && (
+              <div className="absolute inset-0 rounded bg-blue-500/10" />
+            )}
+          </div>
+        );
+      });
+    }, [media, selectedMedia, primaryMedia, mode]);
+
+  /* const mediaGrid = useMemo(() => {
     return media.map((item) => {
       const isSelected = selectedMedia.includes(item.media_id);
       const isPrimary = primaryMedia === item.media_id;
@@ -437,21 +527,21 @@ export default function AddProductComponent({
             className="rounded object-cover"
           />
 
-          {/* Primary Badge */}
+
           {isPrimary && (
             <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
               Primary
             </span>
           )}
 
-          {/* Selection Overlay */}
+  
           {isSelected && (
             <div className="absolute inset-0 rounded bg-blue-500/10" />
           )}
         </div>
       );
     });
-  }, [media, selectedMedia, primaryMedia]);
+  }, [media, selectedMedia, primaryMedia]); */
 
   useEffect(() => {
     if (!productId || mode === "create") return;
@@ -472,6 +562,7 @@ export default function AddProductComponent({
           brand_id: data.brand_id,
           // country_of_origin: data.country_of_origin,
           description: data.description,
+          health_benefits: data.health_benefits,
           price: Number(data.price),
           quantity: Number(data.quantity),
           discount_type: data.discount_type,
@@ -527,8 +618,12 @@ export default function AddProductComponent({
                       type="text"
                       disabled={isView}
                       value={formData.name || ""}
-                      onChange={(e) => setName(e.target.value)}
-                      onBlur={() => setFormData((prev) => ({ ...prev, name }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="w-full border rounded p-2 focus:outline-none focus:ring focus:ring-blue-200"
                     />
                     {errors.name && (
@@ -721,6 +816,24 @@ export default function AddProductComponent({
 
                   <p className="text-gray-500 text-sm mt-1">Maximum 60 Words</p>
                 </div>
+
+                <div>
+                  <label className="block mb-1 font-medium">Health Benefits</label>
+
+                  <MemoTextEditor
+                    value={formData.health_benefits}
+                    readOnly={isView}
+                    onChange={(val: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        health_benefits: val,
+                      }))
+                    }
+                  />
+                </div>
+
+
+                
               </div>
             </Accordion>
 
@@ -867,6 +980,9 @@ export default function AddProductComponent({
                       }
                       placeholder="Choose"
                     />
+                    {errors.discount_type && (
+                      <p className="text-red-600 text-sm">{errors.discount_type}</p>
+                    )}
                   </div>
 
                   <div>
@@ -888,6 +1004,9 @@ export default function AddProductComponent({
                       min={0}
                       step="0.01"
                     />
+                    {errors.discount_value && (
+                      <p className="text-red-600 text-sm">{errors.discount_value}</p>
+                    )}
                   </div>
 
                   <div>
@@ -900,8 +1019,52 @@ export default function AddProductComponent({
                       readOnly
                     />
                   </div>
+                </div>
+              </div>
+            </Accordion>
+            <Accordion
+              title="Images"
+              icon={Figma}
+              open={imagesOpen}
+              onToggle={() => setImagesOpen(!imagesOpen)}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {mediaGrid}
+              </div>
 
-                  {/* 
+              {selectedMedia.length === 0 && (
+                <p className="mt-4 text-sm text-gray-500">
+                  Select at least one image for this product.
+                </p>
+              )}
+            </Accordion>
+          </div>
+
+          <div className="flex justify-end gap-3 my-4">
+            <Link href="/products" className="btn btn-secondary">
+              Cancel
+            </Link>
+            {mode !== "view" && (
+              <button
+                disabled={saving}
+                className="bg-blue-600 text-white px-6 py-2 rounded"
+              >
+                {saving
+                  ? "Saving..."
+                  : mode === "edit"
+                    ? "Update Product"
+                    : "Add Product"}
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+{
+  /* 
                   
                   <div className="grid grid-cols-3 gap-4 mt-4">
   <div>
@@ -938,47 +1101,5 @@ export default function AddProductComponent({
     />
   </div>
 </div>
-                  */}
-                </div>
-              </div>
-            </Accordion>
-            <Accordion
-              title="Images"
-              icon={Figma}
-              open={imagesOpen}
-              onToggle={() => setImagesOpen(!imagesOpen)}
-            >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {mediaGrid}
-              </div>
-
-              {selectedMedia.length === 0 && (
-                <p className="mt-4 text-sm text-gray-500">
-                  Select at least one image for this product.
-                </p>
-              )}
-            </Accordion>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <Link href="/products" className="btn btn-secondary">
-              Cancel
-            </Link>
-            {mode !== "view" && (
-              <button
-                disabled={saving}
-                className="bg-blue-600 text-white px-6 py-2 rounded"
-              >
-                {saving
-                  ? "Saving..."
-                  : mode === "edit"
-                    ? "Update Product"
-                    : "Add Product"}
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+                  */
 }

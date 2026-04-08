@@ -173,8 +173,6 @@ export async function requireStorePermission2(permission: PermissionKey, tenantS
 
   const store = tenantSlug ? await getStoreBySlug(tenantSlug) : await getCurrentStore();
 
-  console.log('requireStorePermission2 store ==== ',store);
-
   if (user.isPlatformAdmin) return store;
 
   const { rowCount } = await pool.query(

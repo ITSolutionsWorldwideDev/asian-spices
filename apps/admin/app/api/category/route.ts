@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import { getCurrentStoreAPI } from "@/lib/auth/guards";
+// import { getCurrentStoreAPI } from "@/lib/auth/guards";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 
 /* ------------------------------------
    Utils
@@ -19,8 +20,9 @@ function slugify(text: string) {
    GET (list or single category)
 ------------------------------------ */
 export async function GET(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  // await requirePlatformAdmin();
 
   const { searchParams } = new URL(req.url);
 
@@ -35,11 +37,18 @@ export async function GET(req: NextRequest) {
   try {
     /* -------- Single category -------- */
     if (id) {
+
       const result = await pool.query(
         `SELECT * FROM store_categories 
-       WHERE id = $1 AND store_id = $2`,
-        [id, storeId],
+       WHERE id = $1`,
+        [id],
       );
+
+      // const result = await pool.query(
+      //   `SELECT * FROM store_categories 
+      //  WHERE id = $1 AND store_id = $2`,
+      //   [id, storeId],
+      // );
 
       if (!result.rows.length) {
         return NextResponse.json(
@@ -72,7 +81,7 @@ export async function GET(req: NextRequest) {
     const dataQuery = `
       SELECT id, name, slug, status, created_at, updated_at
       FROM store_categories
-      WHERE store_id = '${storeId}' ${whereClause}
+      WHERE 1=1 ${whereClause}
       ORDER BY ${orderBy}
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `;
@@ -80,8 +89,22 @@ export async function GET(req: NextRequest) {
     const countQuery = `
       SELECT COUNT(*)::int AS count
       FROM store_categories
-      WHERE store_id = '${storeId}' ${whereClause}
+      WHERE 1=1 ${whereClause}
     `;
+
+    // const dataQuery = `
+    //   SELECT id, name, slug, status, created_at, updated_at
+    //   FROM store_categories
+    //   WHERE store_id = '${storeId}' ${whereClause}
+    //   ORDER BY ${orderBy}
+    //   LIMIT $${values.length - 1} OFFSET $${values.length}
+    // `;
+
+    // const countQuery = `
+    //   SELECT COUNT(*)::int AS count
+    //   FROM store_categories
+    //   WHERE store_id = '${storeId}' ${whereClause}
+    // `;
 
     const [dataRes, countRes] = await Promise.all([
       pool.query(dataQuery, values),
@@ -108,8 +131,10 @@ export async function GET(req: NextRequest) {
    POST (create category)
 ------------------------------------ */
 export async function POST(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
+
   try {
     const body = await req.json();
     const { name, status = 1 } = body;
@@ -125,20 +150,20 @@ export async function POST(req: NextRequest) {
 
     const result = await pool.query(
       `
-      INSERT INTO store_categories (store_id, name, slug, status)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO store_categories (name, slug, status)
+      VALUES ($1, $2, $3)
       RETURNING *
       `,
-      [storeId, name, slug, status],
+      [name, slug, status],
     );
 
     // const result = await pool.query(
     //   `
-    //   INSERT INTO categories (category, categoryslug, status, created_at, updated_at)
-    //   VALUES ($1, $2, $3, NOW(), NOW())
+    //   INSERT INTO store_categories (store_id, name, slug, status)
+    //   VALUES ($1, $2, $3, $4)
     //   RETURNING *
     //   `,
-    //   [category, slug, status],
+    //   [storeId, name, slug, status],
     // );
 
     return NextResponse.json(result.rows[0], { status: 201 });
@@ -163,8 +188,10 @@ export async function POST(req: NextRequest) {
    PUT (update category)
 ------------------------------------ */
 export async function PUT(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  await requirePlatformAdmin();
+
   try {
     const body = await req.json();
     const { id, name, status } = body;
@@ -186,24 +213,24 @@ export async function PUT(req: NextRequest) {
         slug = COALESCE($2, slug),
         status = COALESCE($3, status),
         updated_at = NOW()
-      WHERE id = $4 AND store_id = $5
+      WHERE id = $4
       RETURNING *
       `,
-      [name, slug, status, id, storeId],
+      [name, slug, status, id],
     );
 
     // const result = await pool.query(
     //   `
-    //   UPDATE categories
+    //   UPDATE store_categories
     //   SET
-    //     category = COALESCE($1, category),
-    //     categoryslug = COALESCE($2, categoryslug),
+    //     name = COALESCE($1, name),
+    //     slug = COALESCE($2, slug),
     //     status = COALESCE($3, status),
     //     updated_at = NOW()
-    //   WHERE category_id = $4
+    //   WHERE id = $4 AND store_id = $5
     //   RETURNING *
     //   `,
-    //   [category, slug, status, category_id],
+    //   [name, slug, status, id, storeId],
     // );
 
     if (!result.rows.length) {
@@ -235,8 +262,11 @@ export async function PUT(req: NextRequest) {
    DELETE (remove category)
 ------------------------------------ */
 export async function DELETE(req: NextRequest) {
-  const store = await getCurrentStoreAPI(req);
-  const storeId = store.id;
+  // const store = await getCurrentStoreAPI(req);
+  // const storeId = store.id;
+  
+  await requirePlatformAdmin();
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -248,23 +278,17 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    // const result = await pool.query(
-    //   `DELETE FROM categories WHERE category_id = $1 RETURNING *`,
-    //   [id],
-    // );
-
-    // if (!result.rows.length) {
-    //   return NextResponse.json(
-    //     { error: "Category not found" },
-    //     { status: 404 },
-    //   );
-    // }
 
     await pool.query(
-      `DELETE FROM store_categories 
-      WHERE id = $1 AND store_id = $2`,
-      [id, storeId]
+      `DELETE FROM store_categories WHERE id = $1`,
+      [id]
     );
+
+    // await pool.query(
+    //   `DELETE FROM store_categories 
+    //   WHERE id = $1 AND store_id = $2`,
+    //   [id, storeId]
+    // );
 
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch (err) {

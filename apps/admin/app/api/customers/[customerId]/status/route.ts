@@ -18,7 +18,7 @@ export async function PATCH(
 
     await pool.query(
       `
-    UPDATE customers
+    UPDATE store_customers
     SET status = $1, updated_at = NOW()
     WHERE customer_id = $2
     `,
