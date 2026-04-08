@@ -10,7 +10,9 @@ import {
 import { IoLogoWhatsapp } from "react-icons/io";
 import { AiOutlineMail } from "react-icons/ai";
 import Link from "next/link";
+import SubscribeNewsletter from "./SubscribeNewsletter";
 const FooterContent = () => {
+ 
   return (
     <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 ">
       {/* Logo + Social Icons */}
@@ -86,20 +88,13 @@ const FooterContent = () => {
           and special offers delivered to your inbox every week.
         </p>
 
-        <div className="flex bg-white rounded-xl overflow-hidden shadow-md">
-          <div className="flex items-center justify-center px-3 text-gray-400">
-            <AiOutlineMail size={20} />
-          </div>
+        <SubscribeNewsletter />
 
-          <input
-            type="email"
-            placeholder="Enter your email address"
-            className="w-full outline-none py-3 px-2 "
-          />
-
-          <button className="bg-black text-white  px-6 text-sm hover:bg-gray-800 duration-150">
-            Subscribe
-          </button>
+        <div className="mt-8">
+          <Link href={"/partner-registration"}>
+            {" "}
+            <h3 className="font-bold underline">Go To The Partners Hub</h3>
+          </Link>
         </div>
       </div>
     </div>

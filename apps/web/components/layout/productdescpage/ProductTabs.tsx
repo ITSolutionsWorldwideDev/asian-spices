@@ -2,19 +2,25 @@
 
 import { useState } from "react";
 import ReviewsSection from "../tetimonials/ReviewsSection";
+import WriteReviewForm from "../reviews/WriteReviewForm";
 
 const tabs = [
   "Description",
   "Nutrition Info",
   "How to Use",
   "Reviews (234)",
+  "write a review",
 ] as const;
+
+interface ProductTabsProps {
+  id: number; // or maybe the component expects just a number, not an object
+}
 
 type Tab = (typeof tabs)[number];
 
-export default function ProductTabs() {
+export default function ProductTabs({id}: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>("Description");
-
+// console.log(id)
   return (
     <div className=" container mx-auto p-6 bg-gray-50">
       {/* Tabs */}
@@ -105,6 +111,8 @@ export default function ProductTabs() {
             <ReviewsSection />
           </div>
         )}
+
+        {activeTab === "write a review" && <WriteReviewForm id={id} />}
       </div>
     </div>
   );

@@ -1,8 +1,19 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Contact } from "lucide-react";
 interface ContactFormProps {
   setStep: (step: "contact" | "shipping" | "payment") => void;
 }
-export default function ContactForm({ setStep }: ContactFormProps) {
+
+type CheckoutData = {
+  email: string;
+  phone: string;
+};
+export default function ContactForm({ data, setFormData, setStep }: any) {
+  const handleChange = (field: keyof CheckoutData, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-8">
       <h2 className="font-semibold mb-6">Contact Information</h2>
@@ -13,6 +24,8 @@ export default function ContactForm({ setStep }: ContactFormProps) {
           <input
             className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 outline-none"
             placeholder="Email"
+            value={data.email}
+            onChange={(e) => handleChange("email", e.target.value)}
           />
         </div>
 
@@ -21,6 +34,8 @@ export default function ContactForm({ setStep }: ContactFormProps) {
           <input
             className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 outline-none"
             placeholder="Phone"
+            value={data.phone}
+            onChange={(e) => handleChange("phone", e.target.value)}
           />
         </div>
 

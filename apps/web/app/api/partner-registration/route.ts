@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         business_phone_number,
         business_email_address,
         vat_number,
-        idin,
+        // idin,
       } = body;
 
       //   if (
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       //   }
 
       const result = await pool.query(
-        "INSERT INTO partner_registration (kvk_number, company_name, chamber_of_commerce_number,country,street,house_number,additional_address,postal_code,city,chamber_of_commerce_extract_document,power_of_attorney_document,first_name,middle_name,last_name,business_phone_number,business_email_address,vat_number,idin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *",
+        "INSERT INTO partner_registration (kvk_number, company_name, chamber_of_commerce_number,country,street,house_number,additional_address,postal_code,city,chamber_of_commerce_extract_document,power_of_attorney_document,first_name,middle_name,last_name,business_phone_number,business_email_address,vat_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, ) RETURNING *",
         [
           kvk_number,
           company_name,
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
           business_phone_number,
           business_email_address,
           vat_number,
-          idin,
+          // idin,
         ],
       );
 

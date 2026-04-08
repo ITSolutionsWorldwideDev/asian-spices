@@ -7,6 +7,7 @@ import Stars from "./Stars";
 const INITIAL_COUNT = 4;
 const LOAD_MORE_COUNT = 5;
 
+
 export default function ReviewsSection() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
 

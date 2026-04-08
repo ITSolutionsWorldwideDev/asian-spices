@@ -49,7 +49,10 @@ export default function IdentityVerification({
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-6" id="identity-verification">
+    <div
+      className="min-h-screen bg-gray-100 flex justify-center p-6"
+      id="identity-verification"
+    >
       <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
         <div>
@@ -85,11 +88,12 @@ export default function IdentityVerification({
             {banks.map((bank) => (
               <button
                 key={bank}
-                onClick={() => setSelectedBank(bank)}
-                className={`border rounded-xl p-4 text-left transition ${
+                type="button" // ✅ prevent form submission
+                onClick={() => setSelectedBank(bank)} // ✅ enable selection
+                className={`border rounded-xl p-4 text-left transition hover:border-gray-400 ${
                   selectedBank === bank
                     ? "border-orange-500 bg-orange-50"
-                    : "bg-white hover:border-gray-400"
+                    : "border-gray-300 bg-white"
                 }`}
               >
                 {bank}

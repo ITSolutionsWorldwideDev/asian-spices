@@ -13,29 +13,13 @@ import ReadAloudBtn from "./ReadAloudBtn";
 // import BusinessVerification from "./BusinessVerification";
 
 export default function Prerequisites({ setActiveStep, activeStep }: any) {
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  // const [isSpeaking, setIsSpeaking] = useState(false);
   // const [activeComponent, setActiveComponent] = useState("main");
-  const handleReadAloud = () => {
-    // If already speaking, stop it
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      return;
-    }
+  
 
-    // Get all text content you want to read0
-    const textToRead =
-      document.getElementById("content-to-read")?.innerText ||
-      "Your fallback text here";
+    
 
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    window.speechSynthesis.speak(utterance);
-  };
+   
 
   return (
     <div>
@@ -59,7 +43,8 @@ export default function Prerequisites({ setActiveStep, activeStep }: any) {
               </p>
 
               <div className="flex items-center justify-center mt-3">
-                <ReadAloudBtn ID={"content-to-read"} />
+                <ReadAloudBtn ID={"content-to-reads"} />
+                {/* <ReadAloudBtn ID={"business-verification"} /> */}
               </div>
             </div>
 

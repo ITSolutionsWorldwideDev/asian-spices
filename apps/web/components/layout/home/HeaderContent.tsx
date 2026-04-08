@@ -6,7 +6,7 @@ import { MdOutlineShoppingBag } from "react-icons/md";
 import { FaTruckFast } from "react-icons/fa6";
 import { CiTrophy } from "react-icons/ci";
 import { LuSalad } from "react-icons/lu";
-
+import { Pool } from "pg";
 interface FrameStats {
   Curcumin_Content?: string;
   Customer_Rating?: string;
@@ -97,7 +97,7 @@ const HeaderContent = ({ current }: SpiceFrameProps) => {
 
           {/* CTA Buttons */}
           <div className="flex gap-4">
-            <button className="flex justify-center text-center items-center bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">
+            <button className="flex justify-center text-center items-center bg-white text-black px-1 sm:px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">
               <MdOutlineShoppingBag className="mr-3" /> Shop Collection
             </button>
 

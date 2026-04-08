@@ -16,7 +16,7 @@ const RecipesProductCard = ({ card }: RecipesProductCardProps) => {
   const navigationLink = card.title.toLowerCase().replace(/\s+/g, "");
 
   return (
-    <div className="h-auto cursor-pointer">
+    <div className="h-auto cursor-pointer overflow-hidden">
       <div className="relative  h-64 rounded-2xl overflow-hidden m-5">
         <Image
           src={`/assets/home/spicy_story/${card.image}`}

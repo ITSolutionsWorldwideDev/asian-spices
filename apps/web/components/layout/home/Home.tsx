@@ -13,12 +13,38 @@ import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
 
 const Homei = () => {
+  const menuData = {
+    name: "Healthy Living",
+    children: [
+      {
+        heading: "Health Benefits of Herbs",
+        category: [
+          "Supports Immunity",
+          "Aids Digestion",
+          "Promotes Relaxation",
+          "Enhances Energy Levels",
+        ],
+      },
+      {
+        heading: "Herbal Food Supplements",
+        category: ["Capsules", "Powders", "Teas"],
+      },
+      {
+        heading: "Herbal Skin Products",
+        category: ["Face oils", "Creams", "Cleansers"],
+      },
+      {
+        heading: "Herbal Hair Products",
+        category: ["Hair oils", "Shampoos", "Hair masks"],
+      },
+    ],
+  };
   return (
     <div>
       <Header />
       <AnnouncementBar />
       <HeroSection />
-      <FlashSale />
+      {/* <FlashSale />  */}
       <Premium_Spice_Collection />
       <Smart_Appliances />
       <Story />

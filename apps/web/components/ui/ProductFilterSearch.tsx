@@ -20,7 +20,7 @@ interface ProductFilterSearchProps {
   title2: string;
 }
 
-export default function ProductFilterSearch({
+export default function   ProductFilterSearch({
   categoriesData,
   storesData,
   title1,

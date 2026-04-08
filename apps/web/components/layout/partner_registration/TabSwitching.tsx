@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Form } from "lucide-react";
 import Prerequisites from "./Prerequisites";
 import BusinessVerification from "./BusinessVerification";
 import DocumentUpload from "./DocumentUpload";
@@ -20,8 +20,7 @@ export default function TabSwitching() {
 
   const [formData, setFormData] = useState([]);
   const [activeStep, setActiveStep] = useState(1);
- 
- 
+
   const stepComponents = (
     formData: any,
     setFormData: any,
@@ -108,13 +107,16 @@ export default function TabSwitching() {
       </div>
 
       {/* Step Content */}
-      <div className="mt-8 sm:mt-12 max-w-4xl mx-auto bg-white p-5 sm:p-8 rounded-lg shadow">
+      <form
+        className="mt-8 sm:mt-12 max-w-4xl mx-auto bg-white p-5 sm:p-8 rounded-lg shadow"
+       
+      >
         {
           stepComponents(formData, setFormData, activeStep, setActiveStep)[
             activeStep as keyof ReturnType<typeof stepComponents>
           ]
         }
-      </div>
+      </form>
     </div>
   );
 }

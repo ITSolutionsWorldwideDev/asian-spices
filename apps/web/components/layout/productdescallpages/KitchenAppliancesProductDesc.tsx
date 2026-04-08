@@ -67,7 +67,7 @@ const KitchenAppliancesProductDesc = () => {
       </div>
 
       <ProductDesc />
-      <ProductTabs />
+      {/* <ProductTabs /> */}
       <div className="mt-10 p-5">
         <h1 className="text-black font-bold">You May Also Like</h1>
       </div>

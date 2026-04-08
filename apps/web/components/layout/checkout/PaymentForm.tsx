@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { CreditCard, Lock } from "lucide-react";
 
-export default function CheckoutPage() {
+interface ContactFormProps {
+  setStep: (step: "contact" | "shipping" | "payment") => void;
+}
+export default function CheckoutPage({ data, setFormData, setStep,placeOrder }: any) {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [sameAddress, setSameAddress] = useState(true);
 
@@ -126,11 +129,14 @@ export default function CheckoutPage() {
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row mt-8 gap-4 sm:gap-8">
-          <button className="border border-[#E5E7EB] rounded-lg px-6 py-3 w-full hover:bg-gray-100 transition">
+          <button
+            className="border border-[#E5E7EB] rounded-lg px-6 py-3 w-full hover:bg-gray-100 transition"
+            onClick={() => setStep("shipping")}
+          >
             Back
           </button>
 
-          <button className="bg-orange-500 text-white rounded-lg px-6 py-3 w-full hover:bg-orange-600 flex items-center justify-center gap-2 transition">
+          <button className="bg-orange-500 text-white rounded-lg px-6 py-3 w-full hover:bg-orange-600 flex items-center justify-center gap-2 transition" onClick={placeOrder}>
             <Lock size={16} />
             Place Order
           </button>

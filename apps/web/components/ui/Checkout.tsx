@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import Step from "../layout/checkout/Steps";
 import OrderSummary from "../layout/checkout/OrderSummary";
@@ -12,8 +11,104 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import ShippingForm from "../layout/checkout/ShippingForm";
 import PaymentForm from "../layout/checkout/PaymentForm";
+// import { clear } from "console";
+
+type CheckoutData = {
+  email: string;
+  phone: string;
+
+  firstName: string;
+  lastName: string;
+  address: string;
+  appartment: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+
+  cardNumber: string;
+  expiry: string;
+};
+
 export default function Checkout() {
-  const { cart } = useCartStore();
+  const [formData, setFormData] = useState<CheckoutData>({
+    email: "",
+    phone: "",
+
+    firstName: "",
+    lastName: "",
+    address: "",
+    appartment: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+
+    cardNumber: "",
+    expiry: "",
+  });
+
+  // console.log(formData);
+
+  const placeOrder = async () => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        customer: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+
+        shippingAddress: {
+          address_line1: formData.address,
+          address_line2: formData.appartment,
+          city: formData.city,
+          state: formData.state,
+          postal_code: formData.zip,
+          country: formData.country,
+        },
+
+        cartItems: cart,
+        pricing: {
+          subtotal: subtotal,
+          discount: 0,
+          shipping: 200,
+          total: total,
+        },
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Order placed!");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        appartment: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+        cardNumber: "",
+        expiry: "",
+      });
+
+      clearCart();
+    } else {
+      alert("Error placing order");
+    }
+  };
+  const { cart,clearCart } = useCartStore();
+
   const [step, setStep] = useState<"contact" | "shipping" | "payment">(
     "contact",
   );
@@ -22,7 +117,7 @@ export default function Checkout() {
     0,
   );
 
-  console.log(step);
+  // console.log(step);
   const total = subtotal;
   //   + shipping + tax;
 
@@ -54,9 +149,28 @@ export default function Checkout() {
         <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] items-start gap-8">
           {/* Left */}
 
-          {step === "contact" && <ContactForm setStep={setStep}/>}
-          {step === "shipping" && <ShippingForm  setStep={setStep}/>}
-          {step === "payment" && <PaymentForm />}
+          {step === "contact" && (
+            <ContactForm
+              setStep={setStep}
+              data={formData}
+              setFormData={setFormData}
+            />
+          )}
+          {step === "shipping" && (
+            <ShippingForm
+              setStep={setStep}
+              data={formData}
+              setFormData={setFormData}
+            />
+          )}
+          {step === "payment" && (
+            <PaymentForm
+              setStep={setStep}
+              data={formData}
+              setFormData={setFormData}
+              placeOrder={placeOrder}
+            />
+          )}
 
           {/* Right */}
           <OrderSummary

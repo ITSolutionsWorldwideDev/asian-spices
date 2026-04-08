@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Star, ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import { Truck, RotateCcw, ShieldCheck } from "lucide-react";
+import ProductTabs from "../layout/productdescpage/ProductTabs";
 
 interface Product {
   badge: string;
@@ -233,6 +234,7 @@ export default function ProductDesc() {
           </section>
         </div>
       </div>
+      <ProductTabs id={product.id} />
     </div>
   );
 }

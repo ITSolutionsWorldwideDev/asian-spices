@@ -62,7 +62,7 @@ export default function Header() {
   const current = frames[index];
 
   return (
-    <section className="relative w-full  overflow-hidden flex flex-col">
+    <section className="relative w-full  flex flex-col">
       {/* Background Image */}
       {current && (
         <>
@@ -79,12 +79,12 @@ export default function Header() {
       )}
 
       {/* CENTER BOLD LINE BUTTONS */}
-      <div className="relative mt-10 mb-10 flex items-center justify-center gap-6 container mx-auto z-50">
+      <div className="relative z-10 mt-10 mb-10 flex items-center justify-center gap-6 container mx-auto ">
         {frames.map((_, i) => (
           <button
             key={i}
             onClick={() => setIndex(i)}
-            className={`transition-all duration-300 h-[5px] w-14 rounded-full  cursor-pointer
+            className={`transition-all duration-300 h-1.25 w-14 rounded-full  cursor-pointer
               ${index === i ? "bg-white" : "bg-white/30 hover:bg-white/50"}
             `}
           ></button>

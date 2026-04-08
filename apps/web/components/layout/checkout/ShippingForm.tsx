@@ -6,9 +6,26 @@ import { useState } from "react";
 interface ContactFormProps {
   setStep: (step: "contact" | "shipping" | "payment") => void;
 }
-export default function ShippingForm({ setStep }: ContactFormProps) {
-  const [shippingMethod, setShippingMethod] = useState("standard");
 
+type CheckoutData = {
+  firstName: string;
+  lastName: string;
+  address: string;
+  appartment: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+};
+export default function ShippingForm({ data, setFormData, setStep }: any) {
+  const handleChange = (field: keyof CheckoutData, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+  const [shippingMethod, setShippingMethod] = useState("standard");
+  console.log(data);
   return (
     <div className="  flex justify-center ">
       <div className="w-full  bg-white rounded-xl shadow p-8">
@@ -23,6 +40,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
               <input
                 type="text"
                 className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.firstName}
+                onChange={(e) => handleChange("firstName", e.target.value)}
               />
             </div>
 
@@ -31,6 +50,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
               <input
                 type="text"
                 className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.lastName}
+                onChange={(e) => handleChange("lastName", e.target.value)}
               />
             </div>
           </div>
@@ -41,6 +62,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
             <input
               type="text"
               className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              value={data.address}
+              onChange={(e) => handleChange("address", e.target.value)}
             />
           </div>
 
@@ -52,6 +75,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
             <input
               type="text"
               className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              value={data.apartment}
+              onChange={(e) => handleChange("appartment", e.target.value)}
             />
           </div>
 
@@ -62,6 +87,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
               <input
                 type="text"
                 className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.city}
+                onChange={(e) => handleChange("city", e.target.value)}
               />
             </div>
 
@@ -70,6 +97,8 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
               <input
                 type="text"
                 className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.state}
+                onChange={(e) => handleChange("state", e.target.value)}
               />
             </div>
           </div>
@@ -81,12 +110,18 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
               <input
                 type="text"
                 className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.zip}
+                onChange={(e) => handleChange("zip", e.target.value)}
               />
             </div>
 
             <div>
               <label className="block text-sm mb-1">Country *</label>
-              <select className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <select
+                className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={data.country}
+                onChange={(e) => handleChange("country", e.target.value)}
+              >
                 <option>Pakistan</option>
                 <option>USA</option>
                 <option>UK</option>
@@ -109,7 +144,9 @@ export default function ShippingForm({ setStep }: ContactFormProps) {
                   name="shipping"
                   value="standard"
                   checked={shippingMethod === "standard"}
-                  onChange={(e) => setShippingMethod(e.target.value)}
+                  onChange={(e) => {
+                    setShippingMethod(e.target.value);
+                  }}
                 />
                 <div>
                   <p className="font-medium">Standard Shipping</p>

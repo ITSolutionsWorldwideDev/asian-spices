@@ -16,11 +16,10 @@ const CartandWhishBtn = () => {
         className="bg-white rounded-full cursor-pointer "
         onClick={() => setCartOpen(!isCartOpen)}
       >
-       
-       <Link href={'/wishlist'}>
-        <button className="px-2 py-2    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
-          <Heart />
-        </button>
+        <Link href={"/wishlist"}>
+          <button className="px-2 py-2    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+            <Heart />
+          </button>
         </Link>
       </div>
 

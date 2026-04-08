@@ -4,7 +4,7 @@ import { FlashSaleTimer } from "./Flash_Sale_Timer";
 
 export default function FlashSale() {
   return (
-    <section className="mt-20 relative w-full rounded-3xl bg-linear-to-r from-amber-500 to-amber-500 px-6 py-14 text-white container mx-auto">
+    <section className="mt-20 relative w-full rounded-3xl bg-linear-to-r from-amber-500 to-amber-500 px-6 py-14  text-white container mx-auto">
       {/* Header */}
 
       <div className="absolute right-0 top-1/7  h-screen w-250 opacity-20">

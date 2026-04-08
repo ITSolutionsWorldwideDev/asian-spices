@@ -12,9 +12,11 @@ import { createPortal } from "react-dom";
 import { FaL } from "react-icons/fa6";
 
 interface NavChildren {
-  name: string;
-  image: string;
-  href: string;
+  name?: string;
+  image?: string;
+  href?: string;
+  heading?: string;
+  category?: { name: string; href: string }[];
 }
 
 interface NavLink {
@@ -25,15 +27,19 @@ const ResponsiveNavigation = () => {
   const [activeLink, setActiveLink] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [mobileMenu, setMobileMenu] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const handleClick = (name: string) => {
     setActiveLink(name);
     setIsMenuOpen(!isMenuOpen);
   };
 
+ 
+
   const navLinks: NavLink[] = [
     { name: "Home" },
     { name: "About" },
+
     {
       name: "Category",
       children: [
@@ -56,6 +62,57 @@ const ResponsiveNavigation = () => {
           name: "Foods & Beverages ",
           image: "7998dbf578bd435e51167e00d97f1bc7f0963051.png",
           href: "foods-beverages",
+        },
+      ],
+    },
+
+    {
+      name: "Healthy Living",
+      children: [
+        {
+          heading: "Health Benefits of Herbs",
+          category: [
+            {
+              name: "Supports Immunity",
+              href: "healthyliving/supports-immunity",
+            },
+            {
+              name: "Aids Digestion",
+              href: "healthyliving/aids-digestion",
+            },
+            {
+              name: "Promotes Relaxation",
+              href: "healthyliving/promotes-relaxation",
+            },
+            {
+              name: "Enhances Energy Levels",
+              href: "healthyliving/enhances-energy-levels",
+            },
+          ],
+        },
+        {
+          heading: "Herbal Food Supplements",
+          category: [
+            { name: "Capsules", href: "healthyliving/capsules" },
+            { name: "Powders", href: "healthyliving/powders" },
+            { name: "Teas", href: "healthyliving/teas" },
+          ],
+        },
+        {
+          heading: "Herbal Skin Products",
+          category: [
+            { name: "Face oils", href: "healthyliving/face-oils" },
+            { name: "Creams", href: "healthyliving/creams" },
+            { name: "Cleansers", href: "healthyliving/cleansers" },
+          ],
+        },
+        {
+          heading: "Herbal Hair Products",
+          category: [
+            { name: "Hair oils", href: "healthyliving/hair-oils" },
+            { name: "Shampoos", href: "healthyliving/shampoos" },
+            { name: "Hair masks", href: "healthyliving/hair-masks" },
+          ],
         },
       ],
     },
@@ -136,28 +193,76 @@ const ResponsiveNavigation = () => {
 
                   {/* DROPDOWN MENU */}
                   {activeLink === link.name && isMenuOpen && (
-                    <ul
-                      className={`${isMenuOpen ? "animate-slideDown" : "animate-slideUp"} absolute top-full left-0 mt-5 bg-white text-black shadow-lg rounded-lg w-[250px] z-50`}
-                    >
-                      {link.children.map((child) => (
-                        <li key={child.name} className="">
-                          <Link
-                            href={`/${child.href}`}
-                            className="flex items-center  px-4 py-2 text-black hover:bg-amber-800 transition-colors w-full"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                          >
-                            <img
-                              src={`/assets/navbar/${child.image}`}
-                              alt={child.name}
-                              className="w-12 h-7 object-cover rounded-md"
-                            />
-                            <span className="ml-5 font-bold">{child.name}</span>
+                    <div className="absolute top-full left-0 mt-5 z-50">
+                      {link.name === "Healthy Living" ? (
+                        // ✅ YOUR CUSTOM GRID UI HERE
+                        <div className="fixed top-full left-0 mt-5 z-50">
+                          <div className="w-6xl bg-gray-100 rounded-xl shadow-md ">
+                            {/* Top Section */}
+                            <div className="grid grid-cols-4 gap-8 p-6">
+                              {link.children.map((section, index) => (
+                                <div key={index}>
+                                  <h3
+                                    className={`font-semibold text-gray-800 mb-3 ${
+                                      index === 0
+                                        ? "border-b-2 border-blue-400 inline-block"
+                                        : ""
+                                    }`}
+                                  >
+                                    {section.heading}
+                                  </h3>
 
-                            {/* IMAGE ON RIGHT SIDE */}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                                  <ul className="space-y-2 text-gray-600 text-sm">
+                                    {section.category?.map((item, i) => (
+                                      <li
+                                        key={i}
+                                        className="hover:text-black cursor-pointer"
+                                      >
+                                        <Link href={`/${item.href}`}>
+                                          {" "}
+                                          {item.name}
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Bottom Bar */}
+                            <div className="bg-orange-100 px-6 py-4 rounded-xl">
+                              <button className="text-orange-600 font-medium hover:underline">
+                                View All {link.name} Products →
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        // ✅ EXISTING DROPDOWN (for Category etc.)
+                        <ul className="bg-white text-black shadow-lg rounded-lg w-64">
+                          {link.children.map((child) => (
+                            <li key={child.name}>
+                              <Link
+                                href={`/${child.href}`}
+                                className="flex items-center px-4 py-2 hover:bg-amber-800 transition-colors"
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                {child.image && (
+                                  <img
+                                    src={`/assets/navbar/${child.image}`}
+                                    alt={child.name}
+                                    className="w-12 h-7 object-cover rounded-md"
+                                  />
+                                )}
+                                <span className="ml-5 font-bold">
+                                  {child.name}
+                                </span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
                 </>
               )}
@@ -170,7 +275,7 @@ const ResponsiveNavigation = () => {
 
       {/* mobile navigation */}
       {mobileMenu && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-amber-900/95 shadow-xl rounded-lg lg:hidden">
+        <div className="absolute z-500 top-full left-0 right-0  mt-2 bg-amber-900/95 shadow-xl rounded-lg lg:hidden ">
           {navLinks.map((link) => (
             <div
               key={link.name}
@@ -218,20 +323,71 @@ const ResponsiveNavigation = () => {
                   {/* DROPDOWN CHILDREN */}
                   {activeLink === link.name && (
                     <div className="bg-amber-800/60">
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.name}
-                          href={`/${child.href}`}
-                          onClick={() => setMobileMenu(false)}
-                          className="flex items-center gap-4 px-6 py-3 text-white/90 hover:bg-amber-700 transition-colors"
-                        >
-                          <img
-                            src={`/assets/navbar/${child.image}`}
-                            alt={child.name}
-                            className="w-12 h-7 object-cover rounded-md"
-                          />
-                          <span className="font-semibold">{child.name}</span>
-                        </Link>
+                      {link.children.map((child, ind) => (
+                        <div key={ind}>
+                          {link.name === "Category" ? (
+                            <Link
+                              href={`/${child.href}`}
+                              onClick={() => setMobileMenu(false)}
+                              className="relative z-600 flex items-center gap-4 px-6 py-3 text-white/90 hover:bg-amber-700 transition-colors"
+                            >
+                              <img
+                                src={`/assets/navbar/${child.image}`}
+                                alt={child.name}
+                                className="w-12 h-7 object-cover rounded-md"
+                              />
+
+                              <span className="font-semibold">
+                                {child.name}
+                              </span>
+                            </Link>
+                          ) : (
+                            <div>
+                              <h3 className="px-6 py-2 text-sm font-bold text-gray-300 uppercase">
+                                {child.name}
+                              </h3>
+
+                              {child.category && (
+                                <div>
+                                  {/* HEADING + CHEVRON */}
+                                  <button
+                                    onClick={() =>
+                                      setActiveSection(
+                                        activeSection === child.heading
+                                          ? null
+                                          : (child.heading ?? null),
+                                      )
+                                    }
+                                    className="w-full flex justify-between items-center px-6 py-3 text-sm font-bold text-gray-300 uppercase"
+                                  >
+                                    {child.heading}
+
+                                    <ChevronDown
+                                      className={`transition-transform duration-300 ${
+                                        activeSection === child.heading
+                                          ? "rotate-180"
+                                          : ""
+                                      }`}
+                                    />
+                                  </button>
+
+                                  {/* ITEMS (SHOW ONLY IF ACTIVE) */}
+                                  {activeSection === child.heading &&
+                                    child.category.map((item) => (
+                                      <Link
+                                        key={item.name}
+                                        href={`/${item.href}`}
+                                        onClick={() => setMobileMenu(false)}
+                                        className="flex items-center ml-4 gap-4 px-6 py-3 text-white/90 hover:bg-amber-700 transition-colors"
+                                      >
+                                        <span className="">{item.name}</span>
+                                      </Link>
+                                    ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
@@ -272,18 +428,22 @@ const ResponsiveNavigation = () => {
               className="bg-white rounded-full cursor-pointer "
               onClick={() => setCartOpen(!isCartOpen)}
             >
-              <button className="px-2 py-2    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
-                <Heart />
-              </button>
+              <Link href={"/wishlist"}>
+                <button className="px-2 py-2    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+                  <Heart />
+                </button>
+              </Link>
             </div>
 
             <div
               className="bg-white rounded-full cursor-pointer "
               onClick={() => setCartOpen(!isCartOpen)}
             >
-              <button className="px-3 py-3    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
-                <HiOutlineShoppingBag />
-              </button>
+              <Link href={"/cart"}>
+                <button className="px-3 py-3    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
+                  <HiOutlineShoppingBag />
+                </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -49,8 +49,8 @@ export default function Spicy_Story() {
       </div>
 
       {/* See More */}
-      <div className="flex justify-center mt-14">
-        <button className="cursor-pointer relative px-6 py-3 font-bold text-white  bg-black rounded-lg overflow-hidden group">
+      <div className="flex justify-center mt-14 space-x-5">
+        <button className="cursor-pointer relative px-6 py-3 font-bold text-white text-sm bg-black rounded-lg overflow-hidden group">
           <span className="relative z-10 flex items-center justify-center">
             <Link
               href={`/recipes`}
@@ -60,6 +60,19 @@ export default function Spicy_Story() {
             </Link>{" "}
           </span>
           <span className="absolute inset-0 bg-linear-to-r  from-white/50 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
+        </button>
+
+        <button className="cursor-pointer bg-black relative px-6 py-3 font-bold text-sm text-white rounded-lg overflow-hidden group ">
+          <span className="relative z-10 flex items-center justify-center">
+            <Link
+              href={`/recipes`}
+              className="flex items-center justify-center"
+            >
+              Add Your Own Story
+               {/* <ArrowRight className="ml-4" /> */}
+            </Link>
+          </span>
+          <span className="absolute inset-0 bg-linear-to-r from-white/50 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
         </button>
       </div>
     </section>

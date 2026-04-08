@@ -55,9 +55,9 @@ export default function ContactDetails({
               </label>
               <input
                 type="text"
-                // value={formData.Fname}
+                value={formData.first_name || ""}
                 onChange={(e) => handleChange("first_name", e.target.value)}
-                placeholder="Sheetal"
+                placeholder="First Name"
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
@@ -68,8 +68,8 @@ export default function ContactDetails({
               </label>
               <input
                 type="text"
-                placeholder="Optional"
-                // value={formData.Mname}
+                placeholder="Middle Name"
+                value={formData.middle_name || ""}
                 onChange={(e) => handleChange("middle_name", e.target.value)}
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
@@ -81,8 +81,8 @@ export default function ContactDetails({
               </label>
               <input
                 type="text"
-                placeholder="Devi"
-                // value={formData.Lname}
+                placeholder="Last Name"
+                value={formData.last_name || ""}
                 onChange={(e) => handleChange("last_name", e.target.value)}
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
@@ -102,7 +102,7 @@ export default function ContactDetails({
             </label>
             <input
               type="text"
-              // value={formData.BusinessPhoneNumber}
+              value={formData.business_phone_number || ""}
               onChange={(e) =>
                 handleChange("business_phone_number", e.target.value)
               }
@@ -117,7 +117,7 @@ export default function ContactDetails({
             </label>
             <input
               type="email"
-              // value={formData.BusinessEmailAddress}
+              value={formData.business_email_address || ""}
               onChange={(e) =>
                 handleChange("business_email_address", e.target.value)
               }
@@ -136,7 +136,7 @@ export default function ContactDetails({
             <input
               type="text"
               placeholder="NL123456789B01"
-              // value={formData.VatNumber}
+              value={formData.vat_number || ""}
               onChange={(e) => handleChange("vat_number", e.target.value)}
               className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />

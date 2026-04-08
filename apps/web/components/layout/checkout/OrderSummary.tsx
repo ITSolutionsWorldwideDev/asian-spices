@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 export default function OrderSummary({
   items,
@@ -21,7 +22,7 @@ export default function OrderSummary({
           <div key={item.id} className="flex gap-4">
             <div className="relative h-14 w-14 rounded-lg overflow-hidden">
               <Image
-                src={`/assets/home/premium_collection/${item.image}`}
+                src={`/assets/home/premium_collection/268598abe4d4ba567742332ae571b20ea98ce9d9.jpg`}
                 alt={item.title}
                 fill
                 className="object-cover"
@@ -36,7 +37,7 @@ export default function OrderSummary({
               <p className="text-xs text-gray-500">{item.weight}</p>
             </div>
 
-            <p className="text-sm font-medium">${item.price.toFixed(2)}</p>
+            {/* <p className="text-sm font-medium">${item.price.toFixed(2)}</p> */}
           </div>
         ))}
       </div>
@@ -57,11 +58,22 @@ export default function OrderSummary({
       </div>
 
       {deliverDiffer && (
-        <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
-          <button className="text-white flex items-center justify-center w-full">
-            <ShoppingCart className="mr-3" /> Add {deliverDiffer.toFixed()} $ more for free shipping
-          </button>
-        </div>
+        <>
+          <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
+            <button className="text-white flex items-center justify-center w-full">
+              <ShoppingCart className="mr-3" /> Add {deliverDiffer.toFixed()} $
+              more for free shipping
+            </button>
+          </div>
+
+          <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
+            <Link href="/">
+              <button className="cursor-pointer text-white flex items-center justify-center w-full">
+                Continue Shopping
+              </button>
+            </Link>
+          </div>
+        </>
       )}
     </div>
   );

@@ -2,13 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface CartItem {
-  id: number;
+  id: string;
   title: string;
   price: number;
   quantity: number;
   image: string;
-  weight?: string;
-  oldPrice: number | null;
+  // weight?: string;
+  // oldPrice: number | null;
   // weight: string;
 }
 
@@ -16,10 +16,10 @@ interface CartState {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">) => void;
 
-  removeFromCart: (id: number) => void;
+  removeFromCart: (id: string) => void;
   clearCart: () => void;
-  increaseQty: (id: number) => void;
-  decreaseQty: (id: number) => void;
+  increaseQty: (id: string) => void;
+  decreaseQty: (id: string) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -69,7 +69,7 @@ export const useCartStore = create<CartState>()(
     // }),
     {
       name: "cart-storage", // 🔑 key in localStorage
-      version: 1,
+      version: 1, 
     },
   ),
 );

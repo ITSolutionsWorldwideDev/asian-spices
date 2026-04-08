@@ -4,7 +4,7 @@ import { FaArrowRight } from "react-icons/fa6";
 
 const Story = () => {
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto ">
       <div className="py-12 flex justify-center ">
         <div className="bg-orange-50/90 px-10 py-3 rounded-full text-lg font-semibold text-orange-500 shadow-sm">
           Our Story

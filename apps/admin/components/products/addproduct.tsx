@@ -166,7 +166,7 @@ export default function AddProductComponent({
     category_id: null as number | null,
     subcategory_id: null as number | null,
     brand_id: null as number | null,
-    // country_of_origin: "",
+    // country_of_origin: "fgdf",
     description: "",
     price: 0,
     quantity: 0,
@@ -175,6 +175,7 @@ export default function AddProductComponent({
     status: 1,
   });
 
+  console.log(formData);
   const [name, setName] = useState(formData.name);
   const [b2bPrices, setB2bPrices] = useState<TierPrice[]>([]);
   // const [images, setImages] = useState<ImageItem[]>([]);
@@ -277,7 +278,8 @@ export default function AddProductComponent({
     }));
 
   const selectedCountry =
-    countriesOptions.find((c) => Number(c.value) === formData.country_id) || null;
+    countriesOptions.find((c) => Number(c.value) === formData.country_id) ||
+    null;
 
   const selectedCategory =
     categoryOptions.find((c) => c.value === formData.category_id) || null;
@@ -495,7 +497,8 @@ export default function AddProductComponent({
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>
             <h4 className="text-2xl font-semibold">
-              {(mode === "edit" || mode === "view") ? "Update/View" : "Create"} Product
+              {mode === "edit" || mode === "view" ? "Update/View" : "Create"}{" "}
+              Product
             </h4>
           </div>
         </div>
@@ -687,10 +690,10 @@ export default function AddProductComponent({
                       }
                     />
 
-                    {/* <input
+                    <input
                       type="text"
                       disabled={isView}
-                      value={formData.country_of_origin || ""}
+                      // value={formData.country_of_origin || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -698,7 +701,7 @@ export default function AddProductComponent({
                         }))
                       }
                       className="w-full border rounded p-2 pr-20"
-                    /> */}
+                    />
                   </div>
                 </div>
 

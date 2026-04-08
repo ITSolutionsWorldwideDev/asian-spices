@@ -27,17 +27,7 @@ export default function BusinessVerification({
     }));
   };
 
-  // const validateForm = () => {
-  //   for (let field of requiredFields) {
-  //     if (!formData[field] || formData[field].trim() === "") {
-  //       console.log(`Field ${field} is required but missing.`);
-  //       return false;
-  //     }
-  //   }
-  //   return true;
-  // };
-
-  // console.log(formData);
+  console.log(formData);
   return (
     <div id="business-verification">
       <div className="bg-gray-100 flex items-start justify-center pt-10 px-4 sm:px-6 lg:px-10">
@@ -60,8 +50,31 @@ export default function BusinessVerification({
           </label>
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <input
-              onChange={(e) => handleChange("kvk_number", e.target.value)}
+              onKeyDown={(e) => {
+                const allowedKeys = [
+                  "Backspace",
+                  "Delete",
+                  "ArrowLeft",
+                  "ArrowRight",
+                  "Tab",
+                ];
+
+                if (
+                  !/[0-9]/.test(e.key) &&
+                  !allowedKeys.includes(e.key) &&
+                  !(e.ctrlKey || e.metaKey) // allow copy, paste, select all
+                ) {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                handleChange("kvk_number", e.target.value);
+              }}
+              value={formData.kvk_number || ""}
               placeholder="12345678"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               className="flex-1 border border-gray-300 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm "
               required
             />
@@ -98,12 +111,16 @@ export default function BusinessVerification({
             <div className="space-y-4">
               <InputField
                 label="Company Name"
+                value={formData.company_name || ""}
                 // value={formData.companyName}
-                onChange={(e) => handleChange("company_name", e.target.value)}
+                onChange={(e) => {
+                  handleChange("company_name", e.target.value);
+                }}
                 // value=""
               />
               <InputField
                 label="Chamber of Commerce Number"
+                value={formData.chamber_of_commerce_number || ""}
                 // value={formData.ChamberOfCommerceNumber}
                 onChange={(e) =>
                   handleChange("chamber_of_commerce_number", e.target.value)
@@ -112,6 +129,7 @@ export default function BusinessVerification({
               />
               <InputField
                 label="Country"
+                value={formData.country || ""}
                 // value={formData.country}
                 onChange={(e) => handleChange("country", e.target.value)}
               />
@@ -128,18 +146,21 @@ export default function BusinessVerification({
             <div className="space-y-4">
               <InputField
                 label="Street"
+                value={formData.street || ""}
                 // value={formData.street}
                 onChange={(e) => handleChange("street", e.target.value)}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   label="House Number"
+                  value={formData.house_number || ""}
                   // value={formData.houseNumber}
                   onChange={(e) => handleChange("house_number", e.target.value)}
                 />
 
                 <InputField
                   label="Addition (Optional)"
+                  value={formData.additional_address || ""}
                   // value={formData.Addition}
                   onChange={(e) =>
                     handleChange("additional_address", e.target.value)
@@ -149,11 +170,13 @@ export default function BusinessVerification({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   label="Postal Code"
+                  value={formData.postal_code || ""}
                   // value={formData.postalCode}
                   onChange={(e) => handleChange("postal_code", e.target.value)}
                 />
                 <InputField
                   label="City"
+                  value={formData.city || ""}
                   // value={formData.city}
                   onChange={(e) => handleChange("city", e.target.value)}
                 />
@@ -193,12 +216,11 @@ export default function BusinessVerification({
 /* Reusable Input Component */ function InputField({
   label,
   onChange,
-
-  // value,
+  value,
 }: {
   label: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // value: string;
+  value: string;
 }) {
   return (
     <div>
@@ -206,7 +228,7 @@ export default function BusinessVerification({
       <label className="block text-sm text-gray-600 mb-1">{label}</label>{" "}
       <input
         type="text"
-        // value={value}
+        value={value}
         onChange={onChange}
         className="w-full bg-gray-100  rounded-md px-3 py-2 text-gray-700"
       />{" "}

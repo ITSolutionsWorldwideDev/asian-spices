@@ -2,6 +2,7 @@ import CollectionLargeCard from "./Collection_Large_Card";
 import CollectionSmallCard from "./Collection_Small_Card";
 import CollectionAnimatedText from "./Collection_Animated_Text";
 import HeadingDescription from "../../ui/HeadingDescription";
+import FlashSale from "./Flash_Sale";
 
 const categories = [
   {
@@ -36,19 +37,26 @@ const categories = [
 
 export default function Collections() {
   return (
-    <div className="bg-cover bg-center  bg-[url('/assets/home/collections/531683f465ac68a63e0eb661c769a19e4a41cb38-(1)-min.webp')] ">
-      <div className="bg-white/80">
-        <div className="container mx-auto   mt-20    ">
+    <div className=" relative   ">
+      <div>
+        <img
+          src="/assets/home/collections/531683f465ac68a63e0eb661c769a19e4a41cb38-(1)-min.webp"
+          alt=""
+          className="absolute inset-0 opacity-90"
+        />
+      </div>
+      <div className="bg-white/80 relative py-20">
+        <div className="container mx-auto  ">
           {/* Top Section */}
 
           <HeadingDescription
             heading="Explore Our Collection"
-            text="Shop By Category"
-            description={`Discover authentic spices from across Asia, each category carefully  for quality and flavor Indian Spices`}
+            // text="Shop By Category"
+            description={`Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices`}
           />
-
+          <FlashSale />
           {/* Grid Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-20">
             {categories.map((item, index) => {
               // Large card (left)
               if (index === 0) {

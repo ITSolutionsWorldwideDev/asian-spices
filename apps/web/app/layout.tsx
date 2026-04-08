@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-
 export const metadata: Metadata = {
   title: "Asian Spices - the asian tiger ",
   description:
@@ -23,9 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body 
-      // className={`${geistSans.variable} ${geistMono.variable}`}
-      className=""
+      <body
+        // className={`${geistSans.variable} ${geistMono.variable}`}
+        className=""
       >
         {/* <Nav/> */}
         {children}

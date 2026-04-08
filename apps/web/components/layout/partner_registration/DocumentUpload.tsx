@@ -19,7 +19,7 @@ export default function DocumentUploadPage({
   // const { isSpeaking, handleReadAloud } = useReadAloud();
   console.log(chamberFiles);
   console.log(poaFiles);
-  // console.log("dfa", formData);
+  console.log("dfa", formData);
   // console.log(formData.chamberFiles);
   // console.log(formData.power_of_attorney_document);
   // Format file size
@@ -56,6 +56,7 @@ export default function DocumentUploadPage({
       size: file.size,
       type: file.type,
     }));
+
     const base64s = await Promise.all(
       Array.from(e.target.files).map((file) => fileToBase64(file)),
     );
@@ -115,59 +116,66 @@ export default function DocumentUploadPage({
     files: { name: string; size: number; type: string }[];
     type: "chamber" | "poa";
     required?: boolean;
-  }) => (
-    <div className="space-y-3">
-      <div>
-        <label className="font-semibold text-gray-800">
-          {title} {required && <span className="text-red-500">*</span>}
+  }) => {
+    console.log(files);
+    return (
+      <div className="space-y-3">
+        <div>
+          <label className="font-semibold text-gray-800">
+            {title} {required && <span className="text-red-500">*</span>}
+          </label>
+          <p className="text-sm text-gray-500">{description}</p>
+        </div>
+
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg h-40 cursor-pointer hover:bg-gray-50 transition text-center px-4">
+          <input
+            type="file"
+            multiple
+            className="hidden"
+            // value={e.target.value}
+            onChange={(e) => handleFileChange(e, type)}
+            accept=".jpg,.jpeg,.png,.heic,.pdf"
+          />
+          <p className="text-gray-600">Click to upload or drag and drop</p>
+          <p className="text-xs text-gray-400 mt-1">
+            JPG, PNG, HEIC, or PDF (max. 10MB each)
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            {files.length} / 5 files uploaded
+          </p>
         </label>
-        <p className="text-sm text-gray-500">{description}</p>
-      </div>
 
-      <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg h-40 cursor-pointer hover:bg-gray-50 transition text-center px-4">
-        <input
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFileChange(e, type)}
-        />
-        <p className="text-gray-600">Click to upload or drag and drop</p>
-        <p className="text-xs text-gray-400 mt-1">
-          JPG, PNG, HEIC, or PDF (max. 10MB each)
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          {files.length} / 5 files uploaded
-        </p>
-      </label>
-
-      {/* File List */}
-      {files.map((file, index) => (
-        <div
-          key={index}
-          className="flex justify-between items-center border rounded-lg px-4 py-2 bg-gray-50"
-        >
-          <div>
-            <div className="flex items-center gap-2">
-              <div>
-                <FileChartColumn className="text-[#FF6900]" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-700">{file.name}</p>
-                <p className="text-xs text-gray-400">{formatSize(file.size)}</p>
+        {/* File List */}
+        {files.map((file, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center border rounded-lg px-4 py-2 bg-gray-50"
+          >
+            <div>
+              <div className="flex items-center gap-2">
+                <div>
+                  <FileChartColumn className="text-[#FF6900]" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-700">{file.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {formatSize(file.size)}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <button
-            onClick={() => removeFile(index, type)}
-            className="text-[#FF6900] text-lg font-bold cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
-      ))}
-    </div>
-  );
+            <button
+              onClick={() => removeFile(index, type)}
+              className="text-[#FF6900] text-lg font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-gray-100 flex justify-center p-6" id="document-upload">

@@ -9,41 +9,11 @@ import Reviews from "@/components/ui/Reviews";
 import React from "react";
 import { useEffect, useState } from "react";
 import { NextResponse } from "next/server";
+// import Testimonial from "react-testimonial";
+
 const SpicesPage = () => {
-  const [product2s, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("http://localhost:3003/api/products"); // calling backend API route
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data = await res.json();
-        console.log(data);
-        setProducts(data);
-      } catch (err) {
-        console.error("server error", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
-
-  // const fetchItems = async () => {
-  //   const response = await fetch("http://localhost:3000//api/products",{
-  //     cache: "no-store",
-  //   });
-  //   if (!response.ok) throw new Error("Failed to fetch products");
-  //   console.log(response.json());
-  // return response.json();
-  // }
-
-  //  const product = await fetchItems();
-  // console.log(product);
+  // const [product2s, setProducts] = useState([]);
+  // const [loading, setLoading] = useState(true);
 
   const products = [
     {

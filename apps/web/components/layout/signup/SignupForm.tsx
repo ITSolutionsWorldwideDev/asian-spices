@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const SignupForm = () => {
-  const [type, setType] = useState<"user" | "partner">("user");
+  // const [type, setType] = useState<"user" | "partner">("user");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -26,22 +26,35 @@ const SignupForm = () => {
           Welcome Asian Spices 👋
         </h1>
 
+        <div className="flex justify-center mt-6">
+          <Link href="/partner-registration">
+            <button className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-semibold text-white rounded-xl shadow-lg bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl">
+              <span className="relative z-10 flex items-center gap-2 text-black cursor-pointer">
+                🚀 Sign up as a partner
+              </span>
+
+              {/* Glow Effect */}
+              <span className="absolute inset-0 bg-white opacity-10 group-hover:opacity-20 transition duration-300 rounded-xl"></span>
+            </button>
+          </Link>
+        </div>
+
         {/* Toggle */}
-        <div className="mb-8 flex rounded-lg bg-gray-100 p-1">
-          <button
-            onClick={() => setType("user")}
+        {/* <div className="mb-8 flex rounded-lg bg-gray-100 p-1"> */}
+        {/* <button
+            // onClick={() => setType("user")}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition
-              ${
-                type === "user"
-                  ? "bg-white text-gray-900 shadow"
-                  : "text-gray-500"
-              }`}
+              // 
+                // type === "user"
+                   bg-white text-gray-900 shadow
+                  // : "text-gray-500"
+              `}
           >
             Signup as User
-          </button>
+          </button> */}
 
-          <button
-            onClick={() => setType("partner")}
+        {/* <button
+            // onClick={() => setType("partner")}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition
               ${
                 type === "partner"
@@ -50,11 +63,11 @@ const SignupForm = () => {
               }`}
           >
             Signup as Partner
-          </button>
-        </div>
+          </button> */}
+        {/* </div> */}
 
         {/* ================= USER FORM ================= */}
-        {type === "user" && (
+        {
           <form className="space-y-4 text-left">
             <div>
               <label className="text-sm font-bold text-gray-600">Email</label>
@@ -110,10 +123,10 @@ const SignupForm = () => {
               Sign up
             </button>
           </form>
-        )}
+        }
 
         {/* ================= PARTNER FORM ================= */}
-        {type === "partner" && (
+        {/* {type === "partner" && (
           <form className="space-y-4 text-left">
             <div>
               <label className="text-sm font-bold text-gray-600">
@@ -205,7 +218,7 @@ const SignupForm = () => {
               Register as Partner
             </button>
           </form>
-        )}
+        )} */}
 
         {/* Footer */}
         <p className="mt-6 text-sm font-bold text-gray-500">

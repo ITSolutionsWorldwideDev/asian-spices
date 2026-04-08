@@ -17,10 +17,10 @@ export default function Cart() {
     0,
   );
 
-  const savings = cart.reduce((acc, item) => {
-    if (!item.oldPrice) return acc;
-    return acc + (item.oldPrice - item.price) * item.quantity;
-  }, 0);
+  // const savings = cart.reduce((acc, item) => {
+  //   if (!item.oldPrice) return acc;
+  //   return acc + (item.oldPrice - item.price) * item.quantity;
+  // }, 0);
 
   const TAX_RATE = 0.08;
 
@@ -70,7 +70,7 @@ export default function Cart() {
               {/* IMAGE */}
               <div className="h-30 w-full sm:w-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                 <Image
-                  src={`/assets/home/premium_collection/${item.image}`}
+                  src={`${item.image}`}
                   alt={item.title}
                   width={96}
                   height={96}
@@ -83,9 +83,9 @@ export default function Cart() {
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                   <div>
                     <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-sm text-gray-500">
+                    {/* <p className="text-sm text-gray-500">
                       Weight: {item.weight}
-                    </p>
+                    </p> */}
                     <span className="inline-block mt-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-600">
                       In Stock
                     </span>
@@ -95,11 +95,11 @@ export default function Cart() {
                     <p className="font-semibold">
                       ${(item.price * item.quantity).toFixed(2)}
                     </p>
-                    {item.oldPrice && (
+                    {/* {item.oldPrice && (
                       <p className="text-sm text-gray-400 line-through">
                         ${(item.oldPrice * item.quantity).toFixed(2)}
                       </p>
-                    )}
+                    )} */}
                   </div>
                 </div>
 
@@ -126,7 +126,7 @@ export default function Cart() {
                   <div className="flex items-center gap-4 text-gray-500 flex-wrap">
                     <button
                       className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => addToWishlist(item)}
+                      // onClick={() => addToWishlist(item)}
                     >
                       <Heart size={16} /> Save
                     </button>
@@ -179,12 +179,12 @@ export default function Cart() {
               <span>${subtotal.toFixed(2)}</span>
             </div>
 
-            {savings > 0 && (
+            {/* {savings > 0 && (
               <div className="flex justify-between text-[#00A63E] mt-3">
                 <span>You Save</span>
                 <span>- ${savings.toFixed(2)}</span>
               </div>
-            )}
+            )} */}
 
             <div className="flex justify-between mt-3">
               <span>Shipping</span>
@@ -205,7 +205,7 @@ export default function Cart() {
           </div>
 
           <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
-            Proceed to Checkout{" "}
+            <Link href="/checkout"> Proceed to Checkout </Link>
             <ArrowRight className="text-white ml-4 size-[20]" />
           </button>
 

@@ -20,10 +20,10 @@ const AboutUs = () => {
       </div>
 
       <div className="bg-gray-50 mt-10">
-        <Story/>
-        <OurValues/>
-        <OurTeam/>
-        <Redirect/>
+        <Story />
+        <OurValues />
+        <OurTeam />
+        <Redirect />
       </div>
       <Footer />
     </div>

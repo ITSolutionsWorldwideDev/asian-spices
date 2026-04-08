@@ -2,26 +2,28 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface WishlistItem {
-  id: number;
-  title: string;
+  id: string;
+  quantity: number;
+  name: string;
   image: string;
   price: number;
-  oldPrice: number | null;
-  tag?: string;
-  off?: string;
-  rating?: number;
-  reviews?: number;
-  left?: number;
-  description?: string;
-  weight?: string;
+  // oldPrice: number | null;
+  // tag: string;
+  // off: string;
+  // rating: number;
+  // reviews: number;
+  left: number;
+  // description: string;
+  // weight?: string;
+  // discount_value?: string;
 }
 
 interface WishlistState {
   items: WishlistItem[];
   addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: number) => void;
+  removeFromWishlist: (id: string) => void;
   toggleWishlist: (item: WishlistItem) => void;
-  isInWishlist: (id: number) => boolean;
+  isInWishlist: (id: string) => boolean;
   clearWishlist: () => void;
 }
 

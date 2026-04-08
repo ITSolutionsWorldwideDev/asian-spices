@@ -10,11 +10,13 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
 import Link from "next/link";
+import { TiTickOutline } from "react-icons/ti";
 
 import { usePathname } from "next/navigation";
 type Product = {
-  id: number;
-  title: string;
+  id: string;
+  quantity: number;
+  name: string;
   image: string;
   price: number;
   oldPrice: number | null;
@@ -25,6 +27,7 @@ type Product = {
   left: number;
   description: string;
   weight?: string;
+  discount_value?: string;
 };
 
 interface ProductCardProps {
@@ -33,6 +36,26 @@ interface ProductCardProps {
 
 export default function ProductCard({ item }: ProductCardProps) {
   const path = usePathname();
+  const pathname = path.startsWith("/") ? path.slice(1) : path;
+  console.log(pathname);
+  const [productData, setProductData] = useState<Product[]>([]);
+  const [cartBtn, setCartBtn] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProductsData = async () => {
+      try {
+        const res = await fetch(`/api/products?path=${pathname}`);
+        const data = await res.json();
+        // console.log("iniside function", data.data);
+        setProductData(data.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProductsData();
+  }, []);
+
+  console.log(productData);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
@@ -47,11 +70,11 @@ export default function ProductCard({ item }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addToCart);
   // console.log(addToCart)
   const items = useWishlistStore((state) => state.items);
-  console.log(item);
+  // console.log(item);
 
   const [showAll, setShowAll] = useState(false);
 
-  const visibleProducts = showAll ? item : item.slice(0, 8);
+  const visibleProducts = showAll ? productData : productData.slice(0, 8);
 
   return (
     <div>
@@ -68,17 +91,17 @@ export default function ProductCard({ item }: ProductCardProps) {
               </span>
             )}
 
-            {product.off && (
+            {product.discount_value && (
               <span className="absolute top-1/6 left-1/11 bg-red-500 font-bold text-white text-xs px-2 py-1 rounded-full flex items-center">
                 <GoTag className="mr-2" />
-                {product.off}
+                {product.discount_value} % OFF
               </span>
             )}
 
             {/* Like button */}
             <button
               onClick={() => {
-                toggleWishlist(product);
+                // toggleWishlist(product);
                 // isInWishlist(product.id);
               }}
               className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
@@ -89,30 +112,32 @@ export default function ProductCard({ item }: ProductCardProps) {
             </button>
 
             {/* Product left in stock */}
-            {product.left && (
+            {product.quantity && (
               <span className="absolute bottom-[45%] right-1/11 bg-white text-black text-xs px-2 py-1 rounded-full flex items-center">
-                Only {product.left} Left!
+                Only {product.quantity} Left!
               </span>
             )}
 
             {/* Image */}
             <Image
-              src={`/assets/home/premium_collection/${product.image}`}
-              alt={product.title}
+              src={`/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`}
+              alt={"loading"}
               width={120}
               height={100}
               className="h-70 w-full object-cover rounded-xl "
             />
 
             {/* Rating */}
-            <div className="flex items-center text-yellow-500 text-sm mt-3">
+            {/* <div className="flex items-center text-yellow-500 text-sm mt-3">
               {"★".repeat(product.rating)}
               <span className="text-gray-400 ml-1">({product.reviews})</span>
-            </div>
+            </div> */}
 
             {/* Title */}
-            <Link href={`${path}/${product.title}`}>
-              <h3 className="font-semibold mt-1">{product.title}</h3>
+            <Link href={`${path}/${product.name}`}>
+              <h3 className="font-semibold mt-1">
+                {product.name.split(" ").slice(0, 3).join(" ")}
+              </h3>
               <span className="text-sm text-gray-400">
                 {product.description.split(" ").slice(0, 10).join(" ")}
               </span>
@@ -122,29 +147,42 @@ export default function ProductCard({ item }: ProductCardProps) {
               <span className="text-orange-400 font-bold text-xl">
                 ${product.price}
               </span>
-              {product.oldPrice && (
+              {/* {product.oldPrice && (
                 <span className="line-through text-gray-400 text-sm">
                   ${product.oldPrice}
                 </span>
-              )}
+              )} */}
             </div>
 
             {/* Button */}
             <button
-              className="mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
-              onClick={() =>
+              className="cursor-pointer mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
+              onClick={() => {
                 addToCart({
                   id: product.id,
-                  title: product.title,
+                  title: product.name,
                   price: product.price,
+                  image: `/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`,
                   // quantity:product.
-                  oldPrice: product.oldPrice,
-                  weight: product.weight,
-                  image: product.image,
-                })
-              }
+                  // oldPrice: product.oldPrice,
+                  // weight: product.weight,
+                });
+                setCartBtn(product.id);
+                setTimeout(() => {
+                  setCartBtn(null);
+                }, 3000);
+              }}
             >
-              <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
+              {cartBtn === product.id ? (
+                <div className="flex items-center justify-center bg-green-600 p-2 rounded-lg">
+                  <TiTickOutline className="w-7 h-6 mr-3 bg-green-600" /> Added
+                  To cart successfully
+                </div>
+              ) : (
+                <>
+                  <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
+                </>
+              )}
             </button>
           </div>
         ))}
