@@ -43,6 +43,7 @@ type Countries = {
 type Category = {
   id: number;
   name: string;
+  slug: string;
 };
 
 type Subcategory = {
@@ -54,6 +55,7 @@ type Subcategory = {
 type Brand = {
   brand_id: number;
   name: string;
+  slug: string;
 };
 
 type MediaItem = {
@@ -78,12 +80,6 @@ export function getThumb(url: string, size = 300) {
   return `${url}?w=${size}&h=${size}&fit=crop`;
 }
 
-const generateSlug = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-
 // const generateSKU = (name: string, categoryId?: number) =>
 //   `SKU-${categoryId ?? "X"}-${name.slice(0, 5)}-${Date.now()
 //     .toString()
@@ -92,13 +88,61 @@ const generateSlug = (text: string) =>
 // const generateItemCode = (brandId?: number) =>
 //   `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-const generateSKU = (name: string, categoryId?: number | null) =>
+const getCodeFromSlug = (slug?: string) => {
+  if (!slug) return "GEN";
+
+  return slug
+    .split("-") // ["home", "appliances"]
+    .map((word) => word.slice(0, 2)) // ["ho", "ap"]
+    .join("") // "hoap"
+    .toUpperCase() // "HOAP"
+    .slice(0, 6); // limit length
+};
+
+const generateSlug = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+
+/* const generateSKU = (name: string, categoryId?: number | null) =>
   `SKU-${categoryId ?? "X"}-${name.slice(0, 5)}-${Date.now()
     .toString()
-    .slice(-4)}`;
+    .slice(-4)}`; */
 
-const generateItemCode = (brandId?: number | null) =>
-  `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
+const generateSKU = (
+  name: string,
+  categorySlug?: string,
+  brandSlug?: string,
+) => {
+  const categoryCode = getCodeFromSlug(categorySlug);
+  const brandCode = getCodeFromSlug(brandSlug);
+
+  const namePart = name
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .slice(0, 4);
+
+  const random = Math.floor(1000 + Math.random() * 9000);
+
+  return `${categoryCode}-${brandCode}-${namePart}-${random}`;
+};
+
+const generateItemCode = (name: string, brandSlug?: string) => {
+  const brandCode = getCodeFromSlug(brandSlug);
+
+  const namePart = name
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .slice(0, 3);
+
+  const random = Math.floor(1000 + Math.random() * 9000);
+
+  return `IT-${brandCode}-${namePart}-${random}`;
+};
+
+// const generateItemCode = (brandId?: number | null) =>
+//   `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
 
 const Accordion = memo(function Accordion({
   title,
@@ -215,11 +259,31 @@ export default function ProductFormComponent({
   }, [name]);
 
   useEffect(() => {
-    if (name) setValue("sku", generateSKU(name, categoryId));
-  }, [name, categoryId]);
+    if (!name) return;
+
+    const category = categoryOptions.find((c) => c.value === categoryId);
+    const brand = brandOptions.find((b) => b.value === brandId);
+
+    const categorySlug = category?.slug;
+    const brandSlug = brand?.slug;
+
+    setValue("sku", generateSKU(name, categorySlug, brandSlug));
+  }, [name, categoryId, brandId]);
+
+  // useEffect(() => {
+  //   if (name) setValue("sku", generateSKU(name, categoryId));
+  // }, [name, categoryId]);
+
+  // useEffect(() => {
+  //   setValue("item_code", generateItemCode(brandId));
+  // }, [brandId]);
 
   useEffect(() => {
-    setValue("item_code", generateItemCode(brandId));
+    if (!name) return;
+    const brand = brandOptions.find((b) => b.value === brandId);
+    const brandSlug = brand?.slug;
+
+    setValue("item_code", generateItemCode(name, brandSlug));
   }, [brandId]);
 
   useEffect(() => {
@@ -294,6 +358,7 @@ export default function ProductFormComponent({
       categories.map((c) => ({
         value: c.id,
         label: c.name,
+        slug: c.slug,
       })),
     [categories],
   );
@@ -314,6 +379,7 @@ export default function ProductFormComponent({
       brands.map((b) => ({
         value: b.brand_id,
         label: b.name,
+        slug: b.slug,
       })),
     [brands],
   );
@@ -661,25 +727,6 @@ export default function ProductFormComponent({
                       isDisabled={isView}
                     />
 
-                    {/* <Controller
-                      control={control}
-                      name="category_id"
-                      render={({ field }) => (
-                        <Select
-                          options={categoryOptions}
-                          value={
-                            categoryOptions.find(
-                              (o) => o.value === field.value,
-                            ) || null
-                          }
-                          onChange={(opt) =>
-                            field.onChange(opt ? opt.value : undefined)
-                          }
-                          isDisabled={isView}
-                        />
-                      )}
-                    /> */}
-
                     {errors.category_id && (
                       <p className="text-sm text-red-600 mt-1">
                         {errors.category_id.message as string}
@@ -690,25 +737,6 @@ export default function ProductFormComponent({
                     <label className="block mb-1 font-medium">
                       Sub Category <span className="text-red-500">*</span>
                     </label>
-
-                    {/* <Controller
-                      control={control}
-                      name="subcategory_id"
-                      render={({ field }) => (
-                        <Select
-                          options={subcategoryOptions}
-                          value={
-                            subcategoryOptions.find(
-                              (o) => o.value === field.value,
-                            ) || null
-                          }
-                          onChange={(opt) =>
-                            field.onChange(opt ? opt.value : undefined)
-                          }
-                          isDisabled={!categoryId || isView}
-                        />
-                      )}
-                    /> */}
 
                     <RHFSelect
                       name="subcategory_id"
@@ -738,24 +766,6 @@ export default function ProductFormComponent({
                       placeholder="Select Brand"
                       isDisabled={isView}
                     />
-
-                    {/* <Controller
-                      control={control}
-                      name="brand_id"
-                      render={({ field }) => (
-                        <Select
-                          options={brandOptions}
-                          value={
-                            brandOptions.find((o) => o.value === field.value) ||
-                            null
-                          }
-                          onChange={(opt) =>
-                            field.onChange(opt ? opt.value : undefined)
-                          }
-                          isDisabled={isView}
-                        />
-                      )}
-                    /> */}
                     {errors.brand_id && (
                       <p className="text-sm text-red-600 mt-1">
                         {errors.brand_id.message as string}
