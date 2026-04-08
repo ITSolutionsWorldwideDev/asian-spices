@@ -44,6 +44,18 @@ const PLATFORM_MENU = [
         icon: "settings-cog",
         link: "/platform/settings",
       },
+      {
+        label: "Currencies",
+        icon: "currency-euro",
+        link: "/platform/currencies",
+      },
+      {
+        label: "Currency Rates",
+        icon: "exchange",
+        link: "/platform/currency-rates",
+      },
+
+      
     ],
   },
 

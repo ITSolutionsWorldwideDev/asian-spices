@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
     const values: any[] = []; // storeId
     let where = `WHERE o.store_id IS NULL`;// o.store_id = $1
 
-    // 🔎 Global search
     if (search) {
       values.push(`%${search}%`);
       where += ` AND (
@@ -41,7 +40,6 @@ export async function GET(req: NextRequest) {
       where += ` AND sp.name ILIKE $${values.length}`;
     }
 
-    // 📌 Status filter (payment_status now)
     if (status) {
       values.push(status);
       where += ` AND o.payment_status = $${values.length}`;
@@ -70,11 +68,10 @@ export async function GET(req: NextRequest) {
       ${orderBy}
     `;
 
-    console.log('query ==== ',query);
-
     const result = await pool.query(query, values);
 
     return NextResponse.json({ items: result.rows });
+    
   } catch (error) {
     console.error("Orders listing fetch failed:", error);
     return NextResponse.json(

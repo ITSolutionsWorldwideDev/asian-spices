@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import Select, { SingleValue } from "react-select";
 import {
   Info,
@@ -15,7 +15,6 @@ import {
   FileText,
 } from "react-feather";
 import TextEditorNew from "@/core/common/texteditor/texteditor";
-import { memo } from "react";
 
 const MemoTextEditor = memo(TextEditorNew);
 
@@ -45,6 +44,13 @@ type Countries = {
 type Option = {
   value: number;
   label: string;
+};
+
+type Currency = {
+  id: string;
+  code: string;
+  name: string;
+  symbol: string;
 };
 
 function Accordion({
@@ -86,38 +92,6 @@ function useDebounce<T>(value: T, delay = 400) {
   return debounced;
 }
 
-/* const Accordion = memo(function Accordion({
-  title,
-  icon: Icon,
-  open,
-  onToggle,
-  children,
-}: {
-  title: string;
-  icon?: any;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border rounded-md bg-white">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3"
-      >
-        <div className="flex items-center gap-2 font-medium text-gray-700">
-          {Icon && <Icon size={18} />}
-          {title}
-        </div>
-        <span>{open ? "−" : "+"}</span>
-      </button>
-
-      {open && <div className="border-t p-4">{children}</div>}
-    </div>
-  );
-}); */
-
 export default function ManageSettingsComponent() {
   const router = useRouter();
 
@@ -130,6 +104,9 @@ export default function ManageSettingsComponent() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState<Countries[]>([]);
+
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [selected, setSelected] = useState<string>("");
 
   const [slugTouched, setSlugTouched] = useState(false);
 
@@ -154,13 +131,21 @@ export default function ManageSettingsComponent() {
             : "",
         }));
 
-        // setFormData((prev) => ({
-        //   ...prev,
-        //   ...data,
-        //   renewal_date: data.renewal_date
-        //     ? data.renewal_date.split("T")[0]
-        //     : "",
-        // }));
+        if (data.currency_id) {
+
+          if (!data.currency_id || currencies.length === 0) return;
+          
+          const found = currencies.find((c) => c.id === data.currency_id);
+
+          if (found) {
+            setFormData((prev) => ({
+              ...prev,
+              currency_id: found.id,
+              currency_code: found.code,
+              currency_symbol: found.symbol,
+            }));
+          }
+        }
       } catch (err) {
         console.error("Failed to load settings");
       } finally {
@@ -178,8 +163,9 @@ export default function ManageSettingsComponent() {
     store_phone: "",
 
     /* SETTINGS */
-    currency_code: "USD",
-    currency_symbol: "$",
+    currency_id: "",
+    currency_code: "",
+    currency_symbol: "",
     country_code: "",
     timezone: "",
     language: "en",
@@ -224,54 +210,6 @@ export default function ManageSettingsComponent() {
     renewal_date: "",
   });
 
-  /* const [formData, setFormData] = useState({
-
-    store_name: "",
-    store_email: "",
-    phone: "",
-    support_email: "",
-    support_phone: "",
-
-
-    logo_url: "",
-    favicon_url: "",
-    primary_color: "#000000",
-    secondary_color: "#ffffff",
-
-
-    country_id: null as number | null,
-    timezone: "",
-    currency_code: "",
-    language: "en",
-
-
-    stripe_enabled: false,
-    stripe_public_key: "",
-    stripe_secret_key: "",
-    cod_enabled: false,
-
-
-    free_shipping_enabled: false,
-    free_shipping_min_amount: 0,
-    flat_rate_enabled: false,
-    flat_rate_amount: 0,
-
-
-    tax_enabled: false,
-    tax_type: "exclusive",
-    default_tax_rate: 0,
-
-
-    meta_title: "",
-    meta_description: "",
-    meta_keywords: "",
-
-
-    plan_name: "",
-    subscription_status: "",
-    renewal_date: "",
-  }); */
-
   /* ------------------ Auto Generate ------------------ */
   const debouncedName = useDebounce(formData.store_name, 400);
 
@@ -282,17 +220,34 @@ export default function ManageSettingsComponent() {
       .then((data) => setCountries(data));
   }, []);
 
-  /* ------------------ Select Options ------------------ */
-  /* const countriesOptions: Option[] = countries.map((c) => ({
-    value: c.iso2,
-    label: c.name,
-  })); */
+  useEffect(() => {
+    fetch("/api/currencies")
+      .then((res) => res.json())
+      .then((data) => {
+        setCurrencies(Array.isArray(data) ? data : data.items || []);
+      });
+  }, []);
 
-  /* const selectedCountry =
-    countriesOptions.find((c) => c.value === formData.country_code) ||
-    null; */
+  /* ------------------ Select Options ------------------ */
 
   // Inside ManageSettingsComponent
+
+  const currencyOptions = useMemo(() => {
+    if (!Array.isArray(currencies)) return [];
+
+    return currencies.map((c) => ({
+      value: c.id,
+      label: `${c.code} (${c.symbol})`,
+      code: c.code,
+      symbol: c.symbol,
+    }));
+  }, [currencies]);
+
+  const selectedCurrency = useMemo(
+    () => currencyOptions.find((c) => c.value === formData.currency_id) || null,
+    [currencyOptions, formData.currency_id],
+  );
+
   const countryOptions = useMemo(
     () => countries.map((c) => ({ value: c.iso2, label: c.name })),
     [countries],
@@ -375,8 +330,6 @@ export default function ManageSettingsComponent() {
               icon={Info}
               open={open.general}
               onToggle={() => setOpen({ ...open, general: !open.general })}
-              //   open={accordionOpen}
-              //   onToggle={() => setAccordionOpen(!accordionOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -395,16 +348,6 @@ export default function ManageSettingsComponent() {
                     value={formData.store_phone}
                     onChange={(v) => handleChange("store_phone", v)}
                   />
-                  {/* <Input
-                    label="Support Email"
-                    value={formData.support_email}
-                    onChange={(v) => handleChange("support_email", v)}
-                  />
-                  <Input
-                    label="Support Phone"
-                    value={formData.support_phone}
-                    onChange={(v) => handleChange("support_phone", v)}
-                  /> */}
                 </div>
               </div>
             </Accordion>
@@ -414,8 +357,6 @@ export default function ManageSettingsComponent() {
               icon={ImageIcon}
               open={open.branding}
               onToggle={() => setOpen({ ...open, branding: !open.branding })}
-              //   open={brandingOpen}
-              //   onToggle={() => setBrandingOpen(!brandingOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -450,35 +391,11 @@ export default function ManageSettingsComponent() {
               onToggle={() =>
                 setOpen({ ...open, localization: !open.localization })
               }
-              //   open={localizationOpen}
-              //   onToggle={() => setLocalizationOpen(!localizationOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  {/* <Input
-                    label="Country ID"
-                    value={formData.country_id}
-                    onChange={(v) => handleChange("country_id", v)}
-                  /> */}
-
                   <div className="relative">
                     <label className="block mb-1 font-medium">Country</label>
-
-                    {/* <Select
-                      options={countries.map((c) => ({
-                        value: c.iso2,
-                        label: c.name,
-                      }))}
-                      value={
-                        countries
-                          .map((c) => ({ value: c.iso2, label: c.name }))
-                          .find((c) => c.value === formData.country_code) ||
-                        null
-                      }
-                      onChange={(opt) =>
-                        handleChange("country_code", opt?.value ?? "")
-                      }
-                    /> */}
 
                     <Select
                       options={countryOptions}
@@ -487,19 +404,6 @@ export default function ManageSettingsComponent() {
                         handleChange("country_code", opt?.value ?? "")
                       }
                     />
-
-                    {/* <Select
-                      classNamePrefix="react-select"
-                      options={countriesOptions}
-                      value={selectedCountry}
-                      placeholder="Select Country"
-                      onChange={(opt: SingleValue<Option>) =>
-                        setFormData({
-                          ...formData,
-                          country_id: opt?.value ?? null,
-                        })
-                      }
-                    /> */}
                   </div>
 
                   <Input
@@ -507,11 +411,25 @@ export default function ManageSettingsComponent() {
                     value={formData.timezone}
                     onChange={(v) => handleChange("timezone", v)}
                   />
-                  <Input
+
+                  <div>
+                    <label className="block mb-1 font-medium">Currency</label>
+
+                    <Select
+                      options={currencyOptions}
+                      value={selectedCurrency}
+                      onChange={(opt: any) => {
+                        handleChange("currency_id", opt?.value || "");
+                        handleChange("currency_code", opt?.code || "");
+                        handleChange("currency_symbol", opt?.symbol || "");
+                      }}
+                    />
+                  </div>
+                  {/* <Input
                     label="Currency Code"
                     value={formData.currency_code}
                     onChange={(v) => handleChange("currency_code", v)}
-                  />
+                  /> */}
                   <Input
                     label="Language"
                     value={formData.language}
@@ -526,8 +444,6 @@ export default function ManageSettingsComponent() {
               icon={CreditCard}
               open={open.payments}
               onToggle={() => setOpen({ ...open, payments: !open.payments })}
-              //   open={paymentsOpen}
-              //   onToggle={() => setPaymentsOpen(!paymentsOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <Toggle
@@ -540,16 +456,6 @@ export default function ManageSettingsComponent() {
                   value={formData.stripe_account_id}
                   onChange={(v) => handleChange("stripe_account_id", v)}
                 />
-                {/* <Input
-                  label="Stripe Public Key"
-                  value={formData.stripe_public_key}
-                  onChange={(v) => handleChange("stripe_public_key", v)}
-                />
-                <Input
-                  label="Stripe Secret Key"
-                  value={formData.stripe_secret_key}
-                  onChange={(v) => handleChange("stripe_secret_key", v)}
-                /> */}
                 <Toggle
                   label="Enable Cash on Delivery"
                   checked={formData.cod_enabled}
@@ -563,8 +469,6 @@ export default function ManageSettingsComponent() {
               icon={Truck}
               open={open.shipping}
               onToggle={() => setOpen({ ...open, shipping: !open.shipping })}
-              //   open={ShippingOpen}
-              //   onToggle={() => setShippingOpen(!ShippingOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <Input
@@ -590,30 +494,6 @@ export default function ManageSettingsComponent() {
                   checked={formData.international_shipping}
                   onChange={(v) => handleChange("international_shipping", v)}
                 />
-                {/* <Toggle
-                  label="Free Shipping"
-                  checked={formData.free_shipping_enabled}
-                  onChange={(v) => handleChange("free_shipping_enabled", v)}
-                />
-                <Input
-                  label="Free Shipping Min Amount"
-                  type="number"
-                  value={formData.free_shipping_min_amount}
-                  onChange={(v) =>
-                    handleChange("free_shipping_min_amount", Number(v))
-                  }
-                />
-                <Toggle
-                  label="Flat Rate Shipping"
-                  checked={formData.flat_rate_enabled}
-                  onChange={(v) => handleChange("flat_rate_enabled", v)}
-                />
-                <Input
-                  label="Flat Rate Amount"
-                  type="number"
-                  value={formData.flat_rate_amount}
-                  onChange={(v) => handleChange("flat_rate_amount", Number(v))}
-                /> */}
               </div>
             </Accordion>
 
@@ -622,8 +502,6 @@ export default function ManageSettingsComponent() {
               icon={Percent}
               open={open.tax}
               onToggle={() => setOpen({ ...open, tax: !open.tax })}
-              //   open={taxOpen}
-              //   onToggle={() => setTaxOpen(!taxOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <Input
@@ -650,17 +528,6 @@ export default function ManageSettingsComponent() {
                   value={formData.tax_registration_number}
                   onChange={(v) => handleChange("tax_registration_number", v)}
                 />
-                {/* <Toggle
-                  label="Enable Tax"
-                  checked={formData.tax_enabled}
-                  onChange={(v) => handleChange("tax_enabled", v)}
-                />
-                <Input
-                  label="Default Tax Rate (%)"
-                  type="number"
-                  value={formData.default_tax_rate}
-                  onChange={(v) => handleChange("default_tax_rate", Number(v))}
-                /> */}
               </div>
             </Accordion>
 
@@ -669,8 +536,6 @@ export default function ManageSettingsComponent() {
               icon={Search}
               open={open.seo}
               onToggle={() => setOpen({ ...open, seo: !open.seo })}
-              //   open={SEOOpen}
-              //   onToggle={() => setSEOOpen(!SEOOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <Input
@@ -696,8 +561,6 @@ export default function ManageSettingsComponent() {
               icon={Search}
               open={open.billing}
               onToggle={() => setOpen({ ...open, billing: !open.billing })}
-              //   open={billingOpen}
-              //   onToggle={() => setBillingOpen(!billingOpen)}
             >
               <div className="p-4 border-t space-y-4">
                 <Input
@@ -723,9 +586,6 @@ export default function ManageSettingsComponent() {
           </div>
 
           <div className="flex justify-end gap-3 my-4">
-            {/* <Link href="/products" className="btn btn-secondary">
-              Cancel
-            </Link> */}
             <button
               disabled={saving}
               className="bg-blue-600 text-white px-6 py-2 rounded"
@@ -811,22 +671,6 @@ function Toggle({ label, checked, onChange }: ToggleProps) {
     </div>
   );
 }
-
-/* 
-defaultChecked
-    <div className="flex items-center justify-between">
-      <span>{label}</span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.checked)
-        }
-      />
-    </div>
-    
-    
-    */
 
 type ColorInputProps = {
   label: string;
