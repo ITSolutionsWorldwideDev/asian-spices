@@ -1,4 +1,4 @@
-// apps/admin/app/api/countries/route.ts
+// apps/web/app/api/countries/route.ts
 import { NextResponse } from "next/server";
 import { pool } from "@acme/db";
 

@@ -15,7 +15,7 @@ export default function OrderSummary({
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-      <h2 className="font-semibold mb-6">Order Summary</h2>
+      <h2 className="font-semibold mb-4">Order Summary</h2>
 
       <div className="space-y-4 mb-6">
         {items.map((item: any) => (
@@ -55,6 +55,32 @@ export default function OrderSummary({
       <div className="flex justify-between text-lg font-semibold mt-6">
         <span>Total</span>
         <span>${total.toFixed(2)}</span>
+      </div>
+
+      
+
+      <div className="bg-white border-gray-200 py-5 border-b mb-6">
+        <label
+          htmlFor="promo-code"
+          className="block text-sm font-medium text-gray-700 mb-3"
+        >
+          Promo Code
+        </label>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            id="promo-code"
+            type="text"
+            placeholder="Enter code"
+            className="w-full sm:flex-1 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+
+          <button className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            Apply
+          </button>
+        </div>
+
+        <p className="mt-2 text-xs text-gray-500">Try: SPICE20 or WELCOME10</p>
       </div>
 
       {deliverDiffer && (

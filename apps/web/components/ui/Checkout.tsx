@@ -1,19 +1,19 @@
+// apps/web/components/ui/Checkout.tsx
+
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import Step from "../layout/checkout/Steps";
 import OrderSummary from "../layout/checkout/OrderSummary";
 import ContactForm from "../layout/checkout/ContactForm";
-import { useState } from "react";
-import Nav from "./Nav";
-import { ArrowLeft } from "lucide-react";
-// import { Link } from "lucide-react";
-import Link from "next/link";
 import ShippingForm from "../layout/checkout/ShippingForm";
 import PaymentForm from "../layout/checkout/PaymentForm";
-// import { clear } from "console";
+import Nav from "./Nav";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-type CheckoutData = {
+import { checkoutSchema } from "@/lib/validation/checkout";
+export type CheckoutData = {
   email: string;
   phone: string;
 
@@ -31,6 +31,10 @@ type CheckoutData = {
 };
 
 export default function Checkout() {
+  const { cart, clearCart } = useCartStore();
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState<CheckoutData>({
     email: "",
     phone: "",
@@ -42,15 +46,123 @@ export default function Checkout() {
     city: "",
     state: "",
     zip: "",
-    country: "",
+    country: "NL",
 
     cardNumber: "",
     expiry: "",
   });
+  const isFormValid = checkoutSchema.safeParse(formData).success;
 
-  // console.log(formData);
+  const subtotal = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
 
-  const placeOrder = async () => {
+  const total = subtotal;
+
+  const placeOrder = async (method: "paynl" | "paypal") => {
+    // Validate form
+    const result = checkoutSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as string;
+        if (field) fieldErrors[field] = err.message;
+      });
+
+      setErrors(fieldErrors);
+
+      // Scroll + focus first error
+      const firstField = result.error.issues[0]?.path[0] as string;
+
+      if (firstField) {
+        const el = document.querySelector(
+          `[name="${firstField}"]`,
+        ) as HTMLInputElement | null;
+
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.focus();
+        }
+      }
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      // Create Order
+
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+          },
+          shippingAddress: {
+            address_line1: formData.address,
+            address_line2: formData.appartment,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.zip,
+            country: formData.country,
+          },
+          cartItems: cart,
+          pricing: {
+            subtotal,
+            discount: 0,
+            shipping: 200,
+            total,
+          },
+          payment_status: "pending",
+          order_status: "pending",
+        }),
+      });
+      const order = await res.json();
+
+      if (!order.success) {
+        throw new Error("Order creation failed");
+      }
+
+      const orderId = order.orderId;
+
+      // Initiate payment
+      if (method === "paynl" || method === "paypal") {
+        const payment = await fetch("/api/create-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            amount: total,
+            customerEmail: formData.email,
+            paymentMethod: method,
+          }),
+        });
+
+        const data = await payment.json();
+
+        if (!data.success) {
+          alert("Failed to initiate payment. Please try again.");
+          return;
+        }
+        // Redirect user to payment gateway
+        window.location.href = data.redirectUrl;
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
+  /* const placeOrder = async () => {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
@@ -63,7 +175,6 @@ export default function Checkout() {
           email: formData.email,
           phone: formData.phone,
         },
-
         shippingAddress: {
           address_line1: formData.address,
           address_line2: formData.appartment,
@@ -72,13 +183,12 @@ export default function Checkout() {
           postal_code: formData.zip,
           country: formData.country,
         },
-
         cartItems: cart,
         pricing: {
-          subtotal: subtotal,
+          subtotal,
           discount: 0,
           shipping: 200,
-          total: total,
+          total,
         },
       }),
     });
@@ -87,105 +197,56 @@ export default function Checkout() {
 
     if (data.success) {
       alert("Order placed!");
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        address: "",
-        appartment: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "",
-        cardNumber: "",
-        expiry: "",
-      });
-
       clearCart();
     } else {
       alert("Error placing order");
     }
-  };
-  const { cart,clearCart } = useCartStore();
-
-  const [step, setStep] = useState<"contact" | "shipping" | "payment">(
-    "contact",
-  );
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
-
-  // console.log(step);
-  const total = subtotal;
-  //   + shipping + tax;
+  }; */
 
   return (
     <div>
       <div className="bg-black">
         <Nav />
       </div>
+
       <div className="container mx-auto px-6 py-10">
         {/* Header */}
         <div className="mb-10">
           <Link href="/cart">
-            <p className="text-sm text-gray-500 cursor-pointer flex items-center">
+            <p className="text-sm text-gray-500 flex items-center cursor-pointer">
               <ArrowLeft className="size-[15]" /> Back to Cart
             </p>
           </Link>
           <h1 className="text-2xl font-semibold mt-2">Checkout</h1>
-          <p className="text-gray-500">
-            Complete your order in a few easy steps
-          </p>
         </div>
 
-        {/* Steps */}
-        <div className="flex items-center justify-center gap-10 mb-12">
-          <Step currentStep={step} setStep={setStep} />
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] items-start gap-8">
-          {/* Left */}
-
-          {step === "contact" && (
+        {/* Main Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-8">
+          {/* LEFT - Single Flow */}
+          <div className="space-y-8">
             <ContactForm
-              setStep={setStep}
               data={formData}
               setFormData={setFormData}
+              errors={errors}
             />
-          )}
-          {step === "shipping" && (
             <ShippingForm
-              setStep={setStep}
               data={formData}
               setFormData={setFormData}
+              errors={errors}
             />
-          )}
-          {step === "payment" && (
-            <PaymentForm
-              setStep={setStep}
+            <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
+            {/* <PaymentForm placeOrder={placeOrder} /> */}
+            {/* <PaymentForm
               data={formData}
               setFormData={setFormData}
               placeOrder={placeOrder}
-            />
-          )}
+            /> */}
+          </div>
 
-          {/* Right */}
-          <OrderSummary
-            items={cart}
-            subtotal={subtotal}
-            //   shipping={shipping}
-            //   tax={tax}
-            total={total}
-          />
+          {/* RIGHT */}
+          <OrderSummary items={cart} subtotal={subtotal} total={total} />
         </div>
       </div>
     </div>
   );
 }
-
-// function Divider() {
-//   return <div className="w-20 h-px bg-gray-300" />;
-// }

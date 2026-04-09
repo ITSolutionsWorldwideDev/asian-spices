@@ -147,32 +147,6 @@ export default function Cart() {
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 h-fit">
           <h2 className="font-semibold mb-4">Order Summary</h2>
 
-          <div className="bg-white border-gray-200 py-5 border-b">
-            <label
-              htmlFor="promo-code"
-              className="block text-sm font-medium text-gray-700 mb-3"
-            >
-              Promo Code
-            </label>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                id="promo-code"
-                type="text"
-                placeholder="Enter code"
-                className="w-full sm:flex-1 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-
-              <button className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                Apply
-              </button>
-            </div>
-
-            <p className="mt-2 text-xs text-gray-500">
-              Try: SPICE20 or WELCOME10
-            </p>
-          </div>
-
           <div className="space-y-2 text-sm py-5">
             <div className="flex justify-between mt-3">
               <span>Subtotal</span>

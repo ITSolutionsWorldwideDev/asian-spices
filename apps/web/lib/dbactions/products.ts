@@ -10,7 +10,7 @@ const getProducts = async (category: string) => {
       WHERE c.slug = $1
     `;
     const result = await pool.query(query, [category]);
-    console.log("product results", result);
+    // console.log("product results", result);
     return result.rows;
   } catch (error) {
     console.error("Error fetching categories:", error);

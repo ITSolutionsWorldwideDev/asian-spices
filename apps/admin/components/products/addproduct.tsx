@@ -174,12 +174,8 @@ export default function AddProductComponent({
     status: 1,
   });
 
-<<<<<<< HEAD
-  console.log(formData);
-  const [name, setName] = useState(formData.name);
-=======
+  // console.log(formData);
   // const [name, setName] = useState(formData.name);
->>>>>>> 5e9b8226ea385fc2afb0c173893ebdcb1e2ad46b
   const [b2bPrices, setB2bPrices] = useState<TierPrice[]>([]);
   // const [images, setImages] = useState<ImageItem[]>([]);
   // const [imageInput, setImageInput] = useState("");

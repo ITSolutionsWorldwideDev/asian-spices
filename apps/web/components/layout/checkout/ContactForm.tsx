@@ -1,56 +1,56 @@
-import { ChevronRight, Contact } from "lucide-react";
-interface ContactFormProps {
-  setStep: (step: "contact" | "shipping" | "payment") => void;
+// apps/web/components/layout/checkout/ContactForm.tsx
+interface Props {
+  data: {
+    email: string;
+    phone: string;
+  };
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  errors: Record<string, string>;
 }
-
-type CheckoutData = {
-  email: string;
-  phone: string;
-};
-export default function ContactForm({ data, setFormData, setStep }: any) {
-  const handleChange = (field: keyof CheckoutData, value: string) => {
+export default function ContactForm({ data, setFormData, errors }: Props) {
+  const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
       ...prev,
       [field]: value,
     }));
   };
+
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-8">
       <h2 className="font-semibold mb-6">Contact Information</h2>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium">Email Address *</label>
+          <label className="text-sm font-medium">
+            Email Address<span className="text-red-700 ms-1">*</span>
+          </label>
           <input
-            className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 outline-none"
+            className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 text-sm text-gray-600 outline-none"
             placeholder="Email"
+            name="email"
             value={data.email}
             onChange={(e) => handleChange("email", e.target.value)}
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
         </div>
 
         <div>
-          <label className="text-sm font-medium">Phone Number *</label>
+          <label className="text-sm font-medium">
+            Phone Number<span className="text-red-700 ms-1">*</span>
+          </label>
           <input
-            className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 outline-none"
+            className="w-full mt-1 rounded-lg bg-gray-100 px-4 py-3 text-sm text-gray-600 outline-none"
             placeholder="Phone"
+            name="phone"
             value={data.phone}
             onChange={(e) => handleChange("phone", e.target.value)}
           />
+          {errors.phone && (
+            <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+          )}
         </div>
-
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" className="accent-orange-500" />
-          Email me with news and offers
-        </label>
-
-        <button
-          className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-3 rounded-lg font-medium flex items-center justify-center"
-          type="button"
-          onClick={() => setStep("shipping")}
-        >
-          Continue to Shipping <ChevronRight />
-        </button>
       </div>
     </div>
   );
