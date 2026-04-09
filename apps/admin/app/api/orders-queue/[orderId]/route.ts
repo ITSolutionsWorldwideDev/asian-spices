@@ -1,0 +1,97 @@
+// /app/api/orders-queue/[orderId]/route.ts (GET)
+
+import { NextRequest, NextResponse } from "next/server";
+import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> },
+) {
+  try {
+    const store = await getCurrentStoreAPI(req);
+    const storeId = store.id;
+
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "Store not resolved" },
+        { status: 400 },
+      );
+    }
+
+    const { orderId } = await params;
+
+    // console.log('storeId === ',storeId);
+    // console.log('orderId === ',orderId);
+
+    // 🔹 Fetch Order
+    const orderResult = await pool.query(
+      `
+      SELECT
+        o.id AS order_id,
+        o.order_number,
+        o.created_at AS order_date,
+        o.payment_status AS status,
+        o.order_status,
+        o.total_amount,
+        o.subtotal,
+        o.tax_amount,
+        o.discount_amount,
+        o.shipping_amount,
+        c.company_name AS customer_name,
+        c.email AS customer_email,
+        c.city AS customer_city,
+        c.postcode AS customer_postcode,
+        o.weight,
+        o.length,
+        o.width,
+        o.height,
+        o.boxes,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.shipped_at
+      FROM store_orders o
+      LEFT JOIN store_customers c ON c.id = o.customer_id
+      WHERE o.id = $1 AND o.store_id = $2
+      `,
+      [orderId, storeId],
+    );
+
+    if (!orderResult.rows.length) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // 🔹 Fetch Items
+    const itemsResult = await pool.query(
+      `
+      SELECT
+        oi.id AS order_item_id,
+        oi.quantity,
+        sp.id AS product_id,
+        sp.name,
+        sp.sku,  
+        oi.fulfilled_quantity,
+        sp.quantity as available_stock,
+        oi.price
+      FROM store_order_items oi
+      LEFT JOIN store_products sp ON sp.id = oi.product_id
+      WHERE oi.order_id = $1
+      `,
+      [orderId],
+    );
+
+    return NextResponse.json({
+      order: {
+        ...orderResult.rows[0],
+        items: itemsResult.rows,
+      },
+    });
+  } catch (error) {
+    console.error("Order detail fetch failed:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch order detail" },
+      { status: 500 },
+    );
+  }
+}

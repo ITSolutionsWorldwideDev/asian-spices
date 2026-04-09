@@ -79,16 +79,21 @@ export default function OrdersQueueListComponent() {
       // render: (v: number) => `$${v.toFixed(2)}`,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      render: (s: string) => (
-        <span className={`badge badge-${s.toLowerCase()}`}>{s}</span>
-      ),
+      title: "Order Status",
+      dataIndex: "order_status",
+      render: (s: string) => <span className={`badge badge-${s}`}>{s}</span>,
     },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   render: (s: string) => (
+    //     <span className={`badge badge-${s.toLowerCase()}`}>{s}</span>
+    //   ),
+    // },
     {
       title: "Action",
       render: (_: any, record: Order) => (
-        <Link href={`/orders/${record.order_id}`}>
+        <Link href={`/orders-queue/${record.order_id}`}>
           <Eye size={16} />
         </Link>
       ),
@@ -121,7 +126,11 @@ export default function OrdersQueueListComponent() {
                 {loading ? (
                   <p className="text-center py-6">Loading...</p>
                 ) : (
-                  <Table columns={columns} dataSource={orders} rowKey="order_id" />
+                  <Table
+                    columns={columns}
+                    dataSource={orders}
+                    rowKey="order_id"
+                  />
                 )}
               </div>
             </div>
@@ -131,4 +140,3 @@ export default function OrdersQueueListComponent() {
     </>
   );
 }
-

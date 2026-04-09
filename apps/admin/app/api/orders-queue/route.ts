@@ -24,8 +24,9 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const sort = searchParams.get("sort");
 
-    const values: any[] = []; // storeId
-    let where = `WHERE o.store_id IS NULL`;// o.store_id = $1
+    const values: any[] = [storeId]; 
+    // let where = `WHERE o.store_id IS NULL`;// o.store_id = $1
+    let where = `WHERE o.order_status = 'pending' AND o.payment_status = 'paid' AND o.store_id = $1`;
 
     if (search) {
       values.push(`%${search}%`);
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
         o.id AS order_id,
         o.order_number,
         o.created_at AS order_date,
+        o.order_status,
         o.payment_status AS status,
         o.total_amount,
         c.company_name AS customer_name,
@@ -67,6 +69,8 @@ export async function GET(req: NextRequest) {
       GROUP BY o.id, c.company_name
       ${orderBy}
     `;
+
+    // console.log('query === ',query);
 
     const result = await pool.query(query, values);
 

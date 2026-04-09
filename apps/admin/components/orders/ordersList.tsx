@@ -14,11 +14,12 @@ import { useToast } from "@repo/ui";
 type Order = {
   order_id: string;
   order_number: string;
-  city: string;
   order_date: string;
   items_count: number;
   total_amount: number;
   payment_status: string;
+  order_status: string;
+  fulfillment_status: string;
 };
 
 type Filters = {
@@ -84,11 +85,14 @@ export default function OrdersListComponent() {
       // render: (v: number) => `$${v.toFixed(2)}`,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      render: (s: string) => (
-        <span className={`badge badge-${s.toLowerCase()}`}>{s}</span>
-      ),
+      title: "Order Status",
+      dataIndex: "order_status",
+      render: (s: string) => <span className={`badge badge-${s}`}>{s}</span>,
+    },
+    {
+      title: "Payment",
+      dataIndex: "payment_status",
+      render: (s: string) => <span className={`badge badge-${s}`}>{s}</span>,
     },
     {
       title: "Action",
@@ -125,7 +129,11 @@ export default function OrdersListComponent() {
                 {loading ? (
                   <p className="text-center py-6">Loading...</p>
                 ) : (
-                  <Table columns={columns} dataSource={orders} rowKey="order_id" />
+                  <Table
+                    columns={columns}
+                    dataSource={orders}
+                    rowKey="order_id"
+                  />
                 )}
               </div>
             </div>
@@ -135,4 +143,3 @@ export default function OrdersListComponent() {
     </>
   );
 }
-

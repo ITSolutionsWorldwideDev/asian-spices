@@ -128,6 +128,32 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleDecision = async (action: "approve" | "reject") => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/orders/${orderId}/decision`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      showToast("success", `Order ${action}d successfully`);
+
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateQty = (itemId: string, value: string) => {
     if (!order) return;
 
@@ -197,6 +223,7 @@ export default function OrderDetailPage() {
     try {
       setShippingLoading(true);
 
+      /* 
       const res = await fetch(`/api/orders/${orderId}/ship`, {
         method: "POST",
         headers: {
@@ -207,11 +234,25 @@ export default function OrderDetailPage() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error); */
+
+      const res = await fetch(`/api/orders/${orderId}/ship`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(shipping),
+      });
+
+      if (!res.ok) throw new Error("Failed to generate label");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // open in new tab
+      window.open(url);
 
       showToast("success", "Shipment created");
 
-      window.location.reload();
+      // window.location.reload();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
