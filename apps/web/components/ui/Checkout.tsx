@@ -30,8 +30,19 @@ export type CheckoutData = {
   expiry: string;
 };
 
+export const SHIPPING_OPTIONS = {
+  standard: { label: "Standard Shipping", price: 5.99 },
+  express: { label: "Express Shipping", price: 12.99 },
+  overnight: { label: "Overnight Shipping", price: 24.99 },
+} as const;
+
+export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
+
 export default function Checkout() {
   const { cart, clearCart } = useCartStore();
+
+  const [shippingMethod, setShippingMethod] =
+    useState<ShippingMethod>("standard");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -119,9 +130,10 @@ export default function Checkout() {
           pricing: {
             subtotal,
             discount: 0,
-            shipping: 200,
-            total,
+            shipping: SHIPPING_OPTIONS[shippingMethod].price,
+            total: subtotal + SHIPPING_OPTIONS[shippingMethod].price,
           },
+          shippingMethod,
           payment_status: "pending",
           order_status: "pending",
         }),
@@ -162,47 +174,6 @@ export default function Checkout() {
     }
   };
 
-  /* const placeOrder = async () => {
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        customer: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-        },
-        shippingAddress: {
-          address_line1: formData.address,
-          address_line2: formData.appartment,
-          city: formData.city,
-          state: formData.state,
-          postal_code: formData.zip,
-          country: formData.country,
-        },
-        cartItems: cart,
-        pricing: {
-          subtotal,
-          discount: 0,
-          shipping: 200,
-          total,
-        },
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Order placed!");
-      clearCart();
-    } else {
-      alert("Error placing order");
-    }
-  }; */
-
   return (
     <div>
       <div className="bg-black">
@@ -232,6 +203,8 @@ export default function Checkout() {
             <ShippingForm
               data={formData}
               setFormData={setFormData}
+              shippingMethod={shippingMethod}
+              setShippingMethod={setShippingMethod}
               errors={errors}
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
@@ -244,7 +217,8 @@ export default function Checkout() {
           </div>
 
           {/* RIGHT */}
-          <OrderSummary items={cart} subtotal={subtotal} total={total} />
+          {/* <OrderSummary items={cart} subtotal={subtotal} total={total} /> */}
+          <OrderSummary items={cart} shippingMethod={shippingMethod} />
         </div>
       </div>
     </div>

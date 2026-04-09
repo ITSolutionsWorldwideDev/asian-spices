@@ -1,16 +1,39 @@
+// apps/web/components/layout/checkout/OrderSummary.tsx
+
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import { useCartStore } from "@/store/useCartStore";
+import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
 
-export default function OrderSummary({
-  items,
-  subtotal,
-  //   shipping,
-  //   tax,
-  total,
-}: any) {
+interface Props {
+  items: any[];
+  shippingMethod: "standard" | "express" | "overnight";
+}
+
+export default function OrderSummary({ items, shippingMethod }: Props) {
   // console.log(items);
 
+  const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
+    useCartStore();
+
+  const subtotal = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
+
+  const shippingPrice = SHIPPING_OPTIONS[shippingMethod].price;
+
+  // const savings = cart.reduce((acc, item) => {
+  //   if (!item.oldPrice) return acc;
+  //   return acc + (item.oldPrice - item.price) * item.quantity;
+  // }, 0);
+
+  const TAX_RATE = 0.08;
+
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax + shippingPrice;
+  const itemInCart = cart.length;
   let deliverDiffer = total < 50 ? 50 - total : undefined;
 
   return (
@@ -42,22 +65,66 @@ export default function OrderSummary({
         ))}
       </div>
 
-      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
-        <div className="flex justify-between text-gray-600">
-          <span>{items.label}</span>
-          <span>${items.value}</span>
-          {/* .toFixed(2) */}
+      <div className="space-y-2 text-sm py-5">
+        <div className="flex justify-between mt-3">
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
         </div>
-        {/* <Row label="Shipping" value={shipping} /> */}
-        {/* <Row label="Tax" value={tax} /> */}
+
+        {/* {savings > 0 && (
+              <div className="flex justify-between text-[#00A63E] mt-3">
+                <span>You Save</span>
+                <span>- ${savings.toFixed(2)}</span>
+              </div>
+            )} */}
+        {!deliverDiffer && (
+          <>
+            <div className="flex justify-between mt-3">
+              <span>Shipping</span>
+              <span className="text-[#00A63E]">FREE</span>
+            </div>
+          </>
+        )}
+
+        {deliverDiffer && (
+          <>
+            <div className="flex justify-between mt-3">
+              <span>Shipping ({SHIPPING_OPTIONS[shippingMethod].label})</span>
+              <span>${shippingPrice.toFixed(2)}</span>
+            </div>
+          </>
+        )}
+
+        <div className="flex justify-between mt-3">
+          <span>Tax (8%)</span>
+          <span>${tax.toFixed(2)}</span>
+        </div>
       </div>
 
-      <div className="flex justify-between text-lg font-semibold mt-6">
+      <hr className="my-4" />
+
+      <div className="flex justify-between font-semibold text-lg">
         <span>Total</span>
         <span>${total.toFixed(2)}</span>
       </div>
 
-      
+      {/* 
+      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
+        <div className="flex justify-between text-gray-600">
+          <span>{items.label}</span>
+          <span>${items.value}</span>      
+        </div>
+      </div>
+      <div className="flex justify-between text-lg font-semibold mt-6">
+        <span>Total</span>
+        <span>${total.toFixed(2)}</span>
+      </div> */}
+
+      <p className="text-xs text-gray-500">
+        {shippingMethod === "standard" && "Delivery in 5-7 days"}
+        {shippingMethod === "express" && "Delivery in 2-3 days"}
+        {shippingMethod === "overnight" && "Next day delivery"}
+      </p>
 
       <div className="bg-white border-gray-200 py-5 border-b mb-6">
         <label

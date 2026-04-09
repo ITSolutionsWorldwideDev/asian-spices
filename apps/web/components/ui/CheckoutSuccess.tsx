@@ -12,6 +12,7 @@ interface Order {
   order_status: string;
   transaction_id: string;
   payment_method: string;
+  shipping_method: "standard" | "express" | "overnight";
   cart_items: {
     id: string;
     title: string;
@@ -45,6 +46,8 @@ export default function CheckoutSuccess({ orderId }: Props) {
         }
 
         setOrder(data.order);
+
+        const shippingMethod = data.order.shipping_method || "standard";
       } catch (err) {
         console.error(err);
         setError("Something went wrong fetching your order.");
@@ -97,11 +100,16 @@ export default function CheckoutSuccess({ orderId }: Props) {
         <hr />
 
         <h2 className="text-xl font-semibold mb-4">Items</h2>
+
         <OrderSummary
           items={order.cart_items}
-          subtotal={order.total_amount}
-          total={order.total_amount}
+          shippingMethod={order.shipping_method || "standard"}
         />
+
+        <p>
+          <span className="font-medium">Shipping Method:</span>{" "}
+          {order.shipping_method?.toUpperCase()}
+        </p>
 
         {order.payment_status !== "paid" && (
           <p className="text-orange-600 font-medium mt-4">
