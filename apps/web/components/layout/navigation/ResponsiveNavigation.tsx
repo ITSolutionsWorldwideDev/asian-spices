@@ -34,8 +34,6 @@ const ResponsiveNavigation = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
- 
-
   const navLinks: NavLink[] = [
     { name: "Home" },
     { name: "About" },
@@ -123,7 +121,6 @@ const ResponsiveNavigation = () => {
   return (
     <>
       {/* mobilemenubtn */}
-
       <div className="lg:hidden border border-green-500 rounded-2xl">
         <button
           onClick={() => setMobileMenu(!mobileMenu)}

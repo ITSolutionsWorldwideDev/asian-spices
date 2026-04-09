@@ -234,7 +234,7 @@ export default function ProductDesc() {
           </section>
         </div>
       </div>
-      <ProductTabs  />
+      <ProductTabs />
       {/* <ProductTabs id={product.id} /> */}
     </div>
   );

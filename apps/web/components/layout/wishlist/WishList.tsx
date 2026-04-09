@@ -27,7 +27,10 @@ export default function WishList() {
   } = useWishlistStore();
   const { addToCart } = useCartStore();
   console.log(wishlist);
-  const totalValue = wishlist.reduce((acc, item) => acc + (item.price || 0), 0);
+  const totalValue: number = wishlist.reduce(
+    (acc, item) => acc + Number(item.price || 0),
+    0,
+  );
 
   // const potentialSavings = wishlist.reduce((acc, item) => {
   //   if (!item.oldPrice || !item.price) return acc;
@@ -158,7 +161,7 @@ export default function WishList() {
                       </div>
                     )} */}
                     <Image
-                      src={`/assets/home/premium_collection/${item.image}`}
+                      src={`/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`}
                       alt={item.name}
                       width={128}
                       height={128}
@@ -166,10 +169,24 @@ export default function WishList() {
                     />
                   </div>
 
-                  {/* DETAILS */}
-                  <div className="flex-1 flex flex-col sm:flex-row justify-between gap-4">
+                  {/* RIGHT CONTENT */}
+                  <div className="flex flex-1 justify-between items-start gap-4">
+                    {/* DETAILS */}
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
+
+                      {item.price && (
+                        <div className="flex items-center space-x-1">
+                          <p className="font-bold text-2xl text-orange-500">
+                            ${item.price}
+                          </p>
+                          {/* {item.oldPrice && (
+                            <p className="text-sm text-gray-400 line-through">
+                              ${item.oldPrice.toFixed(2)}
+                            </p>
+                          )} */}
+                        </div>
+                      )}
 
                       {/* Rating */}
                       {/* {item.rating && (
@@ -185,65 +202,37 @@ export default function WishList() {
                                 }`}
                               />
                             ))} */}
-                          </div>
-                          {/* {item.reviews && (
+                    </div>
+                    {/* {item.reviews && (
                             <span className="text-sm text-gray-500">
                               ({item.reviews})
                             </span>
                           )} */}
 
-                          {/* {item.tag && (
+                    {/* {item.tag && (
                             <span className="inline-block text-xs px-2 py-1 rounded-full border border-[#E5E7EB] text-black">
                               {item.tag}
                             </span>
                           )} */}
 
-                          {/* {item.weight && (
+                    {/* {item.weight && (
                             <span className="inline-block text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                               {item.weight}
                             </span>
                           )} */}
-                        </div>
-                      {/* )} */}
-
-                      {item.price && (
-                        // console.log(item)
-                        <div className="flex items-center  space-x-1">
-                          <p className="font-bold text-2xl text-orange-500">
-                            ${item.price.toFixed(2)}
-                          </p>
-                          {/* {item.oldPrice && (
-                            <p className="text-sm text-gray-400 line-through">
-                              ${item.oldPrice.toFixed(2)}
-                            </p>
-                          )} */}
-                        </div>
-                      )}
-
-                      {/* Tags */}
-                      {/* <div className="flex items-center gap-2 mt-2 flex-wrap"></div>
-
-                    {/* Description */}
-                      {/* {item.description && (
-                      <p className="text-sm text-gray-500 mt-2">
-                        {item.description}
-                      </p>
-                    )} */}
-                    </div>
 
                     {/* PRICE & ACTIONS */}
-                    {/* <div className="flex flex-col items-start sm:items-end justify-between gap-4"> */}
-                    {/* Action Buttons */}
-                    <div className="flex flex-col  justify-center gap-2 w-50 relative ">
+                    <div className="flex flex-col gap-2 min-w-37.5 relative">
+                      <button
+                        onClick={() => removeFromWishlist(item.id)}
+                        className="absolute z-10  right-0 -top-3 flex  p-1 border-[#E5E7EB] shadow-md text-black rounded-md bg-white "
+                        title="Remove from wishlist"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                       <button
                         onClick={() => {
-                          //  id: number;
-                          // title: string;
-                          // price: number;
-                          // quantity: number;
-                          // image: string;
-                          // weight?: string;
-                          // oldPrice: number | null;
+                          // add to cart + remove
                           // addToCart(item);
                           removeFromWishlist(item.id);
                         }}
@@ -256,26 +245,19 @@ export default function WishList() {
                       <Link href={"/product"}>
                         <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer w-full">
                           View Details
-                          {/* <ProductCar d item={wishlist} /> */}
                         </button>
                       </Link>
-                      <button
-                        onClick={() => removeFromWishlist(item.id)}
-                        className=" md:absolute top-0 right-0 md:w-fit border-2 border-[#E5E7EB]  shadow-md text-black rounded-xl bg-white px-3 py-3 hover:bg-red-50 transition-colors"
-                        title="Remove from wishlist"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
-                    {/* </div> */}
                   </div>
-                // </div>
-              // </div>
+                </div>
+              </div>
             ))}
           </div>
+
           <RedirectButtons />
         </div>
       </div>
+
       {/* <Footer /> */}
     </div>
   );

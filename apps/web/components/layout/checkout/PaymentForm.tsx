@@ -10,7 +10,7 @@ interface Props {
   disabled: boolean;
 }
 
-export default function PaymentForm({ placeOrder,disabled }: Props) {
+export default function PaymentForm({ placeOrder, disabled }: Props) {
   const [method, setMethod] = useState<"paynl" | "paypal">("paynl");
 
   return (

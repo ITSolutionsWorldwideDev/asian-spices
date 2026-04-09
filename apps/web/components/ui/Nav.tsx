@@ -4,10 +4,15 @@ import Link from "next/link";
 import ButtonsNavigation from "../layout/navigation/ButtonsNavigation";
 import ResponsiveNavigation from "../layout/navigation/ResponsiveNavigation";
 import CartandWhishBtn from "../layout/navigation/CartandWhishBtn";
+import UpperSelection from "../layout/navigation/UpperSelection";
 
 const Nav: React.FC = () => {
   return (
     <div className="relative inset-0 p-8  z-50">
+
+      <div>
+        <UpperSelection/>
+      </div>
       {/* Navbar */}
       <nav className="relative flex items-center justify-between p-2 md:p-4 container mx-auto">
         {/* Logo */}

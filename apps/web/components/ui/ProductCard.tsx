@@ -101,8 +101,8 @@ export default function ProductCard() {
             {/* Like button */}
             <button
               onClick={() => {
-                // toggleWishlist(product);
-                // isInWishlist(product.id);
+                toggleWishlist(product);
+                isInWishlist(product.id);
               }}
               className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
             >

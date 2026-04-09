@@ -43,7 +43,7 @@ export default function Prerequisites({ setActiveStep, activeStep }: any) {
               </p>
 
               <div className="flex items-center justify-center mt-3">
-                <ReadAloudBtn ID={"content-to-reads"} />
+                <ReadAloudBtn ID={"content-to-read"} />
                 {/* <ReadAloudBtn ID={"business-verification"} /> */}
               </div>
             </div>

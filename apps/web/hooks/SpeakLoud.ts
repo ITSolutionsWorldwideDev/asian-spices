@@ -10,6 +10,7 @@ export function useReadAloud() {
 
   const handleReadAloud = ({ ID }: ReadAloudParams): void => {
     if (isSpeaking) {
+      // e.preventDefault();
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       return;
