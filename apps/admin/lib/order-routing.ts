@@ -28,6 +28,7 @@ export const getCandidateStores = async (
   orderId: string,
   country: string,
 ): Promise<StoreCandidate[]> => {
+
   const { rows } = await client.query(
     `
     SELECT 
@@ -113,87 +114,115 @@ export const assignDefaultStore = async (client: any, orderId: string) => {
 };
 
 export const assignNextStore = async (client: any, orderId: string) => {
-  const { rows: orderRows } = await client.query(
-    `SELECT * FROM store_orders WHERE id = $1`,
-    [orderId],
-  );
+  try {
 
-  const order = orderRows[0];
+    const { rows: orderRows } = await client.query(
+      `SELECT o.*, ss.country_code as country
+       FROM store_orders AS o
+       LEFT JOIN store_settings ss ON ss.store_id = o.store_id
+       WHERE o.id = $1`,
+      [orderId],
+    );
 
-  if (order.rejection_count >= 3) {
-    await assignDefaultStore(client, orderId);
-    return;
-  }
+    // SELECT 
+    //   spc.store_id,
+    //   SUM(spc.price * oi.quantity) AS total_price,
+    //   sa.latitude,
+    //   sa.longitude,
+    //   sa.country
+    // FROM store_order_items oi
+    // JOIN store_product_catalog spc ON spc.product_id = oi.product_id
+    // JOIN store_addresses sa ON sa.store_id = spc.store_id
+    // WHERE oi.order_id = $1
+    //   AND spc.status = 1
+    //   AND sa.country = $2
+    // GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
 
-  const stores = await getCandidateStores(client, orderId, order.country);
+    const order = orderRows[0];
 
-  const availableStores = [];
-
-  for (const store of stores) {
-    const isOpen = await isStoreOpenNow(client, store.store_id);
-
-    if (isOpen) {
-      availableStores.push(store);
+    if (order.rejection_count >= 3) {
+      await assignDefaultStore(client, orderId);
+      return;
     }
-  }
+    
+    const stores = await getCandidateStores(client, orderId, order.country);
 
-  if (availableStores.length === 0) {
+    const availableStores = [];
+
+    console.log("assignNextStore stores ==== ", stores);
+
+    for (const store of stores) {
+      const isOpen = await isStoreOpenNow(client, store.store_id);
+
+      console.log("assignNextStore isOpen ==== ", isOpen);
+
+      if (isOpen) {
+        availableStores.push(store);
+      }
+    }
+
+    console.log("assignNextStore availableStores ==== ", availableStores);
+
+    if (availableStores.length === 0) {
+      await logOrderEvent(client, {
+        orderId,
+        eventType: ORDER_EVENTS.DEFAULT_ASSIGNED,
+        message: "All stores closed — assigned to default",
+      });
+
+      return assignDefaultStore(client, orderId);
+    }
+
+    // const sorted = sortStores(stores, order.latitude, order.longitude);
+    const sorted = sortStores(availableStores, order.latitude, order.longitude);
+
+    const { rows: attempts } = await client.query(
+      `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
+      [orderId],
+    );
+
+    const tried = attempts.map((a: { store_id: string }) => a.store_id);
+
+    const nextStore = sorted.find((s) => !tried.includes(s.store_id));
+
+    if (!nextStore) {
+      await assignDefaultStore(client, orderId);
+      return;
+    }
+
+    await client.query(
+      `
+        UPDATE store_orders
+        SET current_store_id = $1,
+            routing_status = 'assigned'
+        WHERE id = $2
+      `,
+      [nextStore.store_id, orderId],
+    );
+
+    await client.query(
+      `
+        INSERT INTO order_routing_attempts
+        (order_id, store_id, attempt_number)
+        VALUES ($1,$2,$3)
+      `,
+      [orderId, nextStore.store_id, attempts.length + 1],
+    );
+
     await logOrderEvent(client, {
       orderId,
-      eventType: ORDER_EVENTS.DEFAULT_ASSIGNED,
-      message: "All stores closed — assigned to default",
+      // eventType: "assigned",
+      eventType: ORDER_EVENTS.ASSIGNED,
+      storeId: nextStore.store_id,
+      message: "Order assigned to store",
+      metadata: {
+        price: nextStore.total_price,
+        distance: nextStore.distance,
+      },
     });
-
-    return assignDefaultStore(client, orderId);
+  } catch (err) {
+    console.log("assignNextStore err ==== ", err);
   }
-
-  // const sorted = sortStores(stores, order.latitude, order.longitude);
-  const sorted = sortStores(availableStores, order.latitude, order.longitude);
-
-  const { rows: attempts } = await client.query(
-    `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
-    [orderId],
-  );
-
-  const tried = attempts.map((a: { store_id: string }) => a.store_id);
-
-  const nextStore = sorted.find((s) => !tried.includes(s.store_id));
-
-  if (!nextStore) {
-    await assignDefaultStore(client, orderId);
-    return;
-  }
-
-  await client.query(
-    `
-    UPDATE store_orders
-    SET current_store_id = $1,
-        routing_status = 'assigned'
-    WHERE id = $2
-  `,
-    [nextStore.store_id, orderId],
-  );
-
-  await client.query(
-    `
-    INSERT INTO order_routing_attempts
-    (order_id, store_id, attempt_number)
-    VALUES ($1,$2,$3)
-  `,
-    [orderId, nextStore.store_id, attempts.length + 1],
-  );
-
-  await logOrderEvent(client, {
-    orderId,
-    // eventType: "assigned",
-    eventType: ORDER_EVENTS.ASSIGNED,
-    storeId: nextStore.store_id,
-    message: "Order assigned to store",
-    metadata: {
-      price: nextStore.total_price,
-      distance: nextStore.distance,
-    },
-  });
 };
 
 export const logOrderEvent = async (
@@ -290,8 +319,9 @@ export const isStoreOpenNow = async (client: any, storeId: string) => {
   if (!rows.length) return false;
 
   const wh = rows[0];
-
   if (wh.is_closed) return false;
+
+  console.log('isStoreOpenNow currentTime === ',currentTime >= wh.open_time && currentTime <= wh.close_time);
 
   return currentTime >= wh.open_time && currentTime <= wh.close_time;
 };

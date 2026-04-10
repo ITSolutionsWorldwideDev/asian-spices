@@ -111,23 +111,41 @@ export default function Checkout() {
 
     try {
       const geocodeAddress = async (address: string) => {
-        const res = await fetch(
-          `/api/geocode?address=${encodeURIComponent(address)}`,
-        );
-        if (!res.ok) throw new Error("Geocoding failed");
-      const data = await res.json();
+        try {
+          console.log("Geocoding address:", address);
 
-      if (!data.lat || !data.lng) {
-        throw new Error("Unable to resolve address coordinates");
-      }
-        return { latitude: data.lat, longitude: data.lng };
+          const res = await fetch(
+            `/api/geocode?address=${encodeURIComponent(address)}`,
+          );
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data?.error || "Geocoding failed");
+          }
+
+          const lat = Number(data?.lat);
+          const lng = Number(data?.lng);
+
+          if (isNaN(lat) || isNaN(lng)) {
+            throw new Error("Invalid coordinates received");
+          }
+
+          return { latitude: lat, longitude: lng };
+        } catch (error) {
+          console.error("Geocode error:", error);
+          throw error;
+        }
       };
 
       // Before calling placeOrder:
       if (!formData.latitude || !formData.longitude) {
-        const geo = await geocodeAddress(
-          `${formData.address}, ${formData.city}, ${formData.country}`,
-        );
+        const fullAddress = [formData.zip, formData.country]
+          .filter(Boolean)
+          .join(", ");
+
+        const geo = await geocodeAddress(fullAddress);
+
         formData.latitude = geo.latitude;
         formData.longitude = geo.longitude;
       }
@@ -153,7 +171,7 @@ export default function Checkout() {
             postal_code: formData.zip,
             country: formData.country,
             latitude: formData.latitude,
-            longitude: formData.longitude
+            longitude: formData.longitude,
           },
           cartItems: cart,
           pricing: {

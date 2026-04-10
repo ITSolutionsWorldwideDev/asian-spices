@@ -185,6 +185,15 @@ export default function ManageSettingsComponent() {
     date_format: "YYYY-MM-DD",
     time_format: "24h",
 
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+
     /* BRANDING */
     logo_url: "",
     favicon_url: "",
@@ -283,15 +292,214 @@ export default function ManageSettingsComponent() {
     workingHours: false,
   });
 
-  const handleChange = (key: string, value: any) => {
+  /* const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+  }; */
+
+  const handleChange = (key: string, value: any) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [key]: value };
+
+      const validationErrors = validateForm(updated);
+      setErrors(validationErrors);
+
+      if (["address_line1", "city", "state", "country_code"].includes(key)) {
+        updated.latitude = null;
+        updated.longitude = null;
+      }
+
+      return updated;
+
+      return updated;
+    });
   };
 
   // ------------------------------------
   //   Submit
   // ------------------------------------
 
+  const validateForm = (data: typeof formData) => {
+    const errors: FormErrors = {};
+
+    // ---------------- GENERAL ----------------
+    if (!data.store_name.trim()) {
+      errors.store_name = "Store name is required";
+    }
+
+    if (!data.store_email.trim()) {
+      errors.store_email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(data.store_email)) {
+      errors.store_email = "Invalid email format";
+    }
+
+    if (!data.store_phone.trim()) {
+      errors.store_phone = "Phone is required";
+    }
+
+    // ---------------- LOCALIZATION ----------------
+    if (!data.country_code) {
+      errors.country_code = "Country is required";
+    }
+
+    if (!data.currency_id) {
+      errors.currency_id = "Currency is required";
+    }
+
+    // if (!data.timezone) {
+    //   errors.timezone = "Timezone is required";
+    // }
+
+    if (!data.city.trim()) {
+      errors.city = "City is required";
+    }
+
+    if (!data.address_line1.trim()) {
+      errors.address_line1 = "Address is required";
+    }
+
+    // ---------------- TAX ----------------
+    if (data.tax_rate < 0) {
+      errors.tax_rate = "Tax cannot be negative";
+    }
+
+    // ---------------- SHIPPING ----------------
+    if (data.flat_shipping_rate < 0) {
+      errors.flat_shipping_rate = "Invalid shipping rate";
+    }
+
+    // ---------------- CONDITIONAL ----------------
+    if (data.stripe_enabled && !data.stripe_account_id) {
+      errors.stripe_account_id = "Stripe account ID required";
+    }
+
+    return errors;
+  };
+
+  const validateAddressForGeocode = (data: typeof formData) => {
+    if (!data.address_line1?.trim()) return "Address is required";
+    if (!data.city?.trim()) return "City is required";
+    if (!data.country_code) return "Country is required";
+
+    return null;
+  };
+
+  const geocodeAddress = async (address: string) => {
+    try {
+      const res = await fetch(
+        `/api/geocode?address=${encodeURIComponent(address)}`,
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Geocoding failed");
+      }
+
+      const lat = Number(data?.lat);
+      const lng = Number(data?.lng);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        throw new Error("Invalid coordinates received");
+      }
+
+      return { latitude: lat, longitude: lng };
+    } catch (error) {
+      console.error("Geocode error:", error);
+      throw error;
+    }
+  };
+
+  const buildFullAddress = (data: typeof formData) => {
+    return [
+      // data.address_line1,
+      data.postal_code,
+      // data.city,
+      // data.state,
+      data.country_code,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  const ensureCoordinates = async () => {
+    if (
+      formData.latitude != null &&
+      formData?.latitude > 0 &&
+      formData.longitude != null &&
+      formData?.longitude > 0
+    ) {
+      return true;
+    }
+
+    const addressError = validateAddressForGeocode(formData);
+
+    if (addressError) {
+      setErrors((prev) => ({
+        ...prev,
+        address_line1: addressError,
+      }));
+
+      showToast("error", addressError);
+      return false;
+    }
+
+    try {
+      const fullAddress = buildFullAddress(formData);
+
+      const geo = await geocodeAddress(fullAddress);
+
+      setFormData((prev) => ({
+        ...prev,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
+      }));
+
+      return true;
+    } catch (err: any) {
+      showToast(
+        "error",
+        err?.message || "Failed to detect location from address",
+      );
+
+      setErrors((prev) => ({
+        ...prev,
+        address_line1: "Invalid address (unable to map location)",
+      }));
+
+      return false;
+    }
+  };
+
+  const getErrorMessages = (errors: FormErrors) => {
+    return Object.entries(errors).map(([field, message]) => {
+      // Convert "store_name" → "Store Name"
+      const label = field
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+      return `${label}: ${message}`;
+    });
+  };
+
   const handleSubmit = async () => {
+    const validationErrors = validateForm(formData);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+
+      const messages = getErrorMessages(validationErrors);
+
+      showToast(
+        "error",
+        messages.slice(0, 3).join(" | "), // show top 3 errors
+      );
+
+      return;
+    }
+
+    const hasCoordinates = await ensureCoordinates();
+    if (!hasCoordinates) return;
+
     try {
       setSaving(true);
       setLoading(true);
@@ -303,6 +511,7 @@ export default function ManageSettingsComponent() {
         body: JSON.stringify({
           ...formData,
           working_hours: workingHours,
+          country: formData.country_code,
         }),
       });
 
@@ -355,16 +564,19 @@ export default function ManageSettingsComponent() {
                     label="Store Name"
                     value={formData.store_name}
                     onChange={(v) => handleChange("store_name", v)}
+                    error={errors.store_name}
                   />
                   <Input
                     label="Email"
                     value={formData.store_email}
                     onChange={(v) => handleChange("store_email", v)}
+                    error={errors.store_email}
                   />
                   <Input
                     label="Phone"
                     value={formData.store_phone}
                     onChange={(v) => handleChange("store_phone", v)}
+                    error={errors.store_phone}
                   />
                 </div>
               </div>
@@ -412,6 +624,40 @@ export default function ManageSettingsComponent() {
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
+                  <Input
+                    label="Address 1"
+                    value={formData.address_line1}
+                    onChange={(v) => handleChange("address_line1", v)}
+                    error={errors.address_line1}
+                  />
+
+                  <Input
+                    label="Address 2"
+                    value={formData.address_line2}
+                    onChange={(v) => handleChange("address_line2", v)}
+                  />
+
+                  <Input
+                    label="City"
+                    value={formData.city}
+                    onChange={(v) => handleChange("city", v)}
+                    error={errors.city}
+                  />
+
+                  <Input
+                    label="State"
+                    value={formData.state}
+                    onChange={(v) => handleChange("state", v)}
+                    error={errors.state}
+                  />
+
+                  <Input
+                    label="Post Code"
+                    value={formData.postal_code}
+                    onChange={(v) => handleChange("postal_code", v)}
+                    error={errors.postal_code}
+                  />
+
                   <div className="relative">
                     <label className="block mb-1 font-medium">Country</label>
 
@@ -442,6 +688,12 @@ export default function ManageSettingsComponent() {
                         handleChange("currency_symbol", opt?.symbol || "");
                       }}
                     />
+
+                    {errors.currency_id && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.currency_id}
+                      </p>
+                    )}
                   </div>
                   {/* <Input
                     label="Currency Code"
@@ -473,6 +725,7 @@ export default function ManageSettingsComponent() {
                   label="Stripe Account ID"
                   value={formData.stripe_account_id}
                   onChange={(v) => handleChange("stripe_account_id", v)}
+                  error={errors.stripe_account_id}
                 />
                 <Toggle
                   label="Enable Cash on Delivery"
@@ -505,6 +758,7 @@ export default function ManageSettingsComponent() {
                   onChange={(v) =>
                     handleChange("flat_shipping_rate", Number(v))
                   }
+                  error={errors.flat_shipping_rate}
                 />
 
                 <Toggle
@@ -533,6 +787,7 @@ export default function ManageSettingsComponent() {
                   type="number"
                   value={formData.tax_rate}
                   onChange={(v) => handleChange("tax_rate", Number(v))}
+                  error={errors.tax_rate}
                 />
 
                 <Toggle
@@ -692,21 +947,24 @@ type InputProps = {
   label: string;
   value: string | number | "";
   type?: string;
+  error?: string;
   onChange: (value: string) => void;
 };
-
-function Input({ label, value, onChange, type = "text" }: InputProps) {
+function Input({ label, value, onChange, type = "text", error }: InputProps) {
   return (
     <div>
       <label className="block mb-1 text-sm font-medium">{label}</label>
+
       <input
         type={type}
         value={value ?? ""}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.value)
-        }
-        className="w-full border rounded px-3 py-2"
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full border rounded px-3 py-2 ${
+          error ? "border-red-500" : ""
+        }`}
       />
+
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
   );
 }

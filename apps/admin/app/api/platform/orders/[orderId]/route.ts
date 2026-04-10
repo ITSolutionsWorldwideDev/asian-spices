@@ -13,6 +13,8 @@ export async function GET(
     `
     SELECT 
       o.*,
+      o.created_at as assigned_at,
+      (o.created_at + interval '1 hour') as deadline,
       s.name as store_name,
       c.first_name || ' ' || c.last_name as customer_name,
       c.email,
