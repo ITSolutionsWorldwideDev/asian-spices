@@ -13,6 +13,8 @@ import Link from "next/link";
 import { TiTickOutline } from "react-icons/ti";
 
 import { usePathname } from "next/navigation";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
+
 type Product = {
   id: string;
   quantity: number;
@@ -35,6 +37,10 @@ interface ProductCardProps {
 }
 
 export default function ProductCard() {
+  const { symbol, selectedCurrency, rate } = useCurrencyStore();
+  console.log(symbol);
+  console.log(selectedCurrency);
+  console.log(rate);
   const path = usePathname();
   const pathname = path.startsWith("/") ? path.slice(1) : path;
   console.log(pathname);
@@ -145,7 +151,8 @@ export default function ProductCard() {
             {/* Price */}
             <div className="flex items-center gap-2 mt-2">
               <span className="text-orange-400 font-bold text-xl">
-                ${product.price}
+                {symbol}
+                {Number(product.price * rate).toFixed(2)}
               </span>
               {/* {product.oldPrice && (
                 <span className="line-through text-gray-400 text-sm">

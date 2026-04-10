@@ -6,11 +6,12 @@ import { useCartStore } from "@/store/useCartStore";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { ArrowRight } from "lucide-react";
-
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
   const { addToWishlist } = useWishlistStore();
+  const { symbol, rate } = useCurrencyStore();
 
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -93,7 +94,8 @@ export default function Cart() {
 
                   <div className="sm:text-right">
                     <p className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {symbol}
+                      {(rate * (item.price * item.quantity)).toFixed(2)}
                     </p>
                     {/* {item.oldPrice && (
                       <p className="text-sm text-gray-400 line-through">
@@ -150,7 +152,10 @@ export default function Cart() {
           <div className="space-y-2 text-sm py-5">
             <div className="flex justify-between mt-3">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>
+                {symbol}
+                {(rate * subtotal).toFixed(2)}
+              </span>
             </div>
 
             {/* {savings > 0 && (
@@ -167,7 +172,10 @@ export default function Cart() {
 
             <div className="flex justify-between mt-3">
               <span>Tax (8%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>
+                {symbol}
+                {(rate * tax).toFixed(2)}
+              </span>
             </div>
           </div>
 
@@ -175,7 +183,10 @@ export default function Cart() {
 
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>
+              {symbol}
+              {(rate * total).toFixed(2)}
+            </span>
           </div>
 
           <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
@@ -196,7 +207,7 @@ export default function Cart() {
             </div>
             <div className="flex items-center gap-2">
               <Truck size={16} className="text-orange-500" />
-              Free Shipping on orders over $50
+              Free Shipping on orders over {symbol}({(rate * 50).toFixed(2)})
             </div>
           </div>
         </div>
