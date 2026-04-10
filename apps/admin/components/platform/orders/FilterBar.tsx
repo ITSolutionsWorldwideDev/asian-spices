@@ -1,18 +1,15 @@
-// // apps/admin/components/products/FilterBar.tsx
-
+// apps/admin/components/platform/orders/FilterBar.tsx
 "use client";
 
 import { useState } from "react";
 
 type Filters = {
   search?: string;
-  category?: string;
-  brand?: string;
   status?: string;
   sort?: string;
 };
 
-export default function FilterBar({
+export default function OrderFilterBar({
   onApply,
 }: {
   onApply: (filters: Filters) => void;
@@ -26,23 +23,11 @@ export default function FilterBar({
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-3 mb-4">
       <input
-        placeholder="Search product / SKU"
+        placeholder="Search Order ID"
         className="px-3 py-2 border rounded text-sm"
         onChange={(e) => update("search", e.target.value)}
-      />
-
-      <input
-        placeholder="Category"
-        className="px-3 py-2 border rounded text-sm"
-        onChange={(e) => update("category", e.target.value)}
-      />
-
-      <input
-        placeholder="Brand"
-        className="px-3 py-2 border rounded text-sm"
-        onChange={(e) => update("brand", e.target.value)}
       />
 
       <select
@@ -50,18 +35,18 @@ export default function FilterBar({
         onChange={(e) => update("status", e.target.value)}
       >
         <option value="">All Status</option>
-        <option value="1">Active</option>
-        <option value="0">Inactive</option>
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="rejected">Rejected</option>
+        <option value="partially_confirmed">Partial</option>
       </select>
 
       <select
         className="px-3 py-2 border rounded text-sm"
         onChange={(e) => update("sort", e.target.value)}
       >
-        <option value="">Sort</option>
+        <option value="priority">Priority (Rejected first)</option>
         <option value="newest">Newest</option>
-        <option value="price_asc">Price ↑</option>
-        <option value="price_desc">Price ↓</option>
       </select>
     </div>
   );

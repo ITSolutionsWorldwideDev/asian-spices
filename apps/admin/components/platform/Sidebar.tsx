@@ -54,6 +54,11 @@ const PLATFORM_MENU = [
         icon: "exchange",
         link: "/platform/currency-rates",
       },
+      {
+        label: "Orders",
+        icon: "exchange",
+        link: "/platform/orders",
+      },
 
       
     ],

@@ -76,15 +76,30 @@ export async function GET(req: NextRequest) {
 
       WHERE s.id = $1
       `,
-      [store.id]
+      [store.id],
     );
 
-    return NextResponse.json(rows[0] || {});
+    const { rows: workingHours } = await pool.query(
+      `
+      SELECT day_of_week, open_time, close_time, is_closed
+      FROM store_working_hours
+      WHERE store_id = $1
+      ORDER BY day_of_week
+      `,
+      [store.id],
+    );
+
+    const data = rows[0] || {};
+    data.working_hours = workingHours;
+
+    return NextResponse.json(data);
+
+    // return NextResponse.json(rows[0] || {});
   } catch (error) {
     console.error("GET STORE SETTINGS ERROR:", error);
     return NextResponse.json(
       { error: "Failed to fetch store settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -95,7 +110,7 @@ export async function PUT(req: NextRequest) {
   try {
     const store = await getCurrentStoreAPI(req);
     const body = await req.json();
-    
+
     const val = (v: any) => (v === "" || v === undefined ? null : v);
     const num = (v: any) => (v === "" || v === undefined ? 0 : Number(v));
 
@@ -111,7 +126,7 @@ export async function PUT(req: NextRequest) {
           updated_at = NOW()
       WHERE id = $2
       `,
-      [val(body.store_name), store.id]
+      [val(body.store_name), store.id],
     );
 
     /* =========================
@@ -149,7 +164,7 @@ export async function PUT(req: NextRequest) {
         val(body.language),
         val(body.date_format),
         val(body.time_format),
-      ]
+      ],
     );
 
     /* =========================
@@ -179,7 +194,7 @@ export async function PUT(req: NextRequest) {
         val(body.primary_color),
         val(body.secondary_color),
         val(body.theme_mode),
-      ]
+      ],
     );
 
     /* =========================
@@ -189,7 +204,7 @@ export async function PUT(req: NextRequest) {
       `
       DELETE FROM store_addresses WHERE store_id = $1
       `,
-      [store.id]
+      [store.id],
     );
 
     await client.query(
@@ -209,7 +224,7 @@ export async function PUT(req: NextRequest) {
         val(body.country),
         num(body.latitude),
         num(body.longitude),
-      ]
+      ],
     );
 
     /* =========================
@@ -234,7 +249,7 @@ export async function PUT(req: NextRequest) {
         num(body.tax_rate),
         body.tax_inclusive || false,
         val(body.tax_registration_number),
-      ]
+      ],
     );
 
     /* =========================
@@ -260,7 +275,7 @@ export async function PUT(req: NextRequest) {
         val(body.stripe_account_id),
         !!body.razorpay_enabled,
         !!body.cod_enabled,
-      ]
+      ],
     );
 
     /* =========================
@@ -283,7 +298,7 @@ export async function PUT(req: NextRequest) {
         num(body.free_shipping_threshold),
         num(body.flat_shipping_rate),
         !!body.international_shipping,
-      ]
+      ],
     );
 
     /* =========================
@@ -311,7 +326,7 @@ export async function PUT(req: NextRequest) {
         val(body.meta_keywords),
         body.facebook_pixel_id,
         body.google_analytics_id,
-      ]
+      ],
     );
 
     /* =========================
@@ -334,20 +349,42 @@ export async function PUT(req: NextRequest) {
         val(body.plan_name),
         body.subscription_status,
         val(body.renewal_date),
-      ]
+      ],
     );
+
+    /* =========================
+        Working Hours
+    ========================== */
+
+    const { working_hours } = body;
+
+    // delete old
+    await client.query(`DELETE FROM store_working_hours WHERE store_id = $1`, [
+      store.id,
+    ]);
+
+    // insert new
+    for (const wh of working_hours || []) {
+      await client.query(
+        `
+        INSERT INTO store_working_hours
+        (store_id, day_of_week, open_time, close_time, is_closed)
+        VALUES ($1,$2,$3,$4,$5)
+        `,
+        [store.id, wh.day_of_week, wh.open_time, wh.close_time, wh.is_closed],
+      );
+    }
 
     await client.query("COMMIT");
 
     return NextResponse.json({ success: true });
-
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("STORE SETTINGS UPDATE ERROR:", error);
 
     return NextResponse.json(
       { error: "Failed to update store settings" },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     client.release();

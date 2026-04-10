@@ -13,6 +13,7 @@ import {
   Percent,
   Search,
   FileText,
+  Clock,
 } from "react-feather";
 import TextEditorNew from "@/core/common/texteditor/texteditor";
 
@@ -109,6 +110,7 @@ export default function ManageSettingsComponent() {
   const [selected, setSelected] = useState<string>("");
 
   const [slugTouched, setSlugTouched] = useState(false);
+  const [workingHours, setWorkingHours] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -117,6 +119,18 @@ export default function ManageSettingsComponent() {
         if (!res.ok) throw new Error();
 
         const data = await res.json();
+
+        // setWorkingHours(data.working_hours || []);
+        if (!data.working_hours || data.working_hours.length === 0) {
+          const defaultHours = Array.from({ length: 7 }).map((_, i) => ({
+            day_of_week: i,
+            open_time: "09:00",
+            close_time: "18:00",
+            is_closed: false,
+          }));
+
+          setWorkingHours(defaultHours);
+        }
 
         const sanitizedData = Object.keys(data).reduce((acc, key) => {
           acc[key] = data[key] === null ? "" : data[key];
@@ -132,9 +146,8 @@ export default function ManageSettingsComponent() {
         }));
 
         if (data.currency_id) {
-
           if (!data.currency_id || currencies.length === 0) return;
-          
+
           const found = currencies.find((c) => c.id === data.currency_id);
 
           if (found) {
@@ -267,6 +280,7 @@ export default function ManageSettingsComponent() {
     tax: false,
     seo: false,
     billing: false,
+    workingHours: false,
   });
 
   const handleChange = (key: string, value: any) => {
@@ -285,7 +299,11 @@ export default function ManageSettingsComponent() {
       const res = await fetch("/api/store-settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          working_hours: workingHours,
+        }),
       });
 
       if (!res.ok) throw new Error();
@@ -581,6 +599,75 @@ export default function ManageSettingsComponent() {
                   value={formData.renewal_date}
                   onChange={(v) => handleChange("renewal_date", v)}
                 />
+              </div>
+            </Accordion>
+
+            <Accordion
+              title="Working Hours"
+              icon={Clock}
+              open={open.workingHours}
+              onToggle={() =>
+                setOpen({ ...open, workingHours: !open.workingHours })
+              }
+            >
+              <div className="p-4 border-t space-y-4">
+                {workingHours.map((day, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-5 gap-3 items-center border-b pb-2"
+                  >
+                    {/* DAY */}
+                    <div className="font-medium">
+                      {
+                        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                          day.day_of_week
+                        ]
+                      }
+                    </div>
+
+                    {/* CLOSED TOGGLE */}
+                    <Toggle
+                      label="Closed"
+                      checked={day.is_closed}
+                      onChange={(v) => {
+                        const updated = [...workingHours];
+                        updated[index].is_closed = v;
+                        setWorkingHours(updated);
+                      }}
+                    />
+
+                    {/* OPEN TIME */}
+                    <input
+                      type="time"
+                      disabled={day.is_closed}
+                      value={day.open_time || ""}
+                      onChange={(e) => {
+                        const updated = [...workingHours];
+                        updated[index].open_time = e.target.value;
+                        setWorkingHours(updated);
+                      }}
+                      className="border px-2 py-1 rounded"
+                    />
+
+                    {/* CLOSE TIME */}
+                    <input
+                      type="time"
+                      disabled={day.is_closed}
+                      value={day.close_time || ""}
+                      onChange={(e) => {
+                        const updated = [...workingHours];
+                        updated[index].close_time = e.target.value;
+                        setWorkingHours(updated);
+                      }}
+                      className="border px-2 py-1 rounded"
+                    />
+
+                    {/* STATUS */}
+                    <span className="text-xs text-gray-500">
+                      {day.is_closed ? "Closed" : "Open"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </Accordion>
           </div>
