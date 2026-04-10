@@ -26,6 +26,9 @@ export type CheckoutData = {
   zip: string;
   country: string;
 
+  latitude?: number;
+  longitude?: number;
+
   cardNumber: string;
   expiry: string;
 };
@@ -58,6 +61,9 @@ export default function Checkout() {
     state: "",
     zip: "",
     country: "NL",
+
+    latitude: 0,
+    longitude: 0,
 
     cardNumber: "",
     expiry: "",
@@ -104,6 +110,27 @@ export default function Checkout() {
     setErrors({});
 
     try {
+      const geocodeAddress = async (address: string) => {
+        const res = await fetch(
+          `/api/geocode?address=${encodeURIComponent(address)}`,
+        );
+        if (!res.ok) throw new Error("Geocoding failed");
+      const data = await res.json();
+
+      if (!data.lat || !data.lng) {
+        throw new Error("Unable to resolve address coordinates");
+      }
+        return { latitude: data.lat, longitude: data.lng };
+      };
+
+      // Before calling placeOrder:
+      if (!formData.latitude || !formData.longitude) {
+        const geo = await geocodeAddress(
+          `${formData.address}, ${formData.city}, ${formData.country}`,
+        );
+        formData.latitude = geo.latitude;
+        formData.longitude = geo.longitude;
+      }
       // Create Order
 
       const res = await fetch("/api/create-order", {
@@ -125,6 +152,8 @@ export default function Checkout() {
             state: formData.state,
             postal_code: formData.zip,
             country: formData.country,
+            latitude: formData.latitude,
+            longitude: formData.longitude
           },
           cartItems: cart,
           pricing: {

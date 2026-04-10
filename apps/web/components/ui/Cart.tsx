@@ -165,10 +165,10 @@ export default function Cart() {
               </div>
             )} */}
 
-            <div className="flex justify-between mt-3">
+            {/* <div className="flex justify-between mt-3">
               <span>Shipping</span>
               <span className="text-[#00A63E]">FREE</span>
-            </div>
+            </div> */}
 
             <div className="flex justify-between mt-3">
               <span>Tax (8%)</span>
