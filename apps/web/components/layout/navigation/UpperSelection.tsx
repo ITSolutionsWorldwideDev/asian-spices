@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useEffect, useState } from "react";
 
 interface Country {
@@ -8,40 +9,78 @@ interface Country {
   code: string;
 }
 
-interface Currency {
-  id: number;
-  name: string;
-  code: string;
-  symbol: string;
-}
+
 
 export default function UpperSelection() {
+  const {
+    currencies,
+    selectedCurrency,
+    rate,
+    fetchCurrencies,
+    setSelectedCurrency,
+  } = useCurrencyStore();
+
+  console.log(currencies);
+  console.log(selectedCurrency);
+  console.log(rate);
+  // console.log(fetchCurrencies);
+
+  useEffect(() => {
+    fetchCurrencies();
+  }, []);
   const [countries, setCountries] = useState<Country[]>([]);
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  // const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCurrency, setSelectedCurrency] = useState("");
-
+  // const [selectedCurrency, setSelectedCurrency] = useState("");
+  // const [rate, setRate] = useState(1);
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {
-      const [countryRes, currencyRes] = await Promise.all([
+      const [countryRes] = await Promise.all([
         fetch("/api/countries"),
-        fetch("/api/curriencies"),
+        // fetch("/api/curriencies"),
       ]);
 
       const countriesData = await countryRes.json();
-      const currenciesData = await currencyRes.json();
+      // const currenciesData = await currencyRes.json();
 
-      console.log(countriesData);
-      console.log(currenciesData);
       setCountries(countriesData);
-      setCurrencies(currenciesData);
+      // setCurrencies(currenciesData);
     };
 
     fetchData();
   }, []);
+  // console.log(currencies);
 
+  // useEffect(() => {
+  //   if (currencies.length > 0) {
+  //     const baseCurrency = currencies.find((c) => c.is_base === true);
+
+  //     if (baseCurrency) {
+  //       setSelectedCurrency(baseCurrency.code);
+  //     }
+  //   }
+  // }, [currencies]);
+
+  // useEffect(() => {
+  //   if (!selectedCurrency) return;
+
+  //   const fetchRate = async () => {
+  //     const res = await fetch(`/api/currency-rate?code=${selectedCurrency}`);
+  //     const data = await res.json();
+
+  //     if (data?.rate) {
+  //       // setRate(data.rate);
+  //     }
+  //   };
+
+  //   fetchRate();
+  // }, [selectedCurrency]);
+
+  // console.log(rate);
+
+  // console.log(selectedCurrency);
   return (
     <nav className="flex items-center justify-between px-6 py-3 ">
       {/* LEFT SIDE */}
@@ -68,7 +107,6 @@ export default function UpperSelection() {
           onChange={(e) => setSelectedCurrency(e.target.value)}
           className="border px-3 py-1 rounded-md bg-white"
         >
-          <option value="">Select Currency</option>
           {currencies.map((c) => (
             <option key={c.id} value={c.code}>
               {c.symbol} - {c.code}

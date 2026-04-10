@@ -21,7 +21,7 @@ export async function createStoreFromPartner(partner: any) {
     // ensure uniqueness
     const slugCheck = await client.query(
       `SELECT 1 FROM stores WHERE slug = $1`,
-      [slug]
+      [slug],
     );
 
     if (slugCheck.rows.length > 0) {
@@ -32,12 +32,7 @@ export async function createStoreFromPartner(partner: any) {
     await client.query(
       `INSERT INTO stores (id, name, slug, owner_email, status)
        VALUES ($1, $2, $3, $4, 'active')`,
-      [
-        storeId,
-        partner.company_name,
-        slug,
-        partner.business_email_address,
-      ]
+      [storeId, partner.company_name, slug, partner.business_email_address],
     );
 
     // 4️⃣ Create User (store owner)
@@ -52,13 +47,13 @@ export async function createStoreFromPartner(partner: any) {
         partner.business_email_address,
         passwordHash,
         `${partner.first_name} ${partner.last_name}`,
-        storeId
-      ]
+        storeId,
+      ],
     );
 
     // 5️⃣ Get store_owner role
     const roleRes = await client.query(
-      `SELECT id FROM roles WHERE key = 'store_owner'`
+      `SELECT id FROM roles WHERE key = 'store_owner'`,
     );
 
     const roleId = roleRes.rows[0].id;
@@ -67,7 +62,7 @@ export async function createStoreFromPartner(partner: any) {
     await client.query(
       `INSERT INTO store_users (store_id, user_id, role_id)
        VALUES ($1, $2, $3)`,
-      [storeId, userId, roleId]
+      [storeId, userId, roleId],
     );
 
     // 7️⃣ Default settings
@@ -94,46 +89,42 @@ export async function createStoreFromPartner(partner: any) {
 async function createDefaultStoreSetup(
   client: any,
   storeId: string,
-  partner: any
+  partner: any,
 ) {
   await client.query(
     `INSERT INTO store_settings (store_id, store_email, store_phone)
      VALUES ($1, $2, $3)`,
-    [
-      storeId,
-      partner.business_email_address,
-      partner.business_phone_number,
-    ]
+    [storeId, partner.business_email_address, partner.business_phone_number],
   );
 
   await client.query(
     `INSERT INTO store_addresses (store_id, address_line1, city, country)
      VALUES ($1, $2, $3, $4)`,
-    [storeId, partner.street, partner.city, partner.country]
+    [storeId, partner.street, partner.city, partner.country],
   );
 
   await client.query(
     `INSERT INTO store_payment_settings (store_id)
      VALUES ($1)`,
-    [storeId]
+    [storeId],
   );
 
   await client.query(
     `INSERT INTO store_shipping_settings (store_id)
      VALUES ($1)`,
-    [storeId]
+    [storeId],
   );
 
   await client.query(
     `INSERT INTO store_tax_settings (store_id)
      VALUES ($1)`,
-    [storeId]
+    [storeId],
   );
 }
 
 async function assignDefaultPlan(client: any, storeId: string) {
   const planRes = await client.query(
-    `SELECT id FROM plans WHERE is_active = true LIMIT 1`
+    `SELECT id FROM plans WHERE is_active = true LIMIT 1`,
   );
 
   if (!planRes.rows.length) return;
@@ -143,6 +134,6 @@ async function assignDefaultPlan(client: any, storeId: string) {
   await client.query(
     `INSERT INTO subscriptions (id, store_id, plan_id, status)
      VALUES ($1, $2, $3, 'active')`,
-    [randomUUID(), storeId, planId]
+    [randomUUID(), storeId, planId],
   );
 }

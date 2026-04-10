@@ -15,11 +15,12 @@ import Link from "next/link";
 // import Nav from "@/components/ui/Nav";
 import EmptyWishList from "./EmptyWishList";
 import RedirectButtons from "./RedirectButtons";
-import ProductCard from "@/components/ui/ProductCard";
-import ProductDesc from "@/components/ui/ProductDesc";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 // import Footer from "@/components/ui/Footer";
 
 export default function WishList() {
+  const { symbol, rate } = useCurrencyStore();
+
   const {
     items: wishlist,
     removeFromWishlist,
@@ -118,7 +119,8 @@ export default function WishList() {
                   <div>
                     <p className="text-sm text-gray-600">Total Value</p>
                     <p className="text-3xl font-bold text-gray-900">
-                      ${totalValue.toFixed(2)}
+                      {symbol}
+                      {(rate * totalValue).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -178,7 +180,7 @@ export default function WishList() {
                       {item.price && (
                         <div className="flex items-center space-x-1">
                           <p className="font-bold text-2xl text-orange-500">
-                            ${item.price}
+                            {symbol}{(rate * item.price).toFixed(2)}
                           </p>
                           {/* {item.oldPrice && (
                             <p className="text-sm text-gray-400 line-through">
