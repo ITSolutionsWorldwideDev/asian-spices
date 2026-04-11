@@ -1,5 +1,7 @@
 // apps/admin/lib/order-routing.ts
 
+import { AppError } from "./errors";
+
 type StoreCandidate = {
   store_id: string;
   total_price: number;
@@ -28,7 +30,6 @@ export const getCandidateStores = async (
   orderId: string,
   country: string,
 ): Promise<StoreCandidate[]> => {
-
   const { rows } = await client.query(
     `
     SELECT 
@@ -91,9 +92,18 @@ export const sortStores = (
     });
 };
 
-const DEFAULT_STORE_ID = "YOUR_DEFAULT_STORE_ID";
+// const DEFAULT_STORE_ID = "YOUR_DEFAULT_STORE_ID";
+const DEFAULT_STORE_ID = "afef3fd5-c31a-440a-ae56-99eca0b24359";
 
 export const assignDefaultStore = async (client: any, orderId: string) => {
+  if (!DEFAULT_STORE_ID) {
+    throw new AppError(
+      "Default store not configured",
+      "DEFAULT_STORE_MISSING",
+      500,
+    );
+  }
+
   await client.query(
     `
     UPDATE store_orders
@@ -115,41 +125,36 @@ export const assignDefaultStore = async (client: any, orderId: string) => {
 
 export const assignNextStore = async (client: any, orderId: string) => {
   try {
-
     const { rows: orderRows } = await client.query(
       `SELECT o.*, ss.country_code as country
        FROM store_orders AS o
-       LEFT JOIN store_settings ss ON ss.store_id = o.store_id
+       LEFT JOIN store_settings ss ON ss.store_id = o.current_store_id
        WHERE o.id = $1`,
       [orderId],
     );
 
-    // SELECT 
-    //   spc.store_id,
-    //   SUM(spc.price * oi.quantity) AS total_price,
-    //   sa.latitude,
-    //   sa.longitude,
-    //   sa.country
-    // FROM store_order_items oi
-    // JOIN store_product_catalog spc ON spc.product_id = oi.product_id
-    // JOIN store_addresses sa ON sa.store_id = spc.store_id
-    // WHERE oi.order_id = $1
-    //   AND spc.status = 1
-    //   AND sa.country = $2
-    // GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
-
     const order = orderRows[0];
+
+    if (!order) {
+      throw new AppError("Order not found", "ORDER_NOT_FOUND", 404);
+    }
 
     if (order.rejection_count >= 3) {
       await assignDefaultStore(client, orderId);
       return;
     }
-    
+
     const stores = await getCandidateStores(client, orderId, order.country);
 
-    const availableStores = [];
+    if (!stores.length) {
+      throw new AppError(
+        "No stores available for this order",
+        "NO_STORES",
+        400,
+      );
+    }
 
-    console.log("assignNextStore stores ==== ", stores);
+    const availableStores = [];
 
     for (const store of stores) {
       const isOpen = await isStoreOpenNow(client, store.store_id);
@@ -200,6 +205,10 @@ export const assignNextStore = async (client: any, orderId: string) => {
       [nextStore.store_id, orderId],
     );
 
+    // Scenrio 3: Partial allocation
+
+    await createAllocations(client, orderId, nextStore.store_id);
+
     await client.query(
       `
         INSERT INTO order_routing_attempts
@@ -221,8 +230,72 @@ export const assignNextStore = async (client: any, orderId: string) => {
       },
     });
   } catch (err) {
-    console.log("assignNextStore err ==== ", err);
+    console.error("assignNextStore err ==== ", err);
+    throw err;
   }
+};
+
+const createAllocations = async (
+  client: any,
+  orderId: string,
+  storeId: string,
+) => {
+  await client.query(
+    `
+    INSERT INTO order_item_allocations
+    (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+    SELECT 
+      oi.id,
+      $1,
+      (oi.quantity - COALESCE(oi.fulfilled_quantity,0)) as remaining,
+      0,
+      'pending'
+    FROM store_order_items oi
+    WHERE oi.order_id = $2
+      AND (oi.quantity - COALESCE(oi.fulfilled_quantity,0)) > 0
+    `,
+    [storeId, orderId],
+  );
+};
+
+export const resolveOrderStatus = async (client: any, orderId: string) => {
+  const { rows } = await client.query(
+    `
+      SELECT 
+        SUM(quantity) as total,
+        SUM(fulfilled_quantity) as fulfilled
+      FROM store_order_items
+      WHERE order_id = $1
+    `,
+    [orderId],
+  );
+
+  const total = Number(rows[0].total || 0);
+  const fulfilled = Number(rows[0].fulfilled || 0);
+
+  let orderStatus = "pending";
+  let fulfillmentStatus = "pending";
+
+  if (fulfilled === 0) {
+    orderStatus = "pending";
+    fulfillmentStatus = "pending";
+  } else if (fulfilled < total) {
+    orderStatus = "partially_confirmed";
+    fulfillmentStatus = "partial";
+  } else {
+    orderStatus = "confirmed";
+    fulfillmentStatus = "fulfilled";
+  }
+
+  await client.query(
+    `
+      UPDATE store_orders
+      SET order_status = $1,
+          fulfillment_status = $2
+      WHERE id = $3
+    `,
+    [orderStatus, fulfillmentStatus, orderId],
+  );
 };
 
 export const logOrderEvent = async (
@@ -321,7 +394,10 @@ export const isStoreOpenNow = async (client: any, storeId: string) => {
   const wh = rows[0];
   if (wh.is_closed) return false;
 
-  console.log('isStoreOpenNow currentTime === ',currentTime >= wh.open_time && currentTime <= wh.close_time);
+  console.log(
+    "isStoreOpenNow currentTime === ",
+    currentTime >= wh.open_time && currentTime <= wh.close_time,
+  );
 
   return currentTime >= wh.open_time && currentTime <= wh.close_time;
 };

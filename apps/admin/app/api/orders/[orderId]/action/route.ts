@@ -7,6 +7,7 @@ import {
   logOrderEvent,
   ORDER_EVENTS,
 } from "@/lib/order-routing";
+import { AppError } from "@/lib/errors";
 
 export async function POST(req: NextRequest, { params }: any) {
   const client = await pool.connect();
@@ -70,7 +71,26 @@ export async function POST(req: NextRequest, { params }: any) {
     return NextResponse.json({ success: true });
   } catch (err) {
     await client.query("ROLLBACK");
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+
+    if (err instanceof AppError) {
+      return NextResponse.json(
+        {
+          error: err.message,
+          code: err.code,
+        },
+        { status: err.statusCode },
+      );
+    }
+
+    console.error(err);
+    return NextResponse.json(
+      {
+        error: "Something went wrong",
+        code: "INTERNAL_ERROR",
+      },
+      { status: 500 },
+    );
+    // return NextResponse.json({ error: "Failed" }, { status: 500 });
   } finally {
     client.release();
   }

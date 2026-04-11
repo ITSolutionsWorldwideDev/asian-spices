@@ -221,20 +221,8 @@ export default function OrderDetailPage() {
 
   const handleShipOrder = async () => {
     try {
+      
       setShippingLoading(true);
-
-      /* 
-      const res = await fetch(`/api/orders/${orderId}/ship`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(shipping),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error); */
 
       const res = await fetch(`/api/orders/${orderId}/ship`, {
         method: "POST",

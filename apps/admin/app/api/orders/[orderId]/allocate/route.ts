@@ -7,6 +7,7 @@ import {
   assignNextStore,
   logOrderEvent,
   ORDER_EVENTS,
+  resolveOrderStatus,
 } from "@/lib/order-routing";
 
 export async function POST(
@@ -124,6 +125,8 @@ export async function POST(
         [orderId],
       );
 
+      await resolveOrderStatus(client, orderId);
+
       await logOrderEvent(client, {
         orderId,
         eventType: ORDER_EVENTS.ACCEPTED,
@@ -169,21 +172,24 @@ export async function POST(
         // update order item
         await client.query(
           `
-          UPDATE store_order_items
-          SET fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1
-          WHERE id = $2
+            UPDATE store_order_items
+            SET 
+              fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1,
+              status = CASE
+                WHEN COALESCE(fulfilled_quantity,0) + $1 = quantity THEN 'fulfilled'
+                WHEN COALESCE(fulfilled_quantity,0) + $1 = 0 THEN 'pending'
+                ELSE 'partial'
+              END
+            WHERE id = $2
           `,
           [fulfillQty, item.id],
         );
         // await client.query(
-        //   `UPDATE store_order_items
-        //    SET fulfilled_quantity = $1,
-        //        status = CASE
-        //          WHEN $1 = 0 THEN 'out_of_stock'
-        //          WHEN $1 < quantity THEN 'partial'
-        //          ELSE 'fulfilled'
-        //        END
-        //    WHERE id = $2`,
+        //   `
+        //   UPDATE store_order_items
+        //   SET fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1
+        //   WHERE id = $2
+        //   `,
         //   [fulfillQty, item.id],
         // );
 
@@ -207,6 +213,7 @@ export async function POST(
       );
 
       // 🔥 route remaining items
+      await resolveOrderStatus(client, orderId);
       await assignNextStore(client, orderId);
 
       await logOrderEvent(client, {

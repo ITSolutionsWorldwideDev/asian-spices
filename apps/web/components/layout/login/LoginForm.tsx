@@ -1,7 +1,78 @@
-import React from "react";
+// apps/web/components/layout/login/LoginForm.tsx
+
+"use client";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-const LoginForm = () => {
+import { signIn } from "next-auth/react";
+import { z } from "zod";
+
+/* ---------------- SCHEMA ---------------- */
+const loginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password required"),
+});
+
+export default function LoginForm() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  function zodToFieldErrors(issues: z.ZodIssue[]): Record<string, string> {
+    const errors: Record<string, string> = {};
+
+    issues.forEach((err) => {
+      const key = err.path[0];
+
+      if (typeof key === "string") {
+        errors[key] = err.message;
+      }
+    });
+
+    return errors;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = loginSchema.safeParse(form);
+
+    if (!result.success) {
+      setErrors(zodToFieldErrors(result.error.issues));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setErrors({ email: "Invalid email or password" });
+        return;
+      }
+
+      window.location.href = "/";
+    } catch {
+      setErrors({ email: "Login failed" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className=" flex items-center justify-center ">
       <div className="w-full max-w-md">
@@ -26,15 +97,18 @@ const LoginForm = () => {
         </p>
 
         {/* Form */}
-        <form className="space-y-4 text-left">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
           {/* Email */}
           <div>
             <label className="text-sm text-gray-600 font-bold">Email</label>
             <input
               type="email"
-              placeholder="Example@email.com"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
               className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
+            {errors.email && <p className="error">{errors.email}</p>}
           </div>
 
           {/* Password */}
@@ -42,9 +116,12 @@ const LoginForm = () => {
             <label className="text-sm text-gray-600 font-bold">Password</label>
             <input
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
               className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
+            {errors.password && <p className="error">{errors.password}</p>}
           </div>
 
           {/* Sign up button */}
@@ -52,7 +129,7 @@ const LoginForm = () => {
             type="submit"
             className="w-full py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition"
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
@@ -62,19 +139,6 @@ const LoginForm = () => {
           {/* <span className="px-3 text-sm text-gray-400">Or</span> */}
           <div className="flex-1 h-px bg-gray-200" />
         </div>
-
-        {/* Google Button */}
-        {/* <button className="w-full flex items-center justify-center gap-2  py-3 rounded-lg hover:bg-gray-50 transition bg-white">
-          <Image
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            width={20}
-            height={20}
-          />
-          <span className="text-sm font-medium text-gray-700">
-            Sign in with Google
-          </span>
-        </button> */}
 
         {/* Login link */}
         <p className="text-sm text-gray-500 mt-6 font-bold">
@@ -86,11 +150,26 @@ const LoginForm = () => {
 
         {/* Footer */}
         <p className="text-xs text-gray-400 mt-10">
-          © 2025 ALL RIGHTS RESERVED
+          © 2026 ALL RIGHTS RESERVED
         </p>
       </div>
     </div>
   );
-};
+}
 
-export default LoginForm;
+{
+  /* Google Button */
+}
+{
+  /* <button className="w-full flex items-center justify-center gap-2  py-3 rounded-lg hover:bg-gray-50 transition bg-white">
+          <Image
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            width={20}
+            height={20}
+          />
+          <span className="text-sm font-medium text-gray-700">
+            Sign in with Google
+          </span>
+        </button> */
+}

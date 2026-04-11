@@ -5,13 +5,12 @@ import { redirect } from "next/navigation";
 import { adminAuthOptions } from "@acme/auth/admin";
 import Link from "next/link";
 import { getPlatformDashboardData } from "@/lib/services/platformDashboard";
+import AdminAnalytics from "@/components/platform/stores/AdminAnalytics";
 
 /**
  * Platform (Super Admin) Dashboard
  * Visible only to platform admins / owners
  */
-
-
 
 export default async function PlatformDashboard() {
   const session = await getServerSession(adminAuthOptions);
@@ -31,7 +30,6 @@ export default async function PlatformDashboard() {
       <div className="content">
         <div className="bg-gray-50/50 p-6">
           <div className="max-w-7xl mx-auto">
-      
             <div className="mb-8">
               <h1 className="text-2xl font-bold tracking-tight text-gray-900">
                 Platform Dashboard
@@ -41,7 +39,6 @@ export default async function PlatformDashboard() {
               </p>
             </div>
 
-       
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
                 { label: "Total Stores", value: data.totalStores },
@@ -69,7 +66,6 @@ export default async function PlatformDashboard() {
               ))}
             </div>
 
-       
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div className="bg-white border rounded-xl p-6 shadow-sm">
                 <h6 className="text-xs text-gray-500">
@@ -81,17 +77,14 @@ export default async function PlatformDashboard() {
               </div>
 
               <div className="bg-white border rounded-xl p-6 shadow-sm">
-                <h6 className="text-xs text-gray-500">
-                  Pending Approvals
-                </h6>
+                <h6 className="text-xs text-gray-500">Pending Approvals</h6>
                 <h3 className="text-2xl font-bold mt-2 text-yellow-600">
                   {data.pendingPartners}
                 </h3>
               </div>
             </div>
 
-    
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6  mb-8">
               <div className="bg-white border rounded-xl p-8 shadow-sm">
                 <h5 className="text-lg font-bold">Stores</h5>
                 <p className="text-gray-500 text-sm mt-2 mb-6">
@@ -112,7 +105,6 @@ export default async function PlatformDashboard() {
                 </Link>
               </div>
 
-   
               <div className="bg-white border rounded-xl p-8 shadow-sm">
                 <h5 className="text-lg font-bold">Partners</h5>
                 <p className="text-gray-500 text-sm mt-2 mb-6">
@@ -123,9 +115,11 @@ export default async function PlatformDashboard() {
                 </Link>
               </div>
             </div>
+
+            <AdminAnalytics />
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

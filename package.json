@@ -79,6 +79,7 @@
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.555.0",
     "next-auth": "^4.24.13",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.13",
     "paynl-sdk": "^2.0.1",
     "pdf-lib": "^1.17.1",

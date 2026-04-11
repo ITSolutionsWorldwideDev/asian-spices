@@ -22,23 +22,3 @@ export const webAuthOptions: NextAuthOptions = {
     signIn: "/login"
   }
 };
-
-/* import { providers } from "../core/providers";
-import { callbacks } from "../core/callbacks";
-
-import { createCallbacks } from "../core/callbacks";
-import { SESSION_IDLE_TIME } from "../core/constants";
-
-callbacks: createCallbacks(SESSION_IDLE_TIME.WEB)
-
-export const webAuthOptions = {
-  providers,
-  callbacks,
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60
-  },
-  pages: {
-    signIn: "/login"
-  }
-}; */

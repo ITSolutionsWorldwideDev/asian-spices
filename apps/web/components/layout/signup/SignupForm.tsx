@@ -1,11 +1,99 @@
+// apps/web/components/layout/signup/SignupForm.tsx
+
 "use client";
 
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { z } from "zod";
+import { signIn } from "next-auth/react";
 
-const SignupForm = () => {
-  // const [type, setType] = useState<"user" | "partner">("user");
+/* ---------------- ZOD SCHEMA ---------------- */
+const signupSchema = z
+  .object({
+    email: z.string().email("Invalid email"),
+    phone: z.string().min(8, "Phone is required"),
+    password: z.string().min(8, "Minimum 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export default function SignupForm() {
+  const [form, setForm] = useState({
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  function zodToFieldErrors(issues: z.ZodIssue[]): Record<string, string> {
+    const errors: Record<string, string> = {};
+
+    issues.forEach((err) => {
+      const key = err.path[0];
+
+      if (typeof key === "string") {
+        errors[key] = err.message;
+      }
+    });
+
+    return errors;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    /* ---------------- VALIDATION ---------------- */
+    const result = signupSchema.safeParse(form);
+
+    if (!result.success) {
+      setErrors(zodToFieldErrors(result.error.issues));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      /* ---------------- API CALL ---------------- */
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors({ email: data.error || "Signup failed" });
+        return;
+      }
+
+      /* ---------------- AUTO LOGIN ---------------- */
+      await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        callbackUrl: "/",
+      });
+    } catch (err) {
+      setErrors({ email: "Something went wrong" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -39,9 +127,100 @@ const SignupForm = () => {
           </Link>
         </div>
 
-        {/* Toggle */}
-        {/* <div className="mb-8 flex rounded-lg bg-gray-100 p-1"> */}
-        {/* <button
+        {/* ================= USER FORM ================= */}
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+          <div>
+            <label className="text-sm font-bold text-gray-600">Email</label>
+            <input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            {errors.email && <p className="error">{errors.email}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-gray-600">Phone No</label>
+            <input
+              type="tel"
+              placeholder="Phone"
+              value={form.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            {errors.phone && <p className="error">{errors.phone}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-gray-600">Password</label>
+            <input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            {errors.password && <p className="error">{errors.password}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-gray-600">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={form.confirmPassword}
+              onChange={(e) => handleChange("confirmPassword", e.target.value)}
+              className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            {errors.confirmPassword && (
+              <p className="error">{errors.confirmPassword}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-slate-900 py-3 font-medium text-white
+                         hover:bg-slate-800 transition"
+          >
+            {loading ? "Creating..." : "Sign Up"}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="mt-6 text-sm font-bold text-gray-500">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Login
+          </Link>
+        </p>
+
+        <p className="mt-10 text-xs text-gray-400">
+          © 2026 ALL RIGHTS RESERVED
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// const [type, setType] = useState<"user" | "partner">("user");
+{
+  /* Toggle */
+}
+{
+  /* <div className="mb-8 flex rounded-lg bg-gray-100 p-1"> */
+}
+{
+  /* <button
             // onClick={() => setType("user")}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition
               // 
@@ -51,9 +230,11 @@ const SignupForm = () => {
               `}
           >
             Signup as User
-          </button> */}
+          </button> */
+}
 
-        {/* <button
+{
+  /* <button
             // onClick={() => setType("partner")}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition
               ${
@@ -63,70 +244,16 @@ const SignupForm = () => {
               }`}
           >
             Signup as Partner
-          </button> */}
-        {/* </div> */}
-
-        {/* ================= USER FORM ================= */}
-        {
-          <form className="space-y-4 text-left">
-            <div>
-              <label className="text-sm font-bold text-gray-600">Email</label>
-              <input
-                type="email"
-                placeholder="example@email.com"
-                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-gray-300"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-bold text-gray-600">
-                Phone No
-              </label>
-              <input
-                type="tel"
-                placeholder="+914 1665 49894"
-                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-gray-300"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-bold text-gray-600">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="At least 8 characters"
-                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-gray-300"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-bold text-gray-600">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                placeholder="At least 8 characters"
-                className="w-full mt-1 rounded-lg border border-gray-300 px-4 py-3 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-gray-300"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-slate-900 py-3 font-medium text-white
-                         hover:bg-slate-800 transition"
-            >
-              Sign up
-            </button>
-          </form>
-        }
-
-        {/* ================= PARTNER FORM ================= */}
-        {/* {type === "partner" && (
+          </button> */
+}
+{
+  /* </div> */
+}
+{
+  /* ================= PARTNER FORM ================= */
+}
+{
+  /* {type === "partner" && (
           <form className="space-y-4 text-left">
             <div>
               <label className="text-sm font-bold text-gray-600">
@@ -218,22 +345,5 @@ const SignupForm = () => {
               Register as Partner
             </button>
           </form>
-        )} */}
-
-        {/* Footer */}
-        <p className="mt-6 text-sm font-bold text-gray-500">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Login
-          </Link>
-        </p>
-
-        <p className="mt-10 text-xs text-gray-400">
-          © 2025 ALL RIGHTS RESERVED
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default SignupForm;
+        )} */
+}

@@ -20,6 +20,7 @@ type Order = {
   payment_status: string;
   order_status: string;
   fulfillment_status: string;
+  current_store_id?: string;
 };
 
 type Filters = {

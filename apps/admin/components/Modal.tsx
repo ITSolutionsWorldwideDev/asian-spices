@@ -1,3 +1,4 @@
+// apps/admin/components/Modal.tsx
 interface ModalProps {
   open: boolean;
   onClose: () => void;
