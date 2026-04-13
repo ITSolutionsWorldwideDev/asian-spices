@@ -9,21 +9,30 @@ import { pool } from "@acme/db";
 // Pay.nl config
 const PAYNL_SERVICE_ID = process.env.PAYNL_SERVICE_ID;
 const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
-const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
+// const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
+const PAYNL_API_URL = "https://rest-api.pay.nl/v1/Transaction/start";
 
 // PayPal config
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
-const PAYPAL_API = process.env.NODE_ENV === "production"
-  ? "https://api-m.paypal.com"
-  : "https://api-m.sandbox.paypal.com";
+const PAYPAL_API =
+  process.env.NODE_ENV === "production"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
 
-async function createPayPalOrder(orderNumber: string, amount: number, returnUrl: string, cancelUrl: string) {
+async function createPayPalOrder(
+  orderNumber: string,
+  amount: number,
+  returnUrl: string,
+  cancelUrl: string,
+) {
   // 1. Get access token
   const tokenRes = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
     method: "POST",
     headers: {
-      Authorization: "Basic " + Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString("base64"),
+      Authorization:
+        "Basic " +
+        Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString("base64"),
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
@@ -58,7 +67,9 @@ async function createPayPalOrder(orderNumber: string, amount: number, returnUrl:
   });
 
   const orderData = await orderRes.json();
-  const approveLink = orderData.links.find((link: any) => link.rel === "approve")?.href;
+  const approveLink = orderData.links.find(
+    (link: any) => link.rel === "approve",
+  )?.href;
 
   return { orderData, approveLink };
 }
@@ -68,18 +79,25 @@ export async function POST(req: NextRequest) {
     const { orderId, amount, customerEmail, paymentMethod } = await req.json();
 
     if (!orderId || !amount || !customerEmail || !paymentMethod) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
 
     // Fetch order from DB
-    const orderRes = await pool.query(`SELECT * FROM store_orders WHERE id = $1`, [orderId]);
-    if (!orderRes.rows.length) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const orderRes = await pool.query(
+      `SELECT * FROM store_orders WHERE id = $1`,
+      [orderId],
+    );
+    if (!orderRes.rows.length)
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     const order = orderRes.rows[0];
 
     if (paymentMethod === "paynl") {
       // Prepare Pay.nl payload
-      const paymentPayload = {
+      /* const paymentPayload = {
         serviceId: PAYNL_SERVICE_ID,
         apiToken: PAYNL_API_TOKEN,
         amount: Math.round(amount * 100), // cents
@@ -95,150 +113,109 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(paymentPayload),
       });
+      */
+
+      const params = new URLSearchParams();
+
+      params.append("serviceId", PAYNL_SERVICE_ID!);
+      params.append("amount", Math.round(amount * 100).toString());
+      // params.append("paymentOptionId", "1"); // card
+      // params.append("paymentOptionId", paymentOptionIdFromUI);
+      params.append("description", `Order ${order.order_number}`);
+      params.append("reference", order.id.toString());
+      params.append(
+        "returnUrl",
+        `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?orderId=${order.id}`,
+      );
+      params.append(
+        "exchangeUrl",
+        `${process.env.NEXT_PUBLIC_SITE_URL}/api/paynl/webhook`,
+      );
+      params.append("customer.email", customerEmail);
+
+      const response = await fetch(
+        "https://rest-api.pay.nl/v1/Transaction/start",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${PAYNL_API_TOKEN}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: params.toString(),
+        },
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Pay.nl HTTP error: ${text}`);
+      }
 
       const data = await response.json();
-      if (!data.success) return NextResponse.json({ error: "Pay.nl failed", details: data }, { status: 500 });
+
+      console.log("Webhook from:", req.headers.get("x-forwarded-for"));
+
+      console.log("Pay.nl response:", data);
+
+      if (data.status !== "success") {
+        return NextResponse.json(
+          { error: "Pay.nl failed", details: data },
+          { status: 500 },
+        );
+      }
+      // if (!data.success)
+      //   return NextResponse.json(
+      //     { error: "Pay.nl failed", details: data },
+      //     { status: 500 },
+      //   );
+
+      const transactionId = data.transaction.transactionId;
+      const redirectUrl = data.transaction.paymentURL;
 
       // Save transactionId
       await pool.query(
         `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
-        [data.transactionId, "paynl", order.id]
+        [transactionId, "paynl", order.id],
+        // [data.transactionId, "paynl", order.id]
       );
 
-      return NextResponse.json({ success: true, redirectUrl: data.redirectUrl, transactionId: data.transactionId });
+      return NextResponse.json({
+        success: true,
+        redirectUrl: redirectUrl,
+        transactionId: transactionId,
+      });
+      // return NextResponse.json({ success: true, redirectUrl: data.redirectUrl, transactionId: data.transactionId });
     }
 
     if (paymentMethod === "paypal") {
       const returnUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?orderId=${order.id}`;
       const cancelUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/cancel?orderId=${order.id}`;
 
-      const { approveLink, orderData } = await createPayPalOrder(order.order_number, amount, returnUrl, cancelUrl);
+      const { approveLink, orderData } = await createPayPalOrder(
+        order.order_number,
+        amount,
+        returnUrl,
+        cancelUrl,
+      );
 
       // Save PayPal order ID as transaction_id
       await pool.query(
         `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
-        [orderData.id, "paypal", order.id]
+        [orderData.id, "paypal", order.id],
       );
 
-      return NextResponse.json({ success: true, redirectUrl: approveLink, transactionId: orderData.id });
+      return NextResponse.json({
+        success: true,
+        redirectUrl: approveLink,
+        transactionId: orderData.id,
+      });
     }
 
-    return NextResponse.json({ error: "Unsupported payment method" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Unsupported payment method" },
+      { status: 400 },
+    );
   } catch (err) {
     console.error("Create payment error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
-
-/* // Pay.nl config (set in env)
-const PAYNL_SERVICE_ID = process.env.PAYNL_SERVICE_ID;
-const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
-const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
-
-export async function POST(req: NextRequest) {
-  try {
-    const { orderId, amount, customerEmail, paymentMethod } = await req.json();
-
-    if (!orderId || !amount || !customerEmail) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
-
-    // 1️⃣ Fetch order from DB
-    const orderRes = await pool.query(
-      `SELECT * FROM store_orders WHERE id = $1`,
-      [orderId],
-    );
-
-    if (!orderRes.rows.length) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-
-    const order = orderRes.rows[0];
-
-    // 2️⃣ Prepare payment payload
-    // Pay.nl expects amounts in cents
-    const paymentPayload = {
-      serviceId: PAYNL_SERVICE_ID,
-      apiToken: PAYNL_API_TOKEN,
-      amount: Math.round(amount * 100), // convert to cents
-      paymentOptionId: paymentMethod === "paypal" ? 574 : 1, // example IDs
-      description: `Order ${order.order_number}`,
-      returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?orderId=${order.id}`,
-      exchangeUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/paynl/webhook`,
-      customer: {
-        email: customerEmail,
-      },
-    };
-
-    // 3️⃣ Call Pay.nl API
-    const response = await fetch(PAYNL_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(paymentPayload),
-    });
-
-    const data = await response.json();
-
-    if (!data.success) {
-      return NextResponse.json(
-        { error: "Failed to create payment", details: data },
-        { status: 500 },
-      );
-    }
-
-    // 4️⃣ Save transaction ID to order
-    await pool.query(
-      `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
-      [data.transactionId, paymentMethod, order.id],
-    );
-
-    // 5️⃣ Return redirect URL to frontend
-    return NextResponse.json({
-      success: true,
-      redirectUrl: data.redirectUrl,
-      transactionId: data.transactionId,
-    });
-  } catch (err) {
-    console.error("Create payment error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
-} */
-
-/* export async function POST(req: NextRequest) {
-  try {
-    const body: CreatePaymentRequest = await req.json();
-
-    const { amount, orderId, customerEmail } = body;
-
-    if (!amount || !orderId || !customerEmail) {
-      return NextResponse.json<CreatePaymentResponse>(
-        { error: 'Invalid payload' },
-        { status: 400 }
-      );
-    }
-
-    const result = await Paynl.Transaction.start({
-      amount: Math.round(amount * 100), // cents
-      currency: 'EUR',
-      description: `Order #${orderId}`,
-      returnUrl: `${process.env.BASE_URL}/checkout/success`,
-      exchangeUrl: `${process.env.BASE_URL}/api/webhook`,
-      email: customerEmail,
-    });
-
-    return NextResponse.json<CreatePaymentResponse>({
-      redirectUrl: result.paymentURL,
-      transactionId: result.transactionId,
-    });
-  } catch (error) {
-    console.error('Payment error:', error);
-
-    return NextResponse.json<CreatePaymentResponse>(
-      { error: 'Payment initialization failed' },
-      { status: 500 }
-    );
-  }
-} */

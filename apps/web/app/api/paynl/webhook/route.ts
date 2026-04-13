@@ -8,14 +8,16 @@ import { pool } from "@acme/db";
  */
 export async function POST(req: NextRequest) {
   try {
-
     // Security: verify signature first
-    const signature = req.headers.get("x-paynl-signature");
+    /* const signature = req.headers.get("x-paynl-signature");
     if (!signature || signature !== process.env.PAYNL_WEBHOOK_SECRET) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    } */
 
-    const body = await req.json();
+    // const body = await req.json();
 
     /**
      * Example payload from Pay.nl (simplified)
@@ -25,9 +27,15 @@ export async function POST(req: NextRequest) {
      *   status: "paid" | "pending" | "failed"
      * }
      */
-    const { orderId, transactionId, status } = body;
+    // const { orderId, transactionId, status } = body;
+    const bodyText = await req.text();
+    const params = new URLSearchParams(bodyText);
 
-    if (!orderId || !transactionId || !status) {
+    const transactionId = params.get("txid");
+    const statusCode = params.get("status");
+    const orderId = params.get("reference");
+
+    if (!orderId || !transactionId || !statusCode) {
       return NextResponse.json(
         { success: false, error: "Missing fields" },
         { status: 400 },
@@ -36,8 +44,12 @@ export async function POST(req: NextRequest) {
 
     // Map Pay.nl status to your DB enum/field
     let paymentStatus: "pending" | "paid" | "failed" = "pending";
-    if (status === "paid") paymentStatus = "paid";
-    else if (status === "failed") paymentStatus = "failed";
+
+    if (statusCode === "100") paymentStatus = "paid";
+    else if (statusCode === "-90") paymentStatus = "failed";
+
+    // if (statusCode === "paid") paymentStatus = "paid";
+    // else if (statusCode === "failed") paymentStatus = "failed";
 
     // Update store_orders table
     const client = await pool.connect();
@@ -76,56 +88,3 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/* 
-
-export async function POST(req: NextRequest) {
-  try {
-    // ✅ Security: verify signature first
-    const signature = req.headers.get("x-paynl-signature");
-    if (!signature || signature !== process.env.PAYNL_WEBHOOK_SECRET) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
-
-    const { orderId, transactionId, status } = body;
-
-    if (!orderId || !transactionId || !status) {
-      return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
-    }
-
-    const client = await pool.connect();
-    try {
-      // map Pay.nl status
-      let paymentStatus: "pending" | "paid" | "failed" = "pending";
-      if (status === "paid") paymentStatus = "paid";
-      else if (status === "failed") paymentStatus = "failed";
-
-      const result = await client.query(
-        `
-        UPDATE store_orders
-        SET payment_status = $1,
-            transaction_id = $2,
-            updated_at = NOW()
-        WHERE id = $3
-        RETURNING id, order_status, payment_status
-        `,
-        [paymentStatus, transactionId, orderId]
-      );
-
-      if (!result.rows.length) {
-        return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
-      }
-
-      console.log(`Order ${orderId} updated: ${paymentStatus}`);
-
-      return NextResponse.json({ success: true });
-    } finally {
-      client.release();
-    }
-  } catch (err) {
-    console.error("Webhook error:", err);
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
-  }
-}
-*/
