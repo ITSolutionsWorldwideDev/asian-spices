@@ -9,8 +9,6 @@ interface Country {
   code: string;
 }
 
-
-
 export default function UpperSelection() {
   const {
     currencies,

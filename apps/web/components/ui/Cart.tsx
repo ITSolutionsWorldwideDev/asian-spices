@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation";
 export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
+
+    
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
 

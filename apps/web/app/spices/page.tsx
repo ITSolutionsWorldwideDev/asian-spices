@@ -179,20 +179,20 @@ const SpicesPage = () => {
     },
   ];
   const title = "Spices";
-  const categoriesData = [
-    { name: "All Spices" },
-    {
-      name: "Indian Spices",
-      children: ["Garam Masala", "Turmeric", "Cumin", "Cardamom"],
-    },
-    {
-      name: "Chinese Spices",
-      children: ["Star Anise", "Szechuan Pepper", "Five Spice"],
-    },
+  // const categoriesData = [
+  //   { name: "All Spices" },
+  //   {
+  //     name: "Indian Spices",
+  //     children: ["Garam Masala", "Turmeric", "Cumin", "Cardamom"],
+  //   },
+  //   {
+  //     name: "Chinese Spices",
+  //     children: ["Star Anise", "Szechuan Pepper", "Five Spice"],
+  //   },
 
-    { name: "Thai Spices" }, // No children
-    { name: "Blend Spices" },
-  ];
+  //   { name: "Thai Spices" }, // No children
+  //   { name: "Blend Spices" },
+  // ];
 
   const storesData = [
     "Bvr Spices",
@@ -221,7 +221,7 @@ const SpicesPage = () => {
       />
       <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
         <ProductFilterSearch
-          categoriesData={categoriesData}
+          // categoriesData={categoriesData}
           storesData={storesData}
           title1={"Spices Category"}
           title2={"Stores"}

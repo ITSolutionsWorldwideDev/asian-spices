@@ -1,75 +1,100 @@
 "use client";
-
+import { usePathname } from "next/navigation";
+import { use, useEffect } from "react";
 import React, { useState } from "react";
-
-interface Category {
-  name: string;
-  children?: string[];
-}
+import { useCategoryFilterStore } from "@/store/useCategoryFilterStore";
 
 interface CategoryDataProp {
-  categoriesData: (string | Category)[];
+  // categoriesData: (string | Category)[];
   title1: string;
 }
 
-const CategoryFilter = ({ categoriesData, title1 }: CategoryDataProp) => {
+const CategoryFilter = ({ title1 }: CategoryDataProp) => {
+  const selectedCategories = useCategoryFilterStore(
+    (state) => state.selectedCategories,
+  );
+
+  console.log(selectedCategories);
+  const toggleCategory = useCategoryFilterStore(
+    (state) => state.toggleCategory,
+  );
+
+  const clearCategories = useCategoryFilterStore(
+    (state) => state.clearCategories,
+  );
+
+  const data = useCategoryFilterStore((state) => state.data);
+  const loading = useCategoryFilterStore((state) => state.loading);
+  const fetchCategories = useCategoryFilterStore(
+    (state) => state.fetchCategories,
+  );
+
   // 🔹 Safely resolve first category
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // const [data, setData] = useState<any>(null);
+  const pathname = usePathname();
+  // console.log(pathname);
+  const slug = pathname.split("/").filter(Boolean).pop();
+  console.log(slug);
+
+  useEffect(() => {
+    if (slug) {
+      fetchCategories(slug);
+    }
+  }, [slug, fetchCategories]);
+
+  // useEffect(() => {
+  //   if (!slug) return;
+
+  //   fetch(`/api/category/${slug}`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       // console.log(data); // categories + subcategories
+  //       setData(data.subcategories);
+  //     });
+  // }, [slug]);
+
+  console.log(data);
   const toggleMobile = () => {
     setIsMobileOpen((prev) => !prev);
   };
 
-  const toggleExpand = (name: string) => {
-    setExpandedCategories((prev) =>
-      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
-    );
-  };
+  // const toggleExpand = (name: string) => {
+  //   setExpandedCategories((prev) =>
+  //     prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name],
+  //   );
+  // };
 
-  const firstItem = categoriesData[0];
+  // const firstItem = data && data.length > 0 ? data[0] : null;
 
-  const firstCategory =
-    firstItem && typeof firstItem === "object"
-      ? firstItem.name
-      : typeof firstItem === "string"
-        ? firstItem
-        : "";
+  // const firstCategory =
+  //   firstItem && typeof firstItem === "object"
+  //     ? firstItem.name
+  //     : typeof firstItem === "string"
+  //       ? firstItem
+  //       : "";
 
-  const firstCategoryHasChildren =
-    firstItem &&
-    typeof firstItem === "object" &&
-    firstItem.children &&
-    firstItem.children.length > 0;
+  // const firstCategoryHasChildren =
+  //   firstItem &&
+  //   typeof firstItem === "object" &&
+  //   firstItem.children &&
+  //   firstItem.children.length > 0;
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    firstCategory ? [firstCategory] : []
-  );
+  // const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  //   firstCategory ? [firstCategory] : [],
+  // );
 
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(
-    firstCategory && firstCategoryHasChildren ? [firstCategory] : []
-  );
+  // const [expandedCategories, setExpandedCategories] = useState<string[]>(
+  //   firstCategory && firstCategoryHasChildren ? [firstCategory] : [],
+  // );
 
-  const handleCategoryToggle = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      // ✅ Allow full unselect
-      setSelectedCategories(selectedCategories.filter((c) => c !== category));
-      setExpandedCategories(expandedCategories.filter((c) => c !== category));
-    } else {
-      setSelectedCategories([...selectedCategories, category]);
-
-      // Auto-expand if parent has children
-      const categoryObj = categoriesData.find(
-        (cat) => typeof cat === "object" && cat.name === category
-      ) as Category | undefined;
-
-      if (categoryObj?.children?.length) {
-        setExpandedCategories([...expandedCategories, category]);
-      }
-    }
+  const handleCategoryToggle = (categoryId: string) => {
+    toggleCategory(categoryId);
   };
 
   return (
-    <>
+    <>  
       <div className="mb-8">
         {/* Mobile Toggle Button */}
         <button
@@ -77,45 +102,45 @@ const CategoryFilter = ({ categoriesData, title1 }: CategoryDataProp) => {
           className="lg:hidden  text-sm w-full flex justify-between items-center px-2 py-1 border rounded-lg text-gray-900 font-semibold"
         >
           {title1}
+
           <span
             className={`transition-transform ${isMobileOpen ? "rotate-180" : ""}`}
           >
             ▼
           </span>
         </button>
-
         {/* Title for Desktop */}
         <h2 className="hidden lg:block text-lg font-semibold text-gray-900 mb-4">
           {title1}
+          {loading && <p className="text-sm text-gray-500">Loading...</p>}
         </h2>
-
         {/* Category List */}
         <div
           className={`space-y-2 mt-4 lg:mt-0 ${
             isMobileOpen ? "block" : "hidden"
           } lg:block`}
         >
-          {categoriesData.map((category) => {
-            const isObject = typeof category === "object";
-            const categoryName = isObject ? category.name : category;
-            const hasChildren =
-              isObject && category.children && category.children.length > 0;
-            const isExpanded = expandedCategories.includes(categoryName);
-            const isSelected = selectedCategories.includes(categoryName);
-
+          {data?.map((category: any) => {
+            // const isObject = typeof category === "object";
+            // const categoryName = isObject ? category.name : category;
+            // const hasChildren =
+            // isObject && category.children && category.children.length > 0;
+            // const isExpanded = expandedCategories.includes(categoryName);
+            const isSelected = selectedCategories.includes(category.id);
+            console.log(category.name, isSelected);
             return (
-              <div key={categoryName}>
+              <div key={category.name}>
                 {/* Parent Category */}
                 <div className="flex items-center justify-between">
                   <label
                     className="flex items-center cursor-pointer group flex-1"
-                    onClick={() => hasChildren && toggleExpand(categoryName)}
+                    // onClick={() => hasChildren && toggleExpand(categoryName)}
                   >
                     <div className="relative">
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => handleCategoryToggle(categoryName)}
+                        onChange={() => handleCategoryToggle(category.id)}
                         className="sr-only"
                       />
                       <div
@@ -140,32 +165,38 @@ const CategoryFilter = ({ categoriesData, title1 }: CategoryDataProp) => {
                     </div>
 
                     <span className="ml-3 text-gray-600 text-sm group-hover:text-gray-900">
-                      {categoryName}
+                      {category.name}
                     </span>
                   </label>
 
                   {/* Expand icon (mobile only) */}
-                  {hasChildren && (
+                  {/* {hasChildren && (
                     <span className="lg:hidden text-xs">
                       {isExpanded ? "−" : "+"}
                     </span>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Child Categories */}
-                {hasChildren && isExpanded && (
+                {/* {hasChildren && isExpanded && (
                   <div className="ml-8 mt-2 space-y-2">
-                    {category.children!.map((child) => (
+                    {category.children!.map((child: any) => (
                       <div key={child} className="text-gray-500 text-sm">
                         {child}
                       </div>
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
             );
           })}
         </div>
+        <button
+          onClick={clearCategories}
+          className="mt-2 text-orange-600 cursor-pointer"
+        >
+          Clear
+        </button>
       </div>
     </>
   );

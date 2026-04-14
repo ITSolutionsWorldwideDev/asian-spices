@@ -222,7 +222,7 @@ const spices = () => {
       />
       <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
         <ProductFilterSearch
-          categoriesData={categoriesData}
+          // categoriesData={categoriesData}
           storesData={storesData}
           title1={"Spices Category"}
           title2={"Stores"}

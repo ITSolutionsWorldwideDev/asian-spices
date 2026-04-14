@@ -14,7 +14,7 @@ import { TiTickOutline } from "react-icons/ti";
 
 import { usePathname } from "next/navigation";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
-
+import { useCategoryFilterStore } from "@/store/useCategoryFilterStore";
 type Product = {
   id: string;
   quantity: number;
@@ -37,20 +37,27 @@ interface ProductCardProps {
 }
 
 export default function ProductCard() {
+  const { selectedCategories } = useCategoryFilterStore();
+  console.log(selectedCategories);
   const { symbol, selectedCurrency, rate } = useCurrencyStore();
-  console.log(symbol);
-  console.log(selectedCurrency);
-  console.log(rate);
+
   const path = usePathname();
   const pathname = path.startsWith("/") ? path.slice(1) : path;
-  console.log(pathname);
+
   const [productData, setProductData] = useState<Product[]>([]);
   const [cartBtn, setCartBtn] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProductsData = async () => {
       try {
-        const res = await fetch(`/api/products?path=${pathname}`);
+        let url = `/api/products?path=${pathname}`;
+        if (selectedCategories.length > 0) {
+          const query = selectedCategories
+            .map((cat) => `categories=${encodeURIComponent(cat)}`)
+            .join("&");
+          url += `&${query}`;
+        }
+        const res = await fetch(url);
         const data = await res.json();
         // console.log("iniside function", data.data);
         setProductData(data.data);
@@ -59,9 +66,9 @@ export default function ProductCard() {
       }
     };
     fetchProductsData();
-  }, []);
+  }, [selectedCategories, pathname]);
 
-  console.log(productData);
+  // console.log(productData);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
@@ -75,7 +82,7 @@ export default function ProductCard() {
   }, []);
   const addToCart = useCartStore((state) => state.addToCart);
   // console.log(addToCart)
-  const items = useWishlistStore((state) => state.items);
+  // const items = useWishlistStore((state) => state.items);
   // console.log(item);
 
   const [showAll, setShowAll] = useState(false);
@@ -145,7 +152,7 @@ export default function ProductCard() {
                 {product.name.split(" ").slice(0, 3).join(" ")}
               </h3>
               <span className="text-sm text-gray-400">
-                {product.description.split(" ").slice(0, 10).join(" ")}
+                {product.description.split(" ").slice(0, 6).join(" ")}
               </span>
             </Link>
             {/* Price */}
@@ -181,10 +188,13 @@ export default function ProductCard() {
               }}
             >
               {cartBtn === product.id ? (
-                <div className="flex items-center justify-center bg-green-600 p-2 rounded-lg">
-                  <TiTickOutline className="w-7 h-6 mr-3 bg-green-600" /> Added
-                  To cart successfully
-                </div>
+                <>
+                  <div className="flex items-center justify-center bg-green-600 p-2 rounded-lg">
+                    <TiTickOutline className="w-7 h-6 mr-3 bg-green-600" />{" "}
+                    Added To cart successfully
+                  </div>
+                  {/* {alert(`${product.name} added to cart successfully!`)} */}
+                </>
               ) : (
                 <>
                   <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
