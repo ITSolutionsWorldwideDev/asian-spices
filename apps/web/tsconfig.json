@@ -10,7 +10,8 @@
       "@/*": ["./*"],
       "@acme/ui": ["../../packages/ui"],
       "@acme/utils": ["../../packages/utils"],
-      "@acme/db": ["../../packages/db"]
+      "@acme/db": ["../../packages/db"],
+      "@acme/order-routing": ["../../packages/order-routing"]
     }
   },
   "include": [

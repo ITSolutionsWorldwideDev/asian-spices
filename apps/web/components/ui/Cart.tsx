@@ -1,3 +1,5 @@
+// apps/web/components/ui/Cart.tsx
+
 "use client";
 
 import Image from "next/image";
@@ -7,11 +9,18 @@ import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { ArrowRight } from "lucide-react";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
+
+// import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
+
+  // const { data: session } = useSession();
+  const router = useRouter();
 
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -28,6 +37,22 @@ export default function Cart() {
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax; // shipping free, tax ignored for now
   const itemInCart = cart.length;
+
+  /* const handleCheckout = () => {
+    if (!session) {
+      // 🔥 store intent
+      localStorage.setItem("checkout_redirect", "/checkout");
+
+      router.push("/login");
+      return;
+    }
+
+    router.push("/checkout");
+  }; */
+
+  const handleCheckout = () => {
+    router.push("/checkout");
+  };
 
   if (cart.length === 0) {
     return (
@@ -189,10 +214,18 @@ export default function Cart() {
             </span>
           </div>
 
-          <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
-            <Link href="/checkout"> Proceed to Checkout </Link>
+          <button
+            onClick={handleCheckout}
+            className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl flex items-center justify-center"
+          >
+            Proceed to Checkout
             <ArrowRight className="text-white ml-4 size-[20]" />
           </button>
+
+          {/* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
+            <Link href="/checkout"> Proceed to Checkout </Link>
+            <ArrowRight className="text-white ml-4 size-[20]" />
+          </button> */}
 
           <Link href={"/"}>
             <button className="w-full mt-3 border py-3 rounded-xl text-sm cursor-pointer">

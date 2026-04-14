@@ -1,4 +1,5 @@
 // apps/web/lib/validation/checkout.ts
+
 import { z } from "zod";
 
 export const checkoutSchema = z.object({

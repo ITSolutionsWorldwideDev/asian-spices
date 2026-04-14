@@ -120,7 +120,7 @@ export default function ManageSettingsComponent() {
 
         const data = await res.json();
 
-        // setWorkingHours(data.working_hours || []);
+        // 
         if (!data.working_hours || data.working_hours.length === 0) {
           const defaultHours = Array.from({ length: 7 }).map((_, i) => ({
             day_of_week: i,
@@ -130,6 +130,9 @@ export default function ManageSettingsComponent() {
           }));
 
           setWorkingHours(defaultHours);
+        }
+        else {
+          setWorkingHours(data.working_hours || []);
         }
 
         const sanitizedData = Object.keys(data).reduce((acc, key) => {

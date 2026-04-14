@@ -1,4 +1,7 @@
+// apps/web/app/layout.tsx
+
 import type { Metadata } from "next";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Asian Spices - the asian tiger ",
@@ -26,8 +29,7 @@ export default function RootLayout({
         // className={`${geistSans.variable} ${geistMono.variable}`}
         className=""
       >
-        {/* <Nav/> */}
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
