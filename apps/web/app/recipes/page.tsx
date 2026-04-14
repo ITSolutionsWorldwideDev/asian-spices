@@ -63,7 +63,7 @@ const RecipesPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
         <ProductFilterSearch
-          categoriesData={categoriesData}
+          // categoriesData={categoriesData}
           storesData={storesData}
           title1={"Recipes By Items"}
           title2={"Recipes By Culture"}

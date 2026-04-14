@@ -4,12 +4,15 @@ import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { Heart } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useCartStore } from "@/store/useCartStore";
 // import Cart from "@/components/ui/Cart";
 // import { createPortal } from "react-dom";
 // import Link from "next/link";
 const CartandWhishBtn = () => {
   const [isCartOpen, setCartOpen] = useState<boolean>(false);
+  const { cart } = useCartStore();
 
+  const itemInCart = cart.length;
   return (
     <div className="lg:flex items-center space-x-3 hidden ">
       <div
@@ -24,7 +27,7 @@ const CartandWhishBtn = () => {
       </div>
 
       <div
-        className="bg-white rounded-full cursor-pointer "
+        className="bg-white rounded-full cursor-pointer relative"
         // onClick={() => setCartOpen(!isCartOpen)}
       >
         <Link href={"/cart"}>
@@ -32,6 +35,11 @@ const CartandWhishBtn = () => {
             <HiOutlineShoppingBag />
           </button>
         </Link>
+        {itemInCart > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {itemInCart}
+          </span>
+        )}
       </div>
 
       {/* {isCartOpen &&

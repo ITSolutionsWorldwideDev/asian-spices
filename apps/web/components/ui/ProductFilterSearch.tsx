@@ -1,46 +1,35 @@
-"use client";
 import React from "react";
 import CategoryFilter from "../layout/product_filter_search/CategoryFilter";
 import StoreFilter from "../layout/product_filter_search/StoreFilter";
 import PriceFilter from "../layout/product_filter_search/PriceFilter";
 
-interface Category {
-  name: string;
-  children?: string[];
-}
+// interface Category {
+//   name: string;
+//   children?: string[];
+// }
 
 interface Stores {
   name: string;
   children?: string[];
 }
 interface ProductFilterSearchProps {
-  categoriesData: (string | Category)[];
+  // categoriesData: (string | Category)[];
   storesData: (string | Stores)[];
   title1: string;
   title2: string;
 }
 
-export default function   ProductFilterSearch({
-  categoriesData,
+export default function ProductFilterSearch({
   storesData,
   title1,
   title2,
 }: ProductFilterSearchProps) {
-  const handleSearch = () => {
-    console.log({
-      // categories: selectedCategories,
-      // stores: selectedStores,
-      // priceRange: { min: minPrice, max: maxPrice },
-    });
-    // Add your search logic here
-  };
-
   return (
     <div className=" mx-auto  lg:shadow-xl p-5">
       <div className=" rounded-lg flex justify-center lg:block  space-x-5">
         {/* Spices Category Section */}
 
-        <CategoryFilter categoriesData={categoriesData} title1={title1} />
+        <CategoryFilter  title1={title1} />
         {/* Stores Section */}
         <StoreFilter storesData={storesData} title2={title2} />
 

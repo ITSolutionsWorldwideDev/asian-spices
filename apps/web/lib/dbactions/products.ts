@@ -1,15 +1,22 @@
 import { pool } from "@acme/db";
 
-const getProducts = async (category: string) => {
+const getProducts = async (category: string, categoryParam: string[] = []) => {
   try {
-    const query = `
+    let query = `
      SELECT sp.* 
       FROM store_products sp
       INNER JOIN store_categories c 
       ON sp.category_id = c.id
       WHERE c.slug = $1
     `;
-    const result = await pool.query(query, [category]);
+    const values: any[] = [category];
+
+    if (categoryParam.length > 0) {
+      query += ` AND sp.subcategory_id = ANY($2)`;
+      values.push(categoryParam);
+    }
+
+    const result = await pool.query(query, values);
     // console.log("product results", result);
     return result.rows;
   } catch (error) {

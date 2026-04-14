@@ -9,9 +9,11 @@ interface path {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const path = searchParams.get("path");
+  const categoriesParam = searchParams.getAll("categories");
   console.log("path recieved", path);
+  console.log("categories recieved", categoriesParam);
   try {
-    const products = await getProducts(path as string);
+    const products = await getProducts(path as string, categoriesParam);
     return NextResponse.json({
       success: true,
       data: products,

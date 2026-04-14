@@ -10,6 +10,8 @@ import { useCurrencyStore } from "@/store/useCurrencyStore";
 export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
+
+    
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
 
