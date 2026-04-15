@@ -6,8 +6,6 @@ import { pool } from "@acme/db";
 // Pay.nl config
 const PAYNL_SERVICE_ID = process.env.PAYNL_SERVICE_ID;
 const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
-// const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
-// const PAYNL_API_URL = "https://rest-api.pay.nl/v1/Transaction/start";
 
 // PayPal config
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -103,10 +101,11 @@ export async function POST(req: NextRequest) {
 
       if (!paymentResponse.ok) {
         console.error("Pay.nl payment error:", paymentData);
-        return NextResponse.json(
-          { error: "Pay.nl payment creation failed", details: paymentData },
-          { status: 500 },
-        );
+        throw new Error("Payment creation failed");
+        // return NextResponse.json(
+        //   { error: "Pay.nl payment creation failed", details: paymentData },
+        //   { status: 500 },
+        // );
       }
 
       const redirectUrl =
@@ -120,20 +119,30 @@ export async function POST(req: NextRequest) {
         throw new Error("No redirect URL from Pay.nl");
       }
 
-      // const transactionId = data.id;
-      // const redirectUrl = data.links?.approve?.href;
-
       // Save transactionId
+      // await pool.query(
+      //   `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
+      //   [paynlOrderId, "paynl", order.id],
+      //   // [data.transactionId, "paynl", order.id]
+      // );
+
       await pool.query(
-        `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
+        `
+        UPDATE store_orders
+        SET transaction_id = $1,
+            payment_method = $2,
+            payment_status = 'pending',
+            updated_at = NOW()
+        WHERE id = $3
+        `,
         [paynlOrderId, "paynl", order.id],
-        // [data.transactionId, "paynl", order.id]
       );
 
       return NextResponse.json({
         success: true,
-        redirectUrl: redirectUrl,
+        redirectUrl,
         transactionId: paynlOrderId,
+        statusUrl: paymentData?.links?.status,
       });
     }
 
@@ -225,6 +234,8 @@ async function createPayPalOrder(
   return { orderData, approveLink };
 }
 
+// const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
+// const PAYNL_API_URL = "https://rest-api.pay.nl/v1/Transaction/start";
 // Prepare Pay.nl payload
 /* const paymentPayload = {
         serviceId: PAYNL_SERVICE_ID,

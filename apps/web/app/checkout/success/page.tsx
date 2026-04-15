@@ -1,10 +1,11 @@
 // apps/web/app/checkout/success/page.tsx
 
 import React from "react";
-import CheckoutSuccess from "@/components/ui/CheckoutSuccess";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Nav from "@/components/ui/Nav";
+import CheckoutStatus from "@/components/ui/CheckoutStatus";
+// import CheckoutSuccess from "@/components/ui/CheckoutSuccess";
 
 interface Props {
   searchParams: { orderId?: string };
@@ -30,7 +31,8 @@ const page = ({ searchParams }: Props) => {
           <h1 className="text-2xl font-semibold mt-2">Checkout</h1>
         </div>
         {orderId ? (
-          <CheckoutSuccess orderId={orderId} />
+          // <CheckoutSuccess orderId={orderId} />
+          <CheckoutStatus orderId={orderId} />
         ) : (
           <p>No order specified</p>
         )}

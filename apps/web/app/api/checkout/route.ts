@@ -9,7 +9,7 @@ import { assignNextStore } from "@acme/order-routing";
 
 export async function POST(req: NextRequest) {
   // const store_id = randomUUID();
-  
+
   const store_id = null;
   const client = await pool.connect();
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // 1️⃣ If logged in → try to find existing customer
     if (userId) {
       // const existingCustomer: any = await client.query(
-      //   `SELECT id FROM store_customers 
+      //   `SELECT id FROM store_customers
       //     WHERE user_id = $1 AND store_id = $2`,
       //   [userId, store_id],
       // );
@@ -176,14 +176,15 @@ export async function POST(req: NextRequest) {
     const orderResult = await client.query(
       `
       INSERT INTO store_orders
-      ( store_id, order_number, customer_id, subtotal, discount_amount, shipping_amount, total_amount)
-      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      ( store_id, order_number, customer_id, customer_email, subtotal, discount_amount, shipping_amount, total_amount)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING id
       `,
       [
         store_id,
         `ORD-${Date.now()}`,
         customer_id,
+        email,
         pricing.subtotal,
         pricing.discount,
         pricing.shipping,

@@ -25,44 +25,60 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 🔐 OPTIONAL SAFETY: verify using statusUrl if available
+    const statusUrl = body?.links?.status;
+
+    let verifiedStatus = body?.status?.action?.toLowerCase();
+
+    if (statusUrl) {
+      const verifyRes = await fetch(statusUrl, {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYNL_API_TOKEN}`,
+          Accept: "application/json",
+        },
+      });
+
+      const verifyData = await verifyRes.json();
+      verifiedStatus = verifyData?.status?.action?.toLowerCase();
+    }
+
     // =========================
     // STATUS MAPPING
     // =========================
     let paymentStatus: "pending" | "paid" | "failed" = "pending";
 
-    if (status === "paid") paymentStatus = "paid";
-    else if (["failed", "cancelled", "expired"].includes(status))
+    if (verifiedStatus === "paid") {
+      paymentStatus = "paid";
+    } else if (["failed", "cancelled", "expired"].includes(verifiedStatus)) {
       paymentStatus = "failed";
-    else paymentStatus = "pending";
+    }
 
-    // Update store_orders table
-    const result = await pool.query(
+    // if (status === "paid") paymentStatus = "paid";
+    // else if (["failed", "cancelled", "expired"].includes(status))
+    //   paymentStatus = "failed";
+    // else paymentStatus = "pending";
+
+    // =========================
+    // IDEMPOTENT UPDATE
+    // =========================
+    await pool.query(
       `
       UPDATE store_orders
       SET payment_status = $1,
           transaction_id = COALESCE($2, transaction_id),
           updated_at = NOW()
       WHERE id = $3
-      RETURNING id
+        AND payment_status != 'paid'
       `,
       [paymentStatus, transactionId, reference],
     );
 
-    if (!result.rows.length) {
-      return NextResponse.json(
-        { success: false, error: "Order not found" },
-        { status: 404 },
-      );
-    }
     console.log(`Order ${reference} → ${paymentStatus}`);
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Webhook error:", err);
-    return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }
 
