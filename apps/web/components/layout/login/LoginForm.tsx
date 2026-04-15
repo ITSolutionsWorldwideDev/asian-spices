@@ -111,8 +111,7 @@ export default function LoginForm() {
           Welcome to Asian Spices 👋
         </h1>
         <p className="text-sm text-gray-400 mb-10">
-          Today is a new day. It's your day. You shape it. Sign in to start
-          managing your projects.
+          Great to see you. Sign in to access your account and get started.
         </p>
 
         {/* Form */}

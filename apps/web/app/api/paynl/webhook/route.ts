@@ -10,8 +10,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    console.log("Webhook payload:", body);
+
     const transactionId = body.id;
-    const status = body.status;
+    // const status = body.status?.toLowerCase();
+    const status = body.status?.action?.toLowerCase();
     const reference = body.reference;
 
     if (!reference) {
@@ -28,7 +31,9 @@ export async function POST(req: NextRequest) {
     let paymentStatus: "pending" | "paid" | "failed" = "pending";
 
     if (status === "paid") paymentStatus = "paid";
-    if (status === "failed" || status === "cancelled") paymentStatus = "failed";
+    else if (["failed", "cancelled", "expired"].includes(status))
+      paymentStatus = "failed";
+    else paymentStatus = "pending";
 
     // Update store_orders table
     const result = await pool.query(

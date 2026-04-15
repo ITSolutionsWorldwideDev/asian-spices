@@ -274,7 +274,6 @@ export default function Checkout() {
       </div>
 
       <div className="container mx-auto px-6 py-10">
-        {/* Header */}
         <div className="mb-10">
           <Link href="/cart">
             <p className="text-sm text-gray-500 flex items-center cursor-pointer">
@@ -295,9 +294,7 @@ export default function Checkout() {
           </div>
         )}
 
-        {/* Main Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-8">
-          {/* LEFT - Single Flow */}
           <div className="space-y-8">
             <ContactForm
               data={formData}
@@ -312,16 +309,8 @@ export default function Checkout() {
               errors={errors}
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
-            {/* <PaymentForm placeOrder={placeOrder} /> */}
-            {/* <PaymentForm
-              data={formData}
-              setFormData={setFormData}
-              placeOrder={placeOrder}
-            /> */}
           </div>
 
-          {/* RIGHT */}
-          {/* <OrderSummary items={cart} subtotal={subtotal} total={total} /> */}
           <OrderSummary items={cart} shippingMethod={shippingMethod} />
         </div>
       </div>
