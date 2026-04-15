@@ -5,6 +5,8 @@ import { createCallbacks } from "../core/callbacks";
 import { SESSION_IDLE_TIME } from "../core/constants";
 
 export const webAuthOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  
   providers: [
     credentialsProvider("web")
   ],

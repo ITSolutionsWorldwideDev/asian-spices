@@ -10,9 +10,12 @@ import PaymentForm from "../layout/checkout/PaymentForm";
 import Nav from "./Nav";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useSession } from "next-auth/react";
 
 import { checkoutSchema } from "@/lib/validation/checkout";
+
 export type CheckoutData = {
   email: string;
   phone: string;
@@ -42,12 +45,55 @@ export const SHIPPING_OPTIONS = {
 export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
 export default function Checkout() {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session;
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      setFormData((prev) => ({
+        ...prev,
+        email: session.user.email,
+      }));
+    }
+  }, [session]);
+
   const { cart, clearCart } = useCartStore();
 
   const [shippingMethod, setShippingMethod] =
     useState<ShippingMethod>("standard");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const loadDefaultAddress = async () => {
+      if (!session?.user) return;
+
+      try {
+        const res = await fetch("/api/account/addresses/default");
+        const data = await res.json();
+
+        if (!data.address) return;
+
+        const a = data.address;
+
+        setFormData((prev) => ({
+          ...prev,
+          firstName: a.first_name || prev.firstName,
+          lastName: a.last_name || prev.lastName,
+          address: a.address_line1 || "",
+          appartment: a.address_line2 || "",
+          city: a.city || "",
+          state: a.state || "",
+          zip: a.postal_code || "",
+          country: a.country || "NL",
+        }));
+      } catch (err) {
+        console.error("Failed to load default address", err);
+      }
+    };
+
+    loadDefaultAddress();
+  }, [session]);
 
   const [formData, setFormData] = useState<CheckoutData>({
     email: "",
@@ -228,7 +274,6 @@ export default function Checkout() {
       </div>
 
       <div className="container mx-auto px-6 py-10">
-        {/* Header */}
         <div className="mb-10">
           <Link href="/cart">
             <p className="text-sm text-gray-500 flex items-center cursor-pointer">
@@ -238,9 +283,18 @@ export default function Checkout() {
           <h1 className="text-2xl font-semibold mt-2">Checkout</h1>
         </div>
 
-        {/* Main Layout */}
+        {!isLoggedIn && (
+          <div className="bg-yellow-50 p-4 rounded mb-4">
+            <p className="text-sm">
+              Already have an account?{" "}
+              <Link href="/login" className="underline">
+                Login
+              </Link>
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-8">
-          {/* LEFT - Single Flow */}
           <div className="space-y-8">
             <ContactForm
               data={formData}
@@ -255,16 +309,8 @@ export default function Checkout() {
               errors={errors}
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
-            {/* <PaymentForm placeOrder={placeOrder} /> */}
-            {/* <PaymentForm
-              data={formData}
-              setFormData={setFormData}
-              placeOrder={placeOrder}
-            /> */}
           </div>
 
-          {/* RIGHT */}
-          {/* <OrderSummary items={cart} subtotal={subtotal} total={total} /> */}
           <OrderSummary items={cart} shippingMethod={shippingMethod} />
         </div>
       </div>

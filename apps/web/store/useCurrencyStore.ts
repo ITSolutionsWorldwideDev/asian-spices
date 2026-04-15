@@ -6,7 +6,7 @@ interface Currency {
   code: string;
   symbol: string;
   is_base: boolean;
-//   symbol:
+  //   symbol:
 }
 
 interface CurrencyStore {
@@ -60,11 +60,9 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
     try {
       const res = await fetch(`/api/currency-rate?code=${code}`);
       const data = await res.json();
-console.log("data from rate api", data);
+      console.log("data from rate api", data);
       if (data?.rate) {
-        set({ rate: data.rate ,
-            symbol:data.symbol
-        });
+        set({ rate: data.rate, symbol: data.symbol });
       }
     } catch (err) {
       console.error("Error fetching rate", err);

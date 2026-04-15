@@ -1,4 +1,5 @@
 // apps/web/lib/validation/checkout.ts
+
 import { z } from "zod";
 
 export const checkoutSchema = z.object({
@@ -10,7 +11,7 @@ export const checkoutSchema = z.object({
 
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
+  // state: z.string().min(1, "State is required"),
   zip: z.string().min(3, "ZIP is required"),
   country: z
     .string()

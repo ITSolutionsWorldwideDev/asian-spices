@@ -25,7 +25,6 @@ export default function ShippingForm({
   setShippingMethod,
   errors,
 }: Props) {
-  // const [shippingMethod, setShippingMethod] = useState("standard");
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
@@ -137,7 +136,7 @@ export default function ShippingForm({
 
             <div>
               <label className="block text-sm mb-1">
-                State<span className="text-red-700 ms-1">*</span>
+                State
               </label>
               <input
                 type="text"

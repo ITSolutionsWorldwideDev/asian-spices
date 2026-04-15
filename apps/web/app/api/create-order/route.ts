@@ -130,13 +130,14 @@ export async function POST(req: NextRequest) {
 
     const orderResult = await client.query(
       `INSERT INTO store_orders
-        (store_id, order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        (store_id, order_number, customer_id, customer_email, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING id`,
       [
         bestStore,
         `ORD-${Date.now()}`,
         customer_id,
+        customer.email,
         "pending",
         pricing.subtotal,
         pricing.discount,

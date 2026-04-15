@@ -5,15 +5,19 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 import { z } from "zod";
 
 /* ---------------- SCHEMA ---------------- */
 const loginSchema = z.object({
-  email: z.string().email("Invalid email"),
+  email: z.string().trim().email("Invalid email"),
   password: z.string().min(6, "Password required"),
 });
 
 export default function LoginForm() {
+  const router = useRouter();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -22,8 +26,12 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
+  /* ---------------- HELPERS ---------------- */
+
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+
+    // clear field error on change
     setErrors((prev) => ({ ...prev, [key]: "" }));
   };
 
@@ -65,9 +73,20 @@ export default function LoginForm() {
         return;
       }
 
-      window.location.href = "/";
-    } catch {
-      setErrors({ email: "Login failed" });
+      // window.location.href = "/";
+
+      // HANDLE CHECKOUT REDIRECT
+      const redirect = localStorage.getItem("checkout_redirect");
+
+      if (redirect) {
+        localStorage.removeItem("checkout_redirect");
+        router.push(redirect);
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      console.error(err);
+      setErrors({ email: "Login failed. Try again." });
     } finally {
       setLoading(false);
     }
@@ -89,11 +108,10 @@ export default function LoginForm() {
           </Link>
         </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-8">
-          Welcome Asian Spices 👋
+          Welcome to Asian Spices 👋
         </h1>
         <p className="text-sm text-gray-400 mb-10">
-          Today is a new day. It's your day. You shape it. Sign in to start
-          managing your projects.
+          Great to see you. Sign in to access your account and get started.
         </p>
 
         {/* Form */}
@@ -123,6 +141,12 @@ export default function LoginForm() {
             />
             {errors.password && <p className="error">{errors.password}</p>}
           </div>
+          <div className="text-sm text-gray-600 mb-4">
+            <Link href="/reset-password">
+              Reset Password
+              <span className="menu-arrow inside-submenu" />
+            </Link>
+          </div>
 
           {/* Sign up button */}
           <button
@@ -142,7 +166,7 @@ export default function LoginForm() {
 
         {/* Login link */}
         <p className="text-sm text-gray-500 mt-6 font-bold">
-          Don't you have an account?
+          Don't you have an account?&nbsp;
           <Link href="/signup" className="text-blue-600 hover:underline">
             Sign up
           </Link>

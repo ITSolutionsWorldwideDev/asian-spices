@@ -5,7 +5,8 @@
   "references": [
     { "path": "packages/db" },
     { "path": "packages/types" },
-    { "path": "packages/auth" }
+    { "path": "packages/auth" },
+    { "path": "packages/order-routing" }
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -15,8 +16,9 @@
       "@acme/utils": ["packages/utils"],
       "@acme/types": ["packages/types"],
       "@acme/ui": ["packages/ui"],
-      "@repo/ui": ["packages/ui/src/index.ts"]
+      "@repo/ui": ["packages/ui/src/index.ts"],
+      "@acme/order-routing": ["packages/order-routing/index.ts"]
     }
-  },
+  }
   // "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
 }
