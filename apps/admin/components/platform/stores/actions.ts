@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
 
 export async function updateStore(
-  storeId: string,
+  storeId: string | undefined,
   data: { name: string; status: string },
 ) {
   const user = await requirePlatformAdmin();
@@ -144,14 +144,39 @@ export async function saveStore(
 ) {
   await requirePlatformAdmin();
 
-  const name = formData.get("name") as string;
-  const slug = formData.get("slug") as string;
-  const status = formData.get("status") as string;
+  // const name = formData.get("name") as string;
+  // const slug = formData.get("slug") as string;
+  // const status = formData.get("status") as string;
 
-  const adminName = formData.get("adminName") as string | null;
-  const adminEmail = formData.get("adminEmail") as string | null;
-  const adminPassword = formData.get("adminPassword") as string | null;
+  // const adminName = formData.get("adminName") as string | null;
+  // const adminEmail = formData.get("adminEmail") as string | null;
+  // const adminPassword = formData.get("adminPassword") as string | null;
 
+  const data = Object.fromEntries(formData.entries());
+  const {
+    name,
+    slug,
+    status,
+    adminName,
+    adminEmail,
+    adminPassword,
+    kvkNumber,
+    companyName,
+    cahamberOfCommerceNumber,
+    country,
+    street,
+    houseNumber,
+    addition,
+    postalCode,
+    city,
+    firstName,
+    middleName,
+    lastName,
+    businessPhone,
+    businessEmail,
+    vatNumber,
+  } = data;
+  console.log("Captured Data:", data);
   if (!name || !slug) {
     throw new Error("Missing required fields");
   }
@@ -170,11 +195,55 @@ export async function saveStore(
         [name, slug, status, storeId],
       );
     } else {
+      const partnerRegData = await client.query(
+        `INSERT INTO partner_registration (
+        kvk_number,
+        company_name,
+        chamber_of_commerce_number,
+        country,
+        street,
+        house_number,
+        additional_address,
+        postal_code,
+        city,
+        first_name,
+        middle_name,
+        last_name,
+        business_phone_number,
+        business_email_address,
+        vat_number
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+        $11,$12,$13,$14,$15
+      )
+      RETURNING partner_id`,
+        [
+          kvkNumber,
+          companyName,
+          cahamberOfCommerceNumber,
+          country,
+          street,
+          houseNumber,
+          addition,
+          postalCode,
+          city,
+          firstName,
+          middleName,
+          lastName,
+          businessPhone,
+          businessEmail,
+          vatNumber,
+        ],
+      );
+
+      const partnerRegId = partnerRegData.rows[0].partner_id;
+
       const storeRes = await client.query(
-        `INSERT INTO stores (name, slug, status)
-         VALUES ($1, $2, $3)
+        `INSERT INTO stores (name, slug, status,partner_registration_id)
+         VALUES ($1, $2, $3,$4)
          RETURNING id`,
-        [name, slug, status ?? "active"],
+        [name, slug, status ?? "active", partnerRegId],
       );
 
       finalStoreId = storeRes.rows[0].id;
@@ -198,7 +267,7 @@ export async function saveStore(
           throw new Error("Password required for new user");
         }
 
-        const passwordHash = await hash(adminPassword, 10);
+        const passwordHash = await hash(adminPassword as string, 10);
 
         const newUser = await client.query(
           `INSERT INTO users (email, password_hash, name)
@@ -227,7 +296,6 @@ export async function saveStore(
 
     revalidatePath("/platform/stores");
     revalidatePath(`/platform/stores/${finalStoreId}`);
-
   } catch (err) {
     await client.query("ROLLBACK");
     throw err;
@@ -237,7 +305,6 @@ export async function saveStore(
 
   redirect("/platform/stores");
 }
-
 
 /* export async function createStore(formData: FormData) {
   const user = await requirePlatformAdmin();
@@ -296,7 +363,6 @@ export async function saveStore(
     client.release();
   }
 } */
-
 
 /* export async function saveStore(
   storeId: string | undefined,

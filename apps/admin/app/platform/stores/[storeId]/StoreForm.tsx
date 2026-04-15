@@ -6,6 +6,8 @@ import { useTransition, useState } from "react";
 import { saveStore } from "@/components/platform/stores/actions";
 import Link from "next/link";
 import { ArrowLeft } from "react-feather";
+import { Building2, MapPin } from "lucide-react";
+import UploadDocument from "./UploadDocument";
 
 export default function StoreForm({ store }: { store?: any }) {
   const [pending, startTransition] = useTransition();
@@ -38,6 +40,7 @@ export default function StoreForm({ store }: { store?: any }) {
     }
   };
 
+  console.log(FormData);
   return (
     <div className=" mx-auto">
       <form
@@ -66,7 +69,6 @@ export default function StoreForm({ store }: { store?: any }) {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Store Name<span className="text-red-500 ml-1">*</span>
@@ -80,7 +82,6 @@ export default function StoreForm({ store }: { store?: any }) {
               required
             />
           </div>
-
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -124,6 +125,77 @@ export default function StoreForm({ store }: { store?: any }) {
                 ⚠️ Warning: Changing this may break existing customer links.
               </p>
             )}
+          </div>
+          <InputField
+            label="KVK Number"
+            name="kvkNumber"
+            placeHolder="123456"
+          />
+
+          <InputField label="Company Name" name="companyName" />
+          <InputField
+            label="Chamber of Commerce Number"
+            name="chamberOfCommerceNumber"
+          />
+          <InputField label="Country" name="country" />
+          <InputField label="Street" name="street" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label="House Number" name="houseNumber" />
+            <InputField label="Addition (Optional)" name="addition" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField label="Postal Code" name="postalCode" />
+            <InputField label="City" name="city" />
+          </div>
+          <hr />
+          <div className="mt-6 bg-white rounded-lg   ">
+            <h2 className="font-semibold text-gray-700 mb-4">
+              Business Contact Details
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="First Name"
+                name="firstName"
+                placeHolder="First Name"
+              />
+
+              <InputField
+                label="Middle Name"
+                name="middleName"
+                placeHolder="Middle Name"
+              />
+              <InputField
+                label="Last Name"
+                name="lastName"
+                placeHolder="Last Name"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <InputField
+                label="Business Phone Number"
+                name="businessPhone"
+                placeHolder="+31 612345678"
+              />
+              <InputField
+                label="Business Email Address"
+                name="businessEmail"
+                placeHolder="info@compnat.com"
+              />
+            </div>
+
+            <div className="mt-4">
+              <InputField
+                label="VAT Number"
+                name="vatNumber"
+                placeHolder="NL12345678B01"
+              />
+            </div>
+
+            {/* <UploadDocument/> */}
           </div>
           {/* <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -245,6 +317,33 @@ export default function StoreForm({ store }: { store?: any }) {
     </div>
   );
 }
+
+function InputField({
+  label,
+  name,
+  placeHolder,
+}: {
+  label: string;
+  name: string;
+  placeHolder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-2 ">
+        {label}
+        <span className="text-red-500 ml-1">*</span>
+      </label>
+      <input
+        type="text"
+        name={name}
+        placeholder={placeHolder}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+        required
+      />
+    </div>
+  );
+}
+
 /* "use client";
 
 import { useTransition } from "react";
