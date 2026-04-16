@@ -2,9 +2,7 @@
 
 import { z } from "zod";
 
-export function zodToFieldErrors(
-  issues: z.ZodIssue[]
-): Record<string, string> {
+export function zodToFieldErrors(issues: z.ZodIssue[]): Record<string, string> {
   const errors: Record<string, string> = {};
 
   issues.forEach((err) => {

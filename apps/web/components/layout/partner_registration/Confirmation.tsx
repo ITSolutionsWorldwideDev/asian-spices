@@ -28,8 +28,8 @@ export default function Confirmation({ formData }: any) {
               Thank you for joining us. We have received your application and
               documents.
               <br />
-              Our team will verify your details and get back to you within{" "}
-              <span className="font-semibold text-gray-700">24 hours</span>.
+              Short onboarding time within
+              <span className="font-semibold text-gray-700"> 2 working days</span>.
             </p>
             <ReadAloudBtn ID={"confirmation"} />
           </div>

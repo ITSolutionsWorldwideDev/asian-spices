@@ -17,7 +17,6 @@ export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
 
-    
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
 
@@ -29,6 +28,7 @@ export default function Cart() {
     0,
   );
 
+  console.log(cart);
   // const savings = cart.reduce((acc, item) => {
   //   if (!item.oldPrice) return acc;
   //   return acc + (item.oldPrice - item.price) * item.quantity;
