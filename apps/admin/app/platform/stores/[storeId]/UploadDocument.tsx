@@ -62,7 +62,7 @@ export default function UploadDocument() {
     files,
     type,
     name,
-    required,
+    required = false,
   }: {
     title: string;
     description: string;
@@ -147,9 +147,10 @@ export default function UploadDocument() {
         </div>
 
         {/* Upload Sections */}
+        {/* Must be less than 6 months old */}
         <UploadBox
           title="Chamber of Commerce Extract"
-          description="Must be less than 6 months old"
+          description=""
           files={chamberFiles}
           type="chamber"
           name="chamberFiles"

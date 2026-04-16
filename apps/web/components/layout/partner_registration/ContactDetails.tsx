@@ -10,11 +10,12 @@ export default function ContactDetails({
   setFormData,
   activeStep,
   setActiveStep,
+  setCompletedSteps,
 }: any) {
   const [agree, setAgree] = useState(false);
   const contactSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
-    middle_name: z.string().optional(),
+    // middle_name: z.string().optional(),
     last_name: z.string().min(1, "Last name is required"),
 
     business_phone_number: z
@@ -48,7 +49,7 @@ export default function ContactDetails({
   };
   const requiredFields = [
     "first_name",
-    "middle_name",
+    // "middle_name",
     "last_name",
     "business_phone_number",
     "business_email_address",
@@ -261,6 +262,21 @@ export default function ContactDetails({
           </p>
         </div>
 
+        <div className=" mt-6 bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6">
+          <div className="text-sm text-gray-600 space-y-2">
+            <h2 className="font-semibold text-gray-800">Need Help?</h2>
+            <p>
+              If you have any questions about your registration or need
+              assistance, our support team is here to help.
+            </p>
+
+            <div className="flex flex-wrap gap-4 text-orange-600">
+              <span>✉ partners@asianspices.com</span>
+              <span>📄 Registration FAQ</span>
+            </div>
+          </div>
+        </div>
+
         {/* Buttons */}
         <div className="flex justify-between">
           <button
@@ -288,8 +304,30 @@ export default function ContactDetails({
                 return;
               }
 
+              if (!agree) {
+                alert("You must accept terms and conditions");
+                return;
+              }
+
+              // ✅ mark step 4 complete
+              setCompletedSteps((prev: number[]) => [
+                ...new Set([...prev, activeStep]),
+              ]);
+
               setActiveStep(activeStep + 1);
             }}
+
+            // onClick={() => {
+            //   const result = contactSchema.safeParse(formData);
+
+            //   if (!result.success) {
+            //     const fieldErrors = result.error.flatten().fieldErrors;
+            //     setErrors(fieldErrors);
+            //     return;
+            //   }
+
+            //   setActiveStep(activeStep + 1);
+            // }}
           >
             Continue →
           </button>

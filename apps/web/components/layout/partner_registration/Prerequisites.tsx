@@ -1,3 +1,5 @@
+// apps/web/components/layout/partner_registration/Prerequisites.tsx
+
 "use client";
 import {
   FileCheck,
@@ -12,14 +14,13 @@ import ReadAloudBtn from "./ReadAloudBtn";
 // import Prerequisities from "./Prerequisites";
 // import BusinessVerification from "./BusinessVerification";
 
-export default function Prerequisites({ setActiveStep, activeStep }: any) {
+export default function Prerequisites({
+  setActiveStep,
+  activeStep,
+  setCompletedSteps,
+}: any) {
   // const [isSpeaking, setIsSpeaking] = useState(false);
   // const [activeComponent, setActiveComponent] = useState("main");
-  
-
-    
-
-   
 
   return (
     <div>
@@ -79,9 +80,10 @@ export default function Prerequisites({ setActiveStep, activeStep }: any) {
                       Chamber of Commerce extract
                     </h3>
                     <p className="text-sm text-gray-600">
-                      A digital copy of your KvK extract. Please ensure it is
-                      not older than 6 months.
+                      A digital copy of your KvK extract.
                     </p>
+                    {/* Please ensure it is
+                      not older than 6 months. */}
                   </div>
                 </div>
 
@@ -155,7 +157,15 @@ export default function Prerequisites({ setActiveStep, activeStep }: any) {
           {/* Getting Started Button */}
           <button
             className="bg-[#FF6900] hover:bg-orange-600 active:bg-orange-700 transition-colors duration-150 text-white font-semibold text-lg px-10 py-4 rounded-2xl flex items-center gap-2 shadow-sm cursor-pointer mt-10"
-            onClick={() => setActiveStep(activeStep + 1)}
+            onClick={() => {
+              // ✅ mark step 1 complete
+              setCompletedSteps((prev: number[]) => [
+                ...new Set([...prev, activeStep]),
+              ]);
+
+              setActiveStep(activeStep + 1);
+            }}
+            // onClick={() => setActiveStep(activeStep + 1)}
           >
             Getting Started
             <span className="text-xl leading-none">→</span>

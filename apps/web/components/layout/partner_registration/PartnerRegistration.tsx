@@ -1,7 +1,8 @@
+// apps/web/components/layout/partner_registration/PartnerRegistration.tsx
+
 import Image from "next/image";
 import React from "react";
 import TabSwitching from "./TabSwitching";
-// import { Link } from "lucide-react";
 import Link from "next/link";
 
 const PartnerRegistration = () => {

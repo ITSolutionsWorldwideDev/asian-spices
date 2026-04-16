@@ -1,52 +1,34 @@
+// apps/web/components/layout/partner_registration/BusinessVerification.tsx
+
 "use client";
 import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
-// import { useReadAloud } from "./SpeakLoud";
+
 import ReadAloudBtn from "./ReadAloudBtn";
 import { z } from "zod";
 import { useState } from "react";
-// import { useFormValidator } from "@/hooks/FormValidator";
 export default function BusinessVerification({
   formData,
   setFormData,
   activeStep,
   setActiveStep,
+  setCompletedSteps,
 }: any) {
   const businessSchema = z.object({
     kvk_number: z
       .string()
       .min(1, "KVK number is required")
       .regex(/^[0-9]+$/, "KVK must be numeric"),
-
     company_name: z.string().min(1, "Company name is required"),
-
     chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
-
     country: z.string().min(1, "Country is required"),
-
     street: z.string().min(1, "Street is required"),
-
     house_number: z.string().min(1, "House number is required"),
-
     postal_code: z.string().min(1, "Postal code is required"),
-
     city: z.string().min(1, "City is required"),
-
     additional_address: z.string().optional(),
   });
 
   const [errors, setErrors] = useState<any>({});
-
-  // const requiredFields = [
-  //   "kvk_number",
-  //   "company_name",
-  //   "chamber_of_commerce_number",
-  //   "country",
-  //   "street",
-  //   "house_number",
-  //   "postal_code",
-  //   "city",
-  // ];
-  // const { validateForm } = useFormValidator(requiredFields, formData);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
@@ -60,7 +42,6 @@ export default function BusinessVerification({
     }));
   };
 
-  console.log(formData);
   return (
     <div id="business-verification">
       <div className="bg-gray-100 flex items-start justify-center pt-10 px-4 sm:px-6 lg:px-10">
@@ -79,7 +60,7 @@ export default function BusinessVerification({
 
           {/* Search Field */}
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-            KVK Number
+            {/* KVK Number */}Chamber of Commerce Number.
           </label>
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <input
@@ -224,6 +205,21 @@ export default function BusinessVerification({
             </div>
           </div>
 
+          <div className=" mt-6 bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6">
+            <div className=" rounded-lg  text-sm text-gray-600 space-y-2">
+              <h2 className="font-semibold text-gray-800">Need Help?</h2>
+              <p>
+                If you have any questions about your registration or need
+                assistance, our support team is here to help.
+              </p>
+
+              <div className="flex flex-wrap gap-4 text-orange-600">
+                <span>✉ partners@asianspices.com</span>
+                <span>📄 Registration FAQ</span>
+              </div>
+            </div>
+          </div>
+
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
             <button
@@ -245,6 +241,11 @@ export default function BusinessVerification({
                   return;
                 }
 
+                // ✅ mark step 2 complete
+                setCompletedSteps((prev: number[]) => [
+                  ...new Set([...prev, activeStep]),
+                ]);
+
                 setActiveStep(activeStep + 1);
               }}
             >
@@ -256,7 +257,8 @@ export default function BusinessVerification({
     </div>
   );
 }
-/* Reusable Input Component */ function InputField({
+
+function InputField({
   label,
   onChange,
   value,

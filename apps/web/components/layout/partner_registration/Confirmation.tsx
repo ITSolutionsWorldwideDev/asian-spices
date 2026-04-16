@@ -63,7 +63,10 @@ export default function Confirmation({ formData }: any) {
 
               <div className="flex justify-between p-4">
                 <span>Contact Person:</span>
-                <span>{formData.business_phone_number}</span>
+                <span>
+                  {formData.first_name} {formData.middle_name}{" "}
+                  {formData.last_name}
+                </span>
               </div>
 
               <div className="flex justify-between p-4">
@@ -135,6 +138,22 @@ export default function Confirmation({ formData }: any) {
           </div>
 
           {/* Need Help */}
+          
+
+        <div className=" mt-6 bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6">
+          <div className="text-sm text-gray-600 space-y-2">
+            <h2 className="font-semibold text-gray-800">Need Help?</h2>
+            <p>
+              If you have any questions about your registration or need
+              assistance, our support team is here to help.
+            </p>
+
+            <div className="flex flex-wrap gap-4 text-orange-600">
+              <span>✉ partners@asianspices.com</span>
+              <span>📄 Registration FAQ</span>
+            </div>
+          </div>
+        </div>
 
           {/* Buttons */}
           <div className="flex flex-col md:flex-row gap-4 justify-center">

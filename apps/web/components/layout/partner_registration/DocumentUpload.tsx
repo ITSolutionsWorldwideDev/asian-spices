@@ -9,6 +9,7 @@ export default function DocumentUploadPage({
   setFormData,
   activeStep,
   setActiveStep,
+  setCompletedSteps,
 }: any) {
   const [chamberFiles, setChamberFiles] = useState<
     { name: string; size: number; type: string }[]
@@ -20,8 +21,6 @@ export default function DocumentUploadPage({
   console.log(chamberFiles);
   console.log(poaFiles);
   console.log("dfa", formData);
-  // console.log(formData.chamberFiles);
-  // console.log(formData.power_of_attorney_document);
   // Format file size
 
   const formatSize = (size: number) => {
@@ -109,7 +108,7 @@ export default function DocumentUploadPage({
     description,
     files,
     type,
-    required,
+    required = false,
   }: {
     title: string;
     description: string;
@@ -203,9 +202,10 @@ export default function DocumentUploadPage({
         </div>
 
         {/* Upload Sections */}
+        {/* Please ensure your KvK extract is not older than 6 months. */}
         <UploadBox
           title="Chamber of Commerce Extract"
-          description="Please ensure your KvK extract is not older than 6 months."
+          description=""
           files={chamberFiles}
           type="chamber"
           required
@@ -224,7 +224,22 @@ export default function DocumentUploadPage({
           <p>✔ Accepted formats: JPG, JPEG, PNG, HEIC, PDF</p>
           <p>✔ Maximum file size: 10MB per file</p>
           <p>✔ Maximum files: 5 documents</p>
-          <p>✔ KvK extract must be less than 6 months old</p>
+          {/* <p>✔ KvK extract must be less than 6 months old</p> */}
+        </div>
+
+        <div className=" mt-6 bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6">
+          <div className="text-sm text-gray-600 space-y-2">
+            <h2 className="font-semibold text-gray-800">Need Help?</h2>
+            <p>
+              If you have any questions about your registration or need
+              assistance, our support team is here to help.
+            </p>
+
+            <div className="flex flex-wrap gap-4 text-orange-600">
+              <span>✉ partners@asianspices.com</span>
+              <span>📄 Registration FAQ</span>
+            </div>
+          </div>
         </div>
 
         {/* Buttons */}
@@ -237,13 +252,26 @@ export default function DocumentUploadPage({
           </button>
 
           <button
-            disabled={chamberFiles.length === 0 || poaFiles.length === 0}
+            disabled={chamberFiles.length === 0}
             className={`px-6 py-2 rounded-lg text-white transition ${
               chamberFiles.length === 0 || poaFiles.length === 0
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-orange-500 hover:bg-orange-600"
             }`}
-            onClick={() => setActiveStep(activeStep + 1)}
+            onClick={() => {
+              if (chamberFiles.length === 0) {
+                alert("Chamber of Commerce document is required");
+                return;
+              }
+
+              // ✅ mark step 3 complete
+              setCompletedSteps((prev: number[]) => [
+                ...new Set([...prev, activeStep]),
+              ]);
+
+              setActiveStep(activeStep + 1);
+            }}
+            // onClick={() => setActiveStep(activeStep + 1)}
           >
             Continue →
           </button>

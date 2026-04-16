@@ -18,8 +18,47 @@ export default function IdentityVerification({
   activeStep,
   setActiveStep,
   formData,
+  setCompletedSteps,
 }: any) {
   const handleSubmit = async () => {
+    // ✅ validation
+    if (!selectedBank) {
+      alert("Please select a bank to continue");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/partner-registration", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          selected_bank: selectedBank, // ✅ include this
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Submission failed");
+      }
+
+      // ✅ mark step complete
+      setCompletedSteps((prev: number[]) => [
+        ...new Set([...prev, activeStep]),
+      ]);
+
+      // ✅ move to next step ONLY once
+      setActiveStep(activeStep + 1);
+
+      alert("Partner registration submitted successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
+  /* const handleSubmit = async () => {
     setActiveStep(activeStep + 1);
 
     try {
@@ -44,7 +83,7 @@ export default function IdentityVerification({
       console.error("Error submitting partner registration:", error);
       alert("An error occurred while submitting the form. Please try again.");
     }
-  };
+  }; */
 
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
 
@@ -132,6 +171,21 @@ export default function IdentityVerification({
             <li>✔ Secure connection directly with your bank</li>
             <li>✔ GDPR compliant identity verification</li>
           </ul>
+        </div>
+
+        <div className=" mt-6 bg-white rounded-lg shadow-sm border border-[#E5E7EB] p-6">
+          <div className="text-sm text-gray-600 space-y-2">
+            <h2 className="font-semibold text-gray-800">Need Help?</h2>
+            <p>
+              If you have any questions about your registration or need
+              assistance, our support team is here to help.
+            </p>
+
+            <div className="flex flex-wrap gap-4 text-orange-600">
+              <span>✉ partners@asianspices.com</span>
+              <span>📄 Registration FAQ</span>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Buttons */}
