@@ -56,8 +56,13 @@ const PLATFORM_MENU = [
       },
       {
         label: "Orders",
-        icon: "exchange",
+        icon: "receipt",
         link: "/platform/orders",
+      },
+      {
+        label: "Shipping",
+        icon: "truck",
+        link: "/platform/shipping/providers",
       },
 
       

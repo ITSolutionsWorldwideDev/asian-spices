@@ -1,6 +1,5 @@
 // apps/admin/app/platform/stores/[storeId]/page.tsx
 
-
 import { pool } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import StoreForm from "./StoreForm";
@@ -8,12 +7,15 @@ import StorePlanSection from "../StorePlanSection";
 
 export default async function EditStorePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ storeId: string }>;
+  searchParams?: Promise<{ tab?: string }>;
 }) {
   await requirePlatformAdmin();
 
   const { storeId } = await params;
+  const { tab } = searchParams ? await searchParams : {};
 
   if (!storeId) {
     throw new Error("Store ID is required");
@@ -38,19 +40,31 @@ export default async function EditStorePage({
     ]);
 
   const store = storeRows[0];
+  const subscription = subscriptionRows[0] ?? null;
 
   if (!store) {
     return <p>Store not found</p>;
   }
 
-  const subscription = subscriptionRows[0] ?? null;
-
   return (
+    <div className="space-y-8">
+      {/* General Tab */}
+      {!tab && <StoreForm store={store} />}
+
+      {/* Plan Tab */}
+      {tab === "plan" && (
+        <StorePlanSection
+          storeId={store.id}
+          currentPlanId={subscription?.plan_id ?? null}
+          currentPlanName={subscription?.plan_name ?? null}
+        />
+      )}
+    </div>
+  );
+
+  /* return (
     <div className="page-wrapper">
       <div className="content space-y-8">
-        {/* <h1 className="text-2xl font-bold mb-6">
-          Edit Store
-        </h1> */}
 
         <StoreForm store={store} />
 
@@ -61,6 +75,6 @@ export default async function EditStorePage({
         />
       </div>
     </div>
-  );
+  ); */
 }
 
