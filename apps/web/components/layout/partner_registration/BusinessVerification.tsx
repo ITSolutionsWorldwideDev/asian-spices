@@ -1,29 +1,62 @@
+"use client";
 import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
 // import { useReadAloud } from "./SpeakLoud";
 import ReadAloudBtn from "./ReadAloudBtn";
-import { useFormValidator } from "@/hooks/FormValidator";
+import { z } from "zod";
+import { useState } from "react";
+// import { useFormValidator } from "@/hooks/FormValidator";
 export default function BusinessVerification({
   formData,
   setFormData,
   activeStep,
   setActiveStep,
 }: any) {
-  const requiredFields = [
-    "kvk_number",
-    "company_name",
-    "chamber_of_commerce_number",
-    "country",
-    "street",
-    "house_number",
-    "postal_code",
-    "city",
-  ];
-  const { validateForm } = useFormValidator(requiredFields, formData);
+  const businessSchema = z.object({
+    kvk_number: z
+      .string()
+      .min(1, "KVK number is required")
+      .regex(/^[0-9]+$/, "KVK must be numeric"),
+
+    company_name: z.string().min(1, "Company name is required"),
+
+    chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
+
+    country: z.string().min(1, "Country is required"),
+
+    street: z.string().min(1, "Street is required"),
+
+    house_number: z.string().min(1, "House number is required"),
+
+    postal_code: z.string().min(1, "Postal code is required"),
+
+    city: z.string().min(1, "City is required"),
+
+    additional_address: z.string().optional(),
+  });
+
+  const [errors, setErrors] = useState<any>({});
+
+  // const requiredFields = [
+  //   "kvk_number",
+  //   "company_name",
+  //   "chamber_of_commerce_number",
+  //   "country",
+  //   "street",
+  //   "house_number",
+  //   "postal_code",
+  //   "city",
+  // ];
+  // const { validateForm } = useFormValidator(requiredFields, formData);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
       ...prev,
       [field]: value,
+    }));
+
+    setErrors((prev: any) => ({
+      ...prev,
+      [field]: undefined,
     }));
   };
 
@@ -58,14 +91,6 @@ export default function BusinessVerification({
                   "ArrowRight",
                   "Tab",
                 ];
-
-                if (
-                  !/[0-9]/.test(e.key) &&
-                  !allowedKeys.includes(e.key) &&
-                  !(e.ctrlKey || e.metaKey) // allow copy, paste, select all
-                ) {
-                  e.preventDefault();
-                }
               }}
               onChange={(e) => {
                 handleChange("kvk_number", e.target.value);
@@ -79,6 +104,12 @@ export default function BusinessVerification({
               required
             />
           </div>
+          {/* ✅ Error */}
+          {errors.kvk_number && (
+            <p className="text-red-500 text-xs mt-1">
+              field is required Please Enter a valid input
+            </p>
+          )}
         </div>
       </div>
 
@@ -116,6 +147,8 @@ export default function BusinessVerification({
                 onChange={(e) => {
                   handleChange("company_name", e.target.value);
                 }}
+                error={errors.company_name?.[0]}
+
                 // value=""
               />
               <InputField
@@ -125,6 +158,8 @@ export default function BusinessVerification({
                 onChange={(e) =>
                   handleChange("chamber_of_commerce_number", e.target.value)
                 }
+                error={errors.chamber_of_commerce_number?.[0]}
+
                 // value="12345678"
               />
               <InputField
@@ -132,6 +167,7 @@ export default function BusinessVerification({
                 value={formData.country || ""}
                 // value={formData.country}
                 onChange={(e) => handleChange("country", e.target.value)}
+                error={errors.country?.[0]}
               />
             </div>
           </div>
@@ -149,6 +185,7 @@ export default function BusinessVerification({
                 value={formData.street || ""}
                 // value={formData.street}
                 onChange={(e) => handleChange("street", e.target.value)}
+                error={errors.street?.[0]}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
@@ -156,6 +193,7 @@ export default function BusinessVerification({
                   value={formData.house_number || ""}
                   // value={formData.houseNumber}
                   onChange={(e) => handleChange("house_number", e.target.value)}
+                  error={errors.house_number?.[0]}
                 />
 
                 <InputField
@@ -173,12 +211,14 @@ export default function BusinessVerification({
                   value={formData.postal_code || ""}
                   // value={formData.postalCode}
                   onChange={(e) => handleChange("postal_code", e.target.value)}
+                  error={errors.postal_code?.[0]}
                 />
                 <InputField
                   label="City"
                   value={formData.city || ""}
                   // value={formData.city}
                   onChange={(e) => handleChange("city", e.target.value)}
+                  error={errors.city?.[0]}
                 />
               </div>
             </div>
@@ -188,21 +228,24 @@ export default function BusinessVerification({
           <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
             <button
               className="flex items-center justify-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 w-full sm:w-auto"
+              type="button"
               onClick={() => setActiveStep(activeStep - 1)}
             >
               <ArrowLeft size={16} /> Back
             </button>
             <button
               className="flex items-center justify-center gap-2 bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 w-full sm:w-auto"
+              type="button"
               onClick={() => {
-                if (validateForm()) {
-                  setActiveStep(activeStep + 1);
-                } else {
-                  alert(
-                    "Please fill in all required fields before continuing.",
-                  );
+                const result = businessSchema.safeParse(formData);
+
+                if (!result.success) {
+                  const fieldErrors = result.error.flatten().fieldErrors;
+                  setErrors(fieldErrors);
+                  return;
                 }
-                // setActiveStep(activeStep + 1)
+
+                setActiveStep(activeStep + 1);
               }}
             >
               Continue <ArrowRight size={16} />
@@ -217,10 +260,12 @@ export default function BusinessVerification({
   label,
   onChange,
   value,
+  error,
 }: {
   label: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   value: string;
+  error?: string;
 }) {
   return (
     <div>
@@ -232,6 +277,12 @@ export default function BusinessVerification({
         onChange={onChange}
         className="w-full bg-gray-100  rounded-md px-3 py-2 text-gray-700"
       />{" "}
+      {/* ✅ Error message */}
+      {error && (
+        <p className="text-red-500 text-xs mt-1">
+          please Enter a valid Input required field
+        </p>
+      )}
     </div>
   );
 }

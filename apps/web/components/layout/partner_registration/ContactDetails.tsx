@@ -3,6 +3,8 @@
 import { useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
 import { useFormValidator } from "@/hooks/FormValidator";
+import { z } from "zod";
+
 export default function ContactDetails({
   formData,
   setFormData,
@@ -10,11 +12,38 @@ export default function ContactDetails({
   setActiveStep,
 }: any) {
   const [agree, setAgree] = useState(false);
+  const contactSchema = z.object({
+    first_name: z.string().min(1, "First name is required"),
+    middle_name: z.string().optional(),
+    last_name: z.string().min(1, "Last name is required"),
+
+    business_phone_number: z
+      .string()
+      .min(1, "Phone number is required")
+      .regex(/^[+0-9\s]+$/, "Invalid phone number"),
+
+    business_email_address: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
+
+    vat_number: z
+      .string()
+      .min(1, "VAT number is required")
+      .regex(/^[A-Z]{2}[A-Z0-9]+$/, "Invalid VAT format"),
+  });
+
+  // ✅ Error state
+  const [errors, setErrors] = useState<any>({});
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
       ...prev,
       [field]: value,
+    }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [field]: undefined,
     }));
   };
   const requiredFields = [
@@ -60,6 +89,11 @@ export default function ContactDetails({
                 placeholder="First Name"
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
+              {errors.first_name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.first_name[0]}
+                </p>
+              )}
             </div>
 
             <div>
@@ -86,6 +120,11 @@ export default function ContactDetails({
                 onChange={(e) => handleChange("last_name", e.target.value)}
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
+              {errors.last_name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.last_name[0]}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -109,6 +148,11 @@ export default function ContactDetails({
               placeholder="+31 6 12345678"
               className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
+            {errors.business_phone_number && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.business_phone_number[0]}
+              </p>
+            )}
           </div>
 
           <div>
@@ -127,6 +171,11 @@ export default function ContactDetails({
             <p className="text-xs text-gray-500 mt-2">
               My billing email is the same as my business email
             </p>
+            {errors.business_email_address && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.business_email_address[0]}
+              </p>
+            )}
           </div>
 
           <div>
@@ -143,6 +192,11 @@ export default function ContactDetails({
             <p className="text-xs text-gray-400 mt-2">
               Format: Country code + numbers (e.g., NL123456789B01)
             </p>
+            {errors.vat_number && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.vat_number[0]}
+              </p>
+            )}
           </div>
         </div>
 
@@ -210,6 +264,7 @@ export default function ContactDetails({
         {/* Buttons */}
         <div className="flex justify-between">
           <button
+            type="button"
             className="px-5 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
             onClick={() => setActiveStep(activeStep - 1)}
           >
@@ -218,19 +273,22 @@ export default function ContactDetails({
 
           <button
             disabled={!agree}
+            type="button"
             className={`px-6 py-2 rounded-lg text-white transition ${
               agree
                 ? "bg-orange-500 hover:bg-orange-600"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
             onClick={() => {
-              if (validateForm()) {
-                setActiveStep(activeStep + 1);
+              const result = contactSchema.safeParse(formData);
 
+              if (!result.success) {
+                const fieldErrors = result.error.flatten().fieldErrors;
+                setErrors(fieldErrors);
                 return;
-              } else {
-                alert("Please fill in all required fields.");
               }
+
+              setActiveStep(activeStep + 1);
             }}
           >
             Continue →

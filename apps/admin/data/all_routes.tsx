@@ -1,4 +1,3 @@
-
 // apps\admin\data\all_routes.tsx
 
 export const all_routes = {
@@ -204,14 +203,13 @@ export const all_routes = {
   coupons: "/coupons",
   payrollList: "/employee-salary",
 
-
   //New Page
   onlineorder: "/online-orders",
   customer: "/customers",
   pos: "/pos",
   posorder: "/pos-orders",
   invoice: "/invoice",
-  invoicedetails: "/invoice-details", 
+  invoicedetails: "/invoice-details",
   pos3: "/pos-3",
   pos4: "/pos-4",
   pos5: "/pos-5",
@@ -285,19 +283,19 @@ export const all_routes = {
   countries: "/countries",
   cities: "/cities",
   activities: "/activities",
-  pricing:"/pricing",
-  contact:"/contacts",
-  superAdminCompanies:"/companies",
-  superAdminPackages:"/packages",
-  superAdminPurchaseTransaction:"/purchase-transaction",
+  pricing: "/pricing",
+  contact: "/contacts",
+  superAdminCompanies: "/companies",
+  superAdminPackages: "/packages",
+  superAdminPurchaseTransaction: "/purchase-transaction",
   //Layout Pages
-  layoutHorizontal:"/layout-horizontal",
-  layoutDetached:"/layout-detached",
-  layoutTwoColumn:"/layout-two-column",
-  layoutHovered:"/layout-hovered",
-  layoutBoxed:"/layout-boxed",
-  layoutRtl:"/layout-rtl",
-  layoutDark:"/layout-dark",
+  layoutHorizontal: "/layout-horizontal",
+  layoutDetached: "/layout-detached",
+  layoutTwoColumn: "/layout-two-column",
+  layoutHovered: "/layout-hovered",
+  layoutBoxed: "/layout-boxed",
+  layoutRtl: "/layout-rtl",
+  layoutDark: "/layout-dark",
 
   custom: {
     currency: "USD",
