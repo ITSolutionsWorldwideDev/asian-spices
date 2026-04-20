@@ -2,13 +2,14 @@
 
 import { getShippingProvider } from "./providerFactory";
 
-export async function createShipmentForOrder(
-  order: any,
-  providerSlug: string
-) {
+export async function createShipmentForOrder(order: any, providerSlug: string) {
   const provider = await getShippingProvider(providerSlug);
 
   const shipment = await provider.createShipment(order);
+
+  if (!shipment?.id) {
+    throw new Error("Shipment creation failed: missing ID");
+  }
 
   let label = null;
   try {

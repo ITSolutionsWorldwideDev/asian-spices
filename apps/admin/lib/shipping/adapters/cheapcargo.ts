@@ -5,10 +5,15 @@ import { withRetry } from "@/lib/utils/retry";
 
 const BASE_URL = "https://api.cheapcargo.dev";
 
-export class CheapCargoAdapter implements ShippingAdapter {
-  private creds: any;
+type Credentials = {
+  api_key: string;
+  api_secret: string;
+};
 
-  constructor(creds: any) {
+export class CheapCargoAdapter implements ShippingAdapter {
+  private creds: Credentials;
+
+  constructor(creds: Credentials) {
     this.creds = creds;
   }
 
@@ -48,7 +53,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
         country: order.country,
       },
       parcels: order.items?.map((i: any) => ({
-        weight: 1,
+        weight: i.weight || 1,
         description: i.title,
       })),
     });

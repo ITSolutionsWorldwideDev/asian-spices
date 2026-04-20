@@ -1,3 +1,5 @@
+// apps/web/components/layout/partner_registration/DocumentUpload.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -17,10 +19,8 @@ export default function DocumentUploadPage({
   const [poaFiles, setPoaFiles] = useState<
     { name: string; size: number; type: string }[]
   >([]);
-  // const { isSpeaking, handleReadAloud } = useReadAloud();
-  console.log(chamberFiles);
-  console.log(poaFiles);
-  console.log("dfa", formData);
+
+  
   // Format file size
 
   const formatSize = (size: number) => {
@@ -59,6 +59,10 @@ export default function DocumentUploadPage({
     const base64s = await Promise.all(
       Array.from(e.target.files).map((file) => fileToBase64(file)),
     );
+
+    // console.log('chamberFiles ==== ',chamberFiles);
+    // console.log('poaFiles ==== ',poaFiles);
+    // console.log('type ==== ',type);
 
     if (type === "chamber") {
       const updatedFiles = [...chamberFiles, ...fileObjects];
@@ -250,16 +254,23 @@ export default function DocumentUploadPage({
           >
             ← Back
           </button>
-
           <button
             disabled={chamberFiles.length === 0}
             className={`px-6 py-2 rounded-lg text-white transition ${
-              chamberFiles.length === 0 || poaFiles.length === 0
+              chamberFiles.length === 0
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-orange-500 hover:bg-orange-600"
             }`}
             onClick={() => {
-              if (chamberFiles.length === 0) {
+              // if (chamberFiles.length === 0) {
+              //   alert("Chamber of Commerce document is required");
+              //   return;
+              // }
+
+              if (
+                !formData.chamberFiles ||
+                formData.chamberFiles.length === 0
+              ) {
                 alert("Chamber of Commerce document is required");
                 return;
               }

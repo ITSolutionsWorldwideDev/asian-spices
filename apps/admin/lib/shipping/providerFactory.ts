@@ -11,7 +11,7 @@ export async function getShippingProvider(
 
   switch (provider.slug) {
     case "cheapcargo":
-      return new CheapCargoAdapter(provider.credentials);
+      return new CheapCargoAdapter(provider.credentials as any);
 
     // future:
     // case "dhl":
@@ -21,3 +21,18 @@ export async function getShippingProvider(
       throw new Error(`Unsupported provider: ${slug}`);
   }
 }
+
+/* import { CheapCargoAdapter } from "./adapters/CheapCargoAdapter";
+
+export function getShippingProvider(
+  slug: string,
+  config: any
+) {
+  switch (slug) {
+    case "cheapcargo":
+      return new CheapCargoAdapter(config);
+
+    default:
+      throw new Error(`Unsupported provider: ${slug}`);
+  }
+} */

@@ -71,6 +71,7 @@ export default function TabSwitching() {
         activeStep={activeStep}
         formData={formData}
         setCompletedSteps={setCompletedSteps}
+        setFormData={setFormData}
       />
     ),
     6: (

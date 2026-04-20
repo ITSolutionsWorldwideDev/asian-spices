@@ -1,17 +1,27 @@
+// apps/web/components/layout/partner_registration/IdentityVerification.tsx
+
 "use client";
 
 import { useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
 
+// const banks = [
+//   "ABN AMRO",
+//   "ING",
+//   "Rabobank",
+//   "SNS Bank",
+//   "ASN Bank",
+//   "RegioBank",
+//   "Triodos Bank",
+//   "Knab",
+// ];
+
 const banks = [
-  "ABN AMRO",
-  "ING",
-  "Rabobank",
-  "SNS Bank",
-  "ASN Bank",
-  "RegioBank",
-  "Triodos Bank",
-  "Knab",
+  { name: "ABN AMRO", issuer: "ABNANL2A" },
+  { name: "ING", issuer: "INGBNL2A" },
+  { name: "Rabobank", issuer: "RABONL2U" },
+  { name: "SNS Bank", issuer: "SNSBNL2A" },
+  { name: "ASN Bank", issuer: "ASNBNL21" },
 ];
 
 export default function IdentityVerification({
@@ -19,10 +29,17 @@ export default function IdentityVerification({
   setActiveStep,
   formData,
   setCompletedSteps,
+  setFormData,
 }: any) {
+  // const [selectedBank, setSelectedBank] = useState<string | null>(
+  //   formData.selected_bank || null,
+  // );
+
+  const selectedBank = formData.selected_bank;
+
   const handleSubmit = async () => {
     // ✅ validation
-    if (!selectedBank) {
+    if (!formData.selected_bank) {
       alert("Please select a bank to continue");
       return;
     }
@@ -33,10 +50,7 @@ export default function IdentityVerification({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          selected_bank: selectedBank, // ✅ include this
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -58,34 +72,35 @@ export default function IdentityVerification({
     }
   };
 
-  /* const handleSubmit = async () => {
-    setActiveStep(activeStep + 1);
+  const handleIDIN = async () => {
+
+    if (!selectedBank) {
+      alert("Please select a bank");
+      return;
+    }
 
     try {
-      const response = await fetch("/api/partner-registration", {
+      const res = await fetch("/api/partner-registration/idin/start", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          bank: selectedBank,
+          formData,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error(
-          "Failed to submit partner registration Form Please try again and fill all the required fields",
-        );
-      }
-      if (response.ok) {
-        alert("Partner registration submitted successfully!");
-        setActiveStep(activeStep + 1);
-      }
-    } catch (error) {
-      console.error("Error submitting partner registration:", error);
-      alert("An error occurred while submitting the form. Please try again.");
-    }
-  }; */
+      const data = await res.json();
 
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl; // 🔥 redirect to bank
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start verification");
+    }
+  };
 
   return (
     <div
@@ -126,16 +141,22 @@ export default function IdentityVerification({
           <div className="grid md:grid-cols-3 gap-4">
             {banks.map((bank) => (
               <button
-                key={bank}
+                key={bank.name}
                 type="button" // ✅ prevent form submission
-                onClick={() => setSelectedBank(bank)} // ✅ enable selection
+                onClick={() => {
+                  // setSelectedBank(bank);
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    selected_bank: bank.issuer,
+                  }));
+                }}
                 className={`border rounded-xl p-4 text-left transition hover:border-gray-400 ${
-                  selectedBank === bank
+                  selectedBank === bank.issuer
                     ? "border-orange-500 bg-orange-50"
                     : "border-gray-300 bg-white"
                 }`}
               >
-                {bank}
+                {bank.name}
               </button>
             ))}
           </div>
@@ -143,8 +164,8 @@ export default function IdentityVerification({
 
         {/* Verify Button */}
         <div>
-          <button
-            disabled={!selectedBank}
+          {/* <button
+            disabled={!formData.selected_bank}
             className={`w-full py-3 rounded-lg text-white font-medium transition ${
               selectedBank
                 ? "bg-orange-500 hover:bg-orange-600"
@@ -152,6 +173,19 @@ export default function IdentityVerification({
             }`}
           >
             🛡 Verify with iDIN
+          </button> */}
+
+          <button
+            disabled={!selectedBank}
+            onClick={handleIDIN}
+            type="button"
+            className={`w-full py-3 rounded-lg text-white font-medium transition ${
+              selectedBank
+                ? "bg-orange-500 hover:bg-orange-600 cursor-pointer"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            🛡 Verify with iDIN →
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-2">
@@ -198,7 +232,7 @@ export default function IdentityVerification({
           </button>
 
           <button
-            disabled={!selectedBank}
+            disabled={!formData.selected_bank}
             className={`px-6 py-2 rounded-lg text-white transition ${
               selectedBank
                 ? "bg-orange-500 hover:bg-orange-600"
@@ -213,3 +247,30 @@ export default function IdentityVerification({
     </div>
   );
 }
+
+/* const handleSubmit = async () => {
+    setActiveStep(activeStep + 1);
+
+    try {
+      const response = await fetch("/api/partner-registration", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to submit partner registration Form Please try again and fill all the required fields",
+        );
+      }
+      if (response.ok) {
+        alert("Partner registration submitted successfully!");
+        setActiveStep(activeStep + 1);
+      }
+    } catch (error) {
+      console.error("Error submitting partner registration:", error);
+      alert("An error occurred while submitting the form. Please try again.");
+    }
+  }; */

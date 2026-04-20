@@ -1,3 +1,6 @@
+// apps/web/store/useWishlistStore.ts
+
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

@@ -10,7 +10,6 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { ArrowRight } from "lucide-react";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 
-// import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
@@ -29,28 +28,12 @@ export default function Cart() {
   );
 
   console.log(cart);
-  // const savings = cart.reduce((acc, item) => {
-  //   if (!item.oldPrice) return acc;
-  //   return acc + (item.oldPrice - item.price) * item.quantity;
-  // }, 0);
 
   const TAX_RATE = 0.08;
 
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax; // shipping free, tax ignored for now
   const itemInCart = cart.length;
-
-  /* const handleCheckout = () => {
-    if (!session) {
-      // 🔥 store intent
-      localStorage.setItem("checkout_redirect", "/checkout");
-
-      router.push("/login");
-      return;
-    }
-
-    router.push("/checkout");
-  }; */
 
   const handleCheckout = () => {
     router.push("/checkout");
@@ -124,11 +107,6 @@ export default function Cart() {
                       {symbol}
                       {(rate * (item.price * item.quantity)).toFixed(2)}
                     </p>
-                    {/* {item.oldPrice && (
-                      <p className="text-sm text-gray-400 line-through">
-                        ${(item.oldPrice * item.quantity).toFixed(2)}
-                      </p>
-                    )} */}
                   </div>
                 </div>
 
@@ -185,18 +163,6 @@ export default function Cart() {
               </span>
             </div>
 
-            {/* {savings > 0 && (
-              <div className="flex justify-between text-[#00A63E] mt-3">
-                <span>You Save</span>
-                <span>- ${savings.toFixed(2)}</span>
-              </div>
-            )} */}
-
-            {/* <div className="flex justify-between mt-3">
-              <span>Shipping</span>
-              <span className="text-[#00A63E]">FREE</span>
-            </div> */}
-
             <div className="flex justify-between mt-3">
               <span>Tax (8%)</span>
               <span>
@@ -224,11 +190,6 @@ export default function Cart() {
             <ArrowRight className="text-white ml-4 size-[20]" />
           </button>
 
-          {/* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
-            <Link href="/checkout"> Proceed to Checkout </Link>
-            <ArrowRight className="text-white ml-4 size-[20]" />
-          </button> */}
-
           <Link href={"/"}>
             <button className="w-full mt-3 border py-3 rounded-xl text-sm cursor-pointer">
               Continue Shopping
@@ -250,3 +211,49 @@ export default function Cart() {
     </div>
   );
 }
+
+
+
+  /* const handleCheckout = () => {
+    if (!session) {
+      // 🔥 store intent
+      localStorage.setItem("checkout_redirect", "/checkout");
+
+      router.push("/login");
+      return;
+    }
+
+    router.push("/checkout");
+  };
+  
+  
+  // const savings = cart.reduce((acc, item) => {
+  //   if (!item.oldPrice) return acc;
+  //   return acc + (item.oldPrice - item.price) * item.quantity;
+  // }, 0);
+  
+  */
+
+                    {/* {item.oldPrice && (
+                      <p className="text-sm text-gray-400 line-through">
+                        ${(item.oldPrice * item.quantity).toFixed(2)}
+                      </p>
+                    )} */}
+  
+
+            {/* {savings > 0 && (
+              <div className="flex justify-between text-[#00A63E] mt-3">
+                <span>You Save</span>
+                <span>- ${savings.toFixed(2)}</span>
+              </div>
+            )} */}
+
+            {/* <div className="flex justify-between mt-3">
+              <span>Shipping</span>
+              <span className="text-[#00A63E]">FREE</span>
+            </div> */}
+
+          {/* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
+            <Link href="/checkout"> Proceed to Checkout </Link>
+            <ArrowRight className="text-white ml-4 size-[20]" />
+          </button> */}

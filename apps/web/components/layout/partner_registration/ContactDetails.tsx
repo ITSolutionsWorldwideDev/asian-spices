@@ -1,3 +1,5 @@
+// apps/web/components/layout/partner_registration/ContactDetails.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -14,25 +16,52 @@ export default function ContactDetails({
 }: any) {
   const [agree, setAgree] = useState(false);
   const contactSchema = z.object({
-    first_name: z.string().min(1, "First name is required"),
-    // middle_name: z.string().optional(),
-    last_name: z.string().min(1, "Last name is required"),
+    first_name: z
+      .string()
+      .min(2, "First name too short")
+      .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
+
+    last_name: z
+      .string()
+      .min(2, "Last name too short")
+      .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
 
     business_phone_number: z
       .string()
-      .min(1, "Phone number is required")
-      .regex(/^[+0-9\s]+$/, "Invalid phone number"),
+      .min(7, "Phone too short")
+      .max(15, "Phone too long")
+      .regex(/^[0-9+]+$/, "Only numbers and + allowed"),
 
     business_email_address: z
       .string()
-      .min(1, "Email is required")
-      .email("Invalid email address"),
+      .email("Invalid email")
+      .min(5, "Email too short"),
 
     vat_number: z
       .string()
-      .min(1, "VAT number is required")
+      .min(8, "VAT too short")
       .regex(/^[A-Z]{2}[A-Z0-9]+$/, "Invalid VAT format"),
   });
+  // const contactSchema = z.object({
+  //   first_name: z.string().min(1, "First name is required"),
+  //   // middle_name: z.string().optional(),
+  //   last_name: z.string().min(1, "Last name is required"),
+
+  //   business_phone_number: z
+  //     .string()
+  //     .min(1, "Phone number is required")
+  //     .regex(/^[+0-9\s]+$/, "Invalid phone number"),
+
+  //   business_email_address: z
+  //     .string()
+  //     .min(1, "Email is required")
+  //     .email("Invalid email address"),
+
+  //   vat_number: z
+  //     .string()
+  //     .min(1, "VAT number is required")
+  //     .regex(/^[A-Z]{2}[A-Z0-9]+$/, "Invalid VAT format"),
+  // });
 
   // ✅ Error state
   const [errors, setErrors] = useState<any>({});
@@ -86,7 +115,11 @@ export default function ContactDetails({
               <input
                 type="text"
                 value={formData.first_name || ""}
-                onChange={(e) => handleChange("first_name", e.target.value)}
+                // onChange={(e) => handleChange("first_name", e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                  handleChange("first_name", value);
+                }}
                 placeholder="First Name"
                 className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
@@ -143,9 +176,13 @@ export default function ContactDetails({
             <input
               type="text"
               value={formData.business_phone_number || ""}
-              onChange={(e) =>
-                handleChange("business_phone_number", e.target.value)
-              }
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9+]/g, "");
+                handleChange("business_phone_number", value);
+              }}
+              // onChange={(e) =>
+              //   handleChange("business_phone_number", e.target.value)
+              // }
               placeholder="+31 6 12345678"
               className="w-full mt-1 border border-[#E5E7EB] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />

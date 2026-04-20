@@ -1,3 +1,5 @@
+// apps/admin/app/api/register-customer/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
         const { itemid, quantity, price } = item; // Adjust based on your frontend cart schema
 
         // Insert or update logic
-        const checkCartItemQuery = `SELECT * FROM cart_items WHERE user_id = $1 AND item_id = $2`;
+        const checkCartItemQuery = `SELECT * FROM store_cart_items WHERE user_id = $1 AND item_id = $2`;
 
         const cartItemResult = await pool.query(checkCartItemQuery, [
           userId,
@@ -70,14 +72,14 @@ export async function POST(req: Request) {
 
         if (cartItemResult.rows.length > 0) {
           const updateCartItemQuery = `
-            UPDATE cart_items 
+            UPDATE store_cart_items 
             SET quantity = quantity + $1, added_at = NOW()
             WHERE user_id = $2 AND item_id = $3;
           `;
           await pool.query(updateCartItemQuery, [quantity, userId, itemid]);
         } else {
           const insertCartItemQuery = `
-            INSERT INTO cart_items (user_id, item_id, quantity, price, added_at)
+            INSERT INTO store_cart_items (user_id, item_id, quantity, price, added_at)
             VALUES ($1, $2, $3, $4, NOW());
           `;
           await pool.query(insertCartItemQuery, [

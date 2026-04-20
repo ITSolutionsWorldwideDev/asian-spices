@@ -1,3 +1,5 @@
+// apps/web/store/useCategoryFilterStore.ts
+
 import { create } from "zustand";
 
 interface CategoryState {
@@ -42,4 +44,3 @@ export const useCategoryFilterStore = create<CategoryState>((set) => ({
     }
   },
 }));
-// }));

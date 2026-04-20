@@ -13,18 +13,60 @@ export default function BusinessVerification({
   setActiveStep,
   setCompletedSteps,
 }: any) {
+  // const businessSchema = z.object({
+  //   kvk_number: z
+  //     .string()
+  //     .min(1, "KVK number is required")
+  //     .regex(/^[0-9]+$/, "KVK must be numeric"),
+  //   company_name: z.string().min(1, "Company name is required"),
+  //   chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
+  //   country: z.string().min(1, "Country is required"),
+  //   street: z.string().min(1, "Street is required"),
+  //   house_number: z.string().min(1, "House number is required"),
+  //   postal_code: z.string().min(1, "Postal code is required"),
+  //   city: z.string().min(1, "City is required"),
+  //   additional_address: z.string().optional(),
+  // });
+
   const businessSchema = z.object({
     kvk_number: z
       .string()
-      .min(1, "KVK number is required")
-      .regex(/^[0-9]+$/, "KVK must be numeric"),
-    company_name: z.string().min(1, "Company name is required"),
-    chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
-    country: z.string().min(1, "Country is required"),
-    street: z.string().min(1, "Street is required"),
-    house_number: z.string().min(1, "House number is required"),
-    postal_code: z.string().min(1, "Postal code is required"),
-    city: z.string().min(1, "City is required"),
+      .min(6, "KVK must be at least 6 digits")
+      .max(24, "KVK too long")
+      .regex(/^[0-9]+$/, "KVK must contain only numbers"),
+
+    company_name: z
+      .string()
+      .min(2, "Company name too short")
+      .regex(/^[a-zA-Z0-9\s.,'-]+$/, "Invalid characters"),
+
+    chamber_of_commerce_number: z
+      .string()
+      .min(6, "Chamber number too short")
+      .regex(/^[0-9]+$/, "Must be numeric"),
+
+    country: z
+      .string()
+      .min(2, "Country required")
+      .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
+
+    street: z
+      .string()
+      .min(2, "Street too short")
+      .regex(/^[a-zA-Z0-9\s.,'-]+$/, "Invalid characters"),
+
+    house_number: z
+      .string()
+      .min(1, "Required")
+      .regex(/^[0-9a-zA-Z\-\/]+$/, "Invalid house number"),
+
+    postal_code: z.string().min(4, "Postal code too short").max(10, "Too long"),
+
+    city: z
+      .string()
+      .min(2, "City too short")
+      .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
+
     additional_address: z.string().optional(),
   });
 
@@ -74,7 +116,8 @@ export default function BusinessVerification({
                 ];
               }}
               onChange={(e) => {
-                handleChange("kvk_number", e.target.value);
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                handleChange("kvk_number", value);
               }}
               value={formData.kvk_number || ""}
               placeholder="12345678"
