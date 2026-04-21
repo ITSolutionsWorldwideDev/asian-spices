@@ -64,7 +64,7 @@ export default function ProfileForm() {
       </div>
 
       <div className="pt-4 border-t">
-        <Button loading={isSubmitting}>Save Changes</Button>
+        <Button loading={isSubmitting} className="bg-orange-500 hover:bg-orange-600">Save Changes</Button>
       </div>
     </form>
   );

@@ -54,7 +54,7 @@ export default function Cart() {
 
   return (
     <div className="bg-white p-8">
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 container mx-auto">
         {/* Breadcrumb */}
         <div className="flex flex-wrap items-center gap-1 text-sm sm:text-base">
           <Link href={"/"}>
@@ -125,14 +125,14 @@ export default function Cart() {
                   <div className="flex items-center border rounded-lg w-fit">
                     <button
                       onClick={() => decreaseQty(item.id, isLoggedIn)}
-                      className="px-3 py-1 text-lg hover:bg-gray-100"
+                      className="px-3 py-1 text-lg hover:bg-gray-100 cursor-pointer rounded-lg"
                     >
                       −
                     </button>
                     <span className="px-4 text-center">{item.quantity}</span>
                     <button
                       onClick={() => increaseQty(item.id, isLoggedIn)}
-                      className="px-3 py-1 text-lg hover:bg-gray-100"
+                      className="px-3 py-1 text-lg hover:bg-gray-100 cursor-pointer rounded-lg"
                     >
                       +
                     </button>

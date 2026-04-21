@@ -28,8 +28,8 @@ export default function AccountTabs() {
             className={cn(
               "flex flex-col items-center text-xs px-3 py-2 rounded-lg",
               active
-                ? "bg-black text-white"
-                : "text-gray-500 hover:bg-gray-100"
+                ? "bg-orange-500 hover:bg-orange-600"
+                : "bg-orange-500 hover:bg-orange-600"
             )}
           >
             <Icon size={18} />

@@ -8,14 +8,16 @@ export default function UserMenu({ email }: { email?: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative right-0 ">
+      <div className="absolute right-0 -top-8">
       {/* Avatar */}
       <button
         onClick={() => setOpen(!open)}
-        className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center"
+        className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center "
       >
         {email?.charAt(0).toUpperCase() || "U"}
       </button>
+      </div>
 
       {/* Dropdown */}
       {open && (

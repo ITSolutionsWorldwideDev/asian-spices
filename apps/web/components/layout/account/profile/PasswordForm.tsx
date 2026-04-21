@@ -26,24 +26,27 @@ export default function PasswordForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-10">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-10 gap-4">
       <h2 className="font-semibold text-lg">Change Password</h2>
 
-      <input
-        type="password"
-        placeholder="Current password"
-        {...register("currentPassword")}
-        className="input"
-      />
+      <div className="space-x-4 space-y-4">
+        <input
+          type="password"
+          placeholder="Current password"
+          {...register("currentPassword")}
+          className="input md:w-1/2 sm:w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition bg-white"
+        />
 
-      <input
-        type="password"
-        placeholder="New password"
-        {...register("newPassword")}
-        className="input"
-      />
-
-      <button className="btn-primary">Update Password</button>
+        <input
+          type="password"
+          placeholder="New password"
+          {...register("newPassword")}
+          className="input md:w-1/2 sm:w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition bg-white"
+        />
+        <button className="bg-orange-500 hover:bg-orange-600 md:w-1/2 sm:w-full  text-white rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+          Update Password
+        </button>
+      </div>
     </form>
   );
 }

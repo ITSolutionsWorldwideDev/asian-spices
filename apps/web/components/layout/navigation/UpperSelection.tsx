@@ -1,91 +1,44 @@
+// apps/web/components/layout/navigation/UpperSelection.tsx
+
 "use client";
-
-import { useCurrencyStore } from "@/store/useCurrencyStore";
-import { useEffect, useState } from "react";
-
-interface Country {
-  id: number;
-  name: string;
-  code: string;
-}
-
-const DEFAULT_COUNTRY = "NL";
-const DEFAULT_CURRENCY = "EUR";
+import { useGlobalStore } from "@/store/useGlobalStore";
 
 export default function UpperSelection() {
   const {
+    countries,
     currencies,
+    selectedCountry,
     selectedCurrency,
-    rate,
-    fetchCurrencies,
+    setSelectedCountry,
     setSelectedCurrency,
-  } = useCurrencyStore();
-
-  console.log(currencies);
-  console.log("selectedCurrency===  ", selectedCurrency);
-  console.log(rate);
-  // console.log(fetchCurrencies);
-
-  useEffect(() => {
-    fetchCurrencies();
-  }, []);
-  const [countries, setCountries] = useState<Country[]>([]);
-  // const [currencies, setCurrencies] = useState<Currency[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
-
-  console.log("setCountries ===  ", setCountries);
-  // const [selectedCurrency, setSelectedCurrency] = useState("");
-  // const [rate, setRate] = useState(1);
-  // Fetch data
-  useEffect(() => {
-    const fetchData = async () => {
-      const [countryRes] = await Promise.all([
-        fetch("/api/countries"),
-        // fetch("/api/curriencies"),
-      ]);
-
-      const countriesData = await countryRes.json();
-      // const currenciesData = await currencyRes.json();
-
-      setCountries(countriesData);
-      // setCurrencies(currenciesData);
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (countries.length && !selectedCountry) {
-      const nl = countries.find((c) => c.code === "NL");
-      if (nl) setSelectedCountry(nl.code);
-    }
-  }, [countries]);
+  } = useGlobalStore();
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 ">
-      {/* LEFT SIDE */}
+    <nav className="flex items-center justify-between px-6 container mx-auto">
+      <div></div>
 
-      {/* RIGHT SIDE */}
-      <div className="flex items-center gap-4 ">
-        {/* COUNTRY SELECT */}
+      <div className="flex items-center gap-4">
+        {/* COUNTRY */}
         <select
           value={selectedCountry}
           onChange={(e) => setSelectedCountry(e.target.value)}
-          className="border px-3 py-1 rounded-md bg-white"
+          className="border px-3 py-1 text-xs rounded-md bg-white cursor-pointer"
         >
-          <option value="">Select Country</option>
+          <option value="" disabled>
+            Select Country
+          </option>
           {countries.map((c) => (
-            <option key={c.id} value={c.code}>
+            <option key={c.id} value={c.iso2}>
               {c.name}
             </option>
           ))}
         </select>
 
-        {/* CURRENCY SELECT */}
+        {/* CURRENCY */}
         <select
           value={selectedCurrency}
           onChange={(e) => setSelectedCurrency(e.target.value)}
-          className="border px-3 py-1 rounded-md bg-white"
+          className="border px-3 py-1 text-xs rounded-md bg-white cursor-pointer"
         >
           {currencies.map((c) => (
             <option key={c.id} value={c.code}>
@@ -98,33 +51,102 @@ export default function UpperSelection() {
   );
 }
 
-// console.log(currencies);
+/* import { useCurrencyStore } from "@/store/useCurrencyStore";
+import { useEffect, useState } from "react";
 
-// useEffect(() => {
-//   if (currencies.length > 0) {
-//     const baseCurrency = currencies.find((c) => c.is_base === true);
+interface Country {
+  id: number;
+  name: string;
+  iso2: string;
+}
 
-//     if (baseCurrency) {
-//       setSelectedCurrency(baseCurrency.code);
-//     }
-//   }
-// }, [currencies]);
+export default function UpperSelection() {
+  const {
+    currencies,
+    selectedCurrency,
+    rate,
+    fetchCurrencies,
+    setSelectedCurrency,
+  } = useCurrencyStore();
 
-// useEffect(() => {
-//   if (!selectedCurrency) return;
+  const DEFAULT_COUNTRY = "NL";
 
-//   const fetchRate = async () => {
-//     const res = await fetch(`/api/currency-rate?code=${selectedCurrency}`);
-//     const data = await res.json();
+  useEffect(() => {
+    fetchCurrencies();
+  }, []);
 
-//     if (data?.rate) {
-//       // setRate(data.rate);
-//     }
-//   };
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
 
-//   fetchRate();
-// }, [selectedCurrency]);
+  const selectedCountryValue =
+    selectedCountry || (countries.length ? DEFAULT_COUNTRY : "");
 
-// console.log(rate);
+  useEffect(() => {
+    const fetchData = async () => {
+      const countryRes = await fetch("/api/countries");
+      const countriesData = await countryRes.json();
 
-// console.log(selectedCurrency);
+      setCountries(countriesData);
+
+      if (!selectedCountry) {
+        const exists = countriesData.some(
+          (c: Country) => c.iso2 === DEFAULT_COUNTRY,
+        );
+
+        if (exists) {
+          setSelectedCountry(DEFAULT_COUNTRY);
+        }
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (currencies.length > 0 && !selectedCurrency) {
+      const euro = currencies.find((c) => c.code === "EUR");
+      if (euro) {
+        setSelectedCurrency(euro.code);
+      }
+    }
+  }, [currencies, selectedCurrency, setSelectedCurrency]);
+
+  return (
+    <nav className="flex items-center justify-between px-6 container mx-auto ">
+
+      <div></div>
+
+
+      <div className="flex items-center gap-4 ">
+
+        <select
+          value={selectedCountryValue}
+          onChange={(e) => setSelectedCountry(e.target.value)}
+          className="border px-3 py-1 text-xs rounded-md bg-white cursor-pointer"
+        >
+          <option value="" disabled>
+            Select Country
+          </option>
+          {countries.map((c) => (
+            <option key={c.id} value={c.iso2}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+
+
+        <select
+          value={selectedCurrency}
+          onChange={(e) => setSelectedCurrency(e.target.value)}
+          className="border px-3 py-1 text-xs rounded-md bg-white cursor-pointer"
+        >
+          {currencies.map((c) => (
+            <option key={c.id} value={c.code}>
+              {c.symbol} - {c.code}
+            </option>
+          ))}
+        </select>
+      </div>
+    </nav>
+  );
+} */

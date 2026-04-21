@@ -32,7 +32,7 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
   // 🔹 Fetch currencies only
   fetchCurrencies: async () => {
     try {
-      const res = await fetch("/api/curriencies"); // ✅ fix spelling here
+      const res = await fetch("/api/currencies");
       const currencies = await res.json();
 
       const baseCurrency = currencies.find((c: Currency) => c.is_base);

@@ -40,9 +40,9 @@ export default function AccountSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition",
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white font-medium transition",
                 isActive
-                  ? "bg-black text-white"
+                  ? "bg-orange-500 hover:bg-orange-600"
                   : "hover:bg-gray-100 text-gray-700"
               )}
             >

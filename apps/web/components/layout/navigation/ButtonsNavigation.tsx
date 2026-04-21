@@ -40,7 +40,7 @@ const ButtonsNavigation = () => {
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="bg-white p-2 rounded-full font-bold ml-2"
+            className="bg-white p-2 rounded-full font-bold ml-2 cursor-pointer"
           >
             <User  size={24} />
             {/* {session.user?.email} */}
@@ -67,7 +67,7 @@ const ButtonsNavigation = () => {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
               >
                 Logout
               </button>
