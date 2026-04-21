@@ -241,6 +241,12 @@ export default function Checkout() {
 
       // Initiate payment
       if (method === "paynl" || method === "paypal") {
+        
+        console.log('orderId ===  ', orderId);
+        console.log('total ===  ', total);
+        console.log('formData.email ===  ', formData.email);
+        console.log('method ===  ', method);
+
         const payment = await fetch("/api/create-payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -253,6 +259,8 @@ export default function Checkout() {
         });
 
         const data = await payment.json();
+
+        console.log('Failed to initiate payment. Please try again. ===  ', data);
 
         if (!data.success) {
           alert("Failed to initiate payment. Please try again.");

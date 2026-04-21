@@ -36,41 +36,54 @@ export async function POST(req: NextRequest) {
 
     // 1️⃣ If logged in → try to find existing customer
     if (userId) {
-      // const existingCustomer: any = await client.query(
-      //   `SELECT id FROM store_customers
-      //     WHERE user_id = $1 AND store_id = $2`,
-      //   [userId, store_id],
-      // );
 
-      const existingCustomer: any = await client.query(
-        `SELECT id FROM store_customers 
-          WHERE user_id = $1 LIMIT 1`,
-        [userId],
+      const existingCustomer = await client.query(
+        `SELECT id FROM customers WHERE user_id = $1 LIMIT 1`,
+        [userId]
       );
 
-      if (existingCustomer.rowCount > 0) {
+      if (existingCustomer.rowCount) {
         customer_id = existingCustomer.rows[0].id;
       } else {
-        // create new linked customer
         const result = await client.query(
-          `INSERT INTO store_customers 
-          (store_id, user_id, first_name, last_name, email, phone, city, postcode)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          `INSERT INTO customers (user_id, email, first_name, last_name, phone)
+          VALUES ($1,$2,$3,$4,$5)
           RETURNING id`,
-          [
-            store_id,
-            userId,
-            customer.firstName,
-            customer.lastName,
-            email,
-            customer.phone,
-            shippingAddress.city,
-            shippingAddress.zip,
-          ],
+          [userId, email, customer.firstName, customer.lastName, customer.phone]
         );
 
         customer_id = result.rows[0].id;
       }
+
+      // const existingCustomer: any = await client.query(
+      //   `SELECT id FROM store_customers 
+      //     WHERE user_id = $1 LIMIT 1`,
+      //   [userId],
+      // );
+
+      // if (existingCustomer.rowCount > 0) {
+      //   customer_id = existingCustomer.rows[0].id;
+      // } else {
+      //   // create new linked customer
+      //   const result = await client.query(
+      //     `INSERT INTO store_customers 
+      //     (store_id, user_id, first_name, last_name, email, phone, city, postcode)
+      //     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      //     RETURNING id`,
+      //     [
+      //       store_id,
+      //       userId,
+      //       customer.firstName,
+      //       customer.lastName,
+      //       email,
+      //       customer.phone,
+      //       shippingAddress.city,
+      //       shippingAddress.zip,
+      //     ],
+      //   );
+
+      //   customer_id = result.rows[0].id;
+      // }
 
       // 🔥 assign CUSTOMER role
       await client.query(
@@ -207,6 +220,44 @@ export async function POST(req: NextRequest) {
     }
 
     await assignNextStore(client, order_id);
+
+    const { rows } = await client.query(
+      `SELECT current_store_id FROM store_orders WHERE id = $1`,
+      [order_id]
+    );
+
+    const new_store_id = rows[0].current_store_id;
+
+    await client.query(
+      `
+      INSERT INTO store_customers 
+      (store_id, user_id, first_name, last_name, email, phone, city, postcode)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT (store_id, user_id)
+      DO NOTHING
+      `,
+      [
+        new_store_id,
+        userId,
+        customer.firstName,
+        customer.lastName,
+        email,
+        customer.phone,
+        shippingAddress.city,
+        shippingAddress.zip,
+      ]
+    );
+
+    await client.query(
+      `
+      INSERT INTO store_users (user_id, store_id, role_id)
+      SELECT $1, $2, id FROM roles 
+      WHERE key = 'customer'
+      ON CONFLICT (store_id, user_id) DO NOTHING
+      `,
+      [userId, new_store_id]
+    );
+
 
     await client.query("COMMIT");
 

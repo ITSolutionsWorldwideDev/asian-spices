@@ -10,7 +10,11 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { ArrowRight } from "lucide-react";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 
+import { useSession } from "next-auth/react";
+
 import { useRouter } from "next/navigation";
+
+const FALLBACK_IMAGE = "/images/placeholder.png";
 
 export default function Cart() {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
@@ -18,6 +22,9 @@ export default function Cart() {
 
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
+
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
   // const { data: session } = useSession();
   const router = useRouter();
@@ -80,9 +87,11 @@ export default function Cart() {
             >
               {/* IMAGE */}
               <div className="h-30 w-full sm:w-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                {/* src={`${item.image}`}
+                  alt={item.title} */}
                 <Image
-                  src={`${item.image}`}
-                  alt={item.title}
+                  src={item.image || FALLBACK_IMAGE}
+                  alt={item.title || "Product"}
                   width={96}
                   height={96}
                   className="object-cover h-full w-full"
@@ -115,14 +124,14 @@ export default function Cart() {
                   {/* QTY */}
                   <div className="flex items-center border rounded-lg w-fit">
                     <button
-                      onClick={() => decreaseQty(item.id)}
+                      onClick={() => decreaseQty(item.id, isLoggedIn)}
                       className="px-3 py-1 text-lg hover:bg-gray-100"
                     >
                       −
                     </button>
                     <span className="px-4 text-center">{item.quantity}</span>
                     <button
-                      onClick={() => increaseQty(item.id)}
+                      onClick={() => increaseQty(item.id, isLoggedIn)}
                       className="px-3 py-1 text-lg hover:bg-gray-100"
                     >
                       +
@@ -138,7 +147,7 @@ export default function Cart() {
                       <Heart size={16} /> Save
                     </button>
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item.id, isLoggedIn)}
                       className="flex items-center gap-1 text-red-500 cursor-pointer"
                     >
                       <Trash2 size={16} /> Remove
@@ -212,9 +221,7 @@ export default function Cart() {
   );
 }
 
-
-
-  /* const handleCheckout = () => {
+/* const handleCheckout = () => {
     if (!session) {
       // 🔥 store intent
       localStorage.setItem("checkout_redirect", "/checkout");
@@ -234,26 +241,33 @@ export default function Cart() {
   
   */
 
-                    {/* {item.oldPrice && (
+{
+  /* {item.oldPrice && (
                       <p className="text-sm text-gray-400 line-through">
                         ${(item.oldPrice * item.quantity).toFixed(2)}
                       </p>
-                    )} */}
-  
+                    )} */
+}
 
-            {/* {savings > 0 && (
+{
+  /* {savings > 0 && (
               <div className="flex justify-between text-[#00A63E] mt-3">
                 <span>You Save</span>
                 <span>- ${savings.toFixed(2)}</span>
               </div>
-            )} */}
+            )} */
+}
 
-            {/* <div className="flex justify-between mt-3">
+{
+  /* <div className="flex justify-between mt-3">
               <span>Shipping</span>
               <span className="text-[#00A63E]">FREE</span>
-            </div> */}
+            </div> */
+}
 
-          {/* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
+{
+  /* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
             <Link href="/checkout"> Proceed to Checkout </Link>
             <ArrowRight className="text-white ml-4 size-[20]" />
-          </button> */}
+          </button> */
+}

@@ -60,6 +60,10 @@ export async function POST(req: Request) {
 
     const customer_id = customerRows[0]?.id;
 
+    if (!customer_id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data } = parsed;
 
     await client.query(

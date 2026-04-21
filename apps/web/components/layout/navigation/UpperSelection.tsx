@@ -9,6 +9,9 @@ interface Country {
   code: string;
 }
 
+const DEFAULT_COUNTRY = "NL";
+const DEFAULT_CURRENCY = "EUR";
+
 export default function UpperSelection() {
   const {
     currencies,
@@ -19,7 +22,7 @@ export default function UpperSelection() {
   } = useCurrencyStore();
 
   console.log(currencies);
-  console.log(selectedCurrency);
+  console.log("selectedCurrency===  ", selectedCurrency);
   console.log(rate);
   // console.log(fetchCurrencies);
 
@@ -28,8 +31,9 @@ export default function UpperSelection() {
   }, []);
   const [countries, setCountries] = useState<Country[]>([]);
   // const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
 
-  const [selectedCountry, setSelectedCountry] = useState("");
+  console.log("setCountries ===  ", setCountries);
   // const [selectedCurrency, setSelectedCurrency] = useState("");
   // const [rate, setRate] = useState(1);
   // Fetch data
@@ -49,36 +53,14 @@ export default function UpperSelection() {
 
     fetchData();
   }, []);
-  // console.log(currencies);
 
-  // useEffect(() => {
-  //   if (currencies.length > 0) {
-  //     const baseCurrency = currencies.find((c) => c.is_base === true);
+  useEffect(() => {
+    if (countries.length && !selectedCountry) {
+      const nl = countries.find((c) => c.code === "NL");
+      if (nl) setSelectedCountry(nl.code);
+    }
+  }, [countries]);
 
-  //     if (baseCurrency) {
-  //       setSelectedCurrency(baseCurrency.code);
-  //     }
-  //   }
-  // }, [currencies]);
-
-  // useEffect(() => {
-  //   if (!selectedCurrency) return;
-
-  //   const fetchRate = async () => {
-  //     const res = await fetch(`/api/currency-rate?code=${selectedCurrency}`);
-  //     const data = await res.json();
-
-  //     if (data?.rate) {
-  //       // setRate(data.rate);
-  //     }
-  //   };
-
-  //   fetchRate();
-  // }, [selectedCurrency]);
-
-  // console.log(rate);
-
-  // console.log(selectedCurrency);
   return (
     <nav className="flex items-center justify-between px-6 py-3 ">
       {/* LEFT SIDE */}
@@ -115,3 +97,34 @@ export default function UpperSelection() {
     </nav>
   );
 }
+
+// console.log(currencies);
+
+// useEffect(() => {
+//   if (currencies.length > 0) {
+//     const baseCurrency = currencies.find((c) => c.is_base === true);
+
+//     if (baseCurrency) {
+//       setSelectedCurrency(baseCurrency.code);
+//     }
+//   }
+// }, [currencies]);
+
+// useEffect(() => {
+//   if (!selectedCurrency) return;
+
+//   const fetchRate = async () => {
+//     const res = await fetch(`/api/currency-rate?code=${selectedCurrency}`);
+//     const data = await res.json();
+
+//     if (data?.rate) {
+//       // setRate(data.rate);
+//     }
+//   };
+
+//   fetchRate();
+// }, [selectedCurrency]);
+
+// console.log(rate);
+
+// console.log(selectedCurrency);

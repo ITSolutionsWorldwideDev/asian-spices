@@ -10,6 +10,179 @@ export async function GET() {
   const session = await getServerSession(webAuthOptions);
 
   if (!session?.user?.id) {
+    return NextResponse.json([], { status: 200 });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    const customerId = await getOrCreateCustomer(client, session.user);
+
+    console.log('customerId === ',customerId);
+
+    const cartRes = await client.query(
+      `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,
+      [customerId],
+    );
+
+    if (!cartRes.rowCount) return NextResponse.json([]);
+
+    const items = await client.query(
+      `SELECT * FROM store_cart_items WHERE cart_id = $1`,
+      [cartRes.rows[0].id],
+    );
+
+    return NextResponse.json(items.rows);
+  } finally {
+    client.release();
+  }
+}
+
+export async function POST(req: Request) {
+  const session = await getServerSession(webAuthOptions);
+
+  const client = await pool.connect();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // const { product_id, price, quantity } = await req.json();
+  const { product_id, quantity } = await req.json();
+
+  /* ---------------- GET PRICE FROM DB ---------------- */
+
+  const productRes = await client.query(
+    `
+    SELECT price 
+    FROM store_products 
+    WHERE id = $1
+    `,
+    [product_id]
+  );
+
+  if (!productRes.rowCount) {
+    return NextResponse.json(
+      { error: "Product not found" },
+      { status: 404 }
+    );
+  }
+
+  const price = productRes.rows[0].price;
+
+  try {
+    const customerId = await getOrCreateCustomer(client, session.user);
+
+    let cartRes = await client.query(
+      `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,
+      [customerId],
+    );
+
+    let cartId;
+
+    if (!cartRes.rowCount) {
+      const newCart = await client.query(
+        `INSERT INTO store_carts (global_customer_id)
+         VALUES ($1)
+         RETURNING id`,
+        [customerId],
+      );
+
+      cartId = newCart.rows[0].id;
+    } else {
+      cartId = cartRes.rows[0].id;
+    }
+
+    const result = await client.query(
+      `INSERT INTO store_cart_items (cart_id, product_id, quantity, price)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (cart_id, product_id)
+       DO UPDATE SET quantity = store_cart_items.quantity + EXCLUDED.quantity
+       RETURNING *`,
+      [cartId, product_id, quantity, price],
+    );
+
+    return NextResponse.json(result.rows[0]);
+  } finally {
+    client.release();
+  }
+}
+
+export async function DELETE(req: Request) {
+  const session = await getServerSession(webAuthOptions);
+
+  if (!session?.user?.id) {
+    return NextResponse.json({}, { status: 401 });
+  }
+
+  const { product_id } = await req.json();
+
+  /* ---------------- FIND CUSTOMER ---------------- */
+
+  const customerRes = await pool.query(
+    `SELECT id FROM store_customers WHERE user_id = $1 LIMIT 1`,
+    [session.user.id]
+  );
+
+  if (!customerRes.rowCount) {
+    return NextResponse.json({ success: true });
+  }
+
+  const customerId = customerRes.rows[0].id;
+
+  /* ---------------- FIND CART ---------------- */
+
+  const cartRes = await pool.query(
+    `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,
+    [customerId]
+  );
+
+  if (!cartRes.rowCount) {
+    return NextResponse.json({ success: true });
+  }
+
+  const cartId = cartRes.rows[0].id;
+
+  /* ---------------- DELETE ITEM ---------------- */
+
+  await pool.query(
+    `DELETE FROM store_cart_items 
+     WHERE cart_id = $1 AND product_id = $2`,
+    [cartId, product_id]
+  );
+
+  return NextResponse.json({ success: true });
+}
+
+async function getOrCreateCustomer(client: any, user: any) {
+  const email = user.email;
+
+  const existing = await client.query(
+    `SELECT id FROM customers WHERE user_id = $1 LIMIT 1`,
+    [user.id],
+  );
+
+  if (existing.rowCount) {
+    return existing.rows[0].id;
+  }
+
+  const created = await client.query(
+    `INSERT INTO customers (user_id, email)
+     VALUES ($1,$2)
+     RETURNING id`,
+    [user.id, email],
+  );
+
+  return created.rows[0].id;
+}
+
+/*
+
+
+export async function GET() {
+  const session = await getServerSession(webAuthOptions);
+
+  if (!session?.user?.id) {
     return NextResponse.json([], { status: 200 }); // allow guest fallback
   }
 
@@ -33,6 +206,8 @@ export async function GET() {
 }
 
 
+
+
 export async function POST(req: Request) {
   const session = await getServerSession(webAuthOptions);
 
@@ -50,13 +225,22 @@ export async function POST(req: Request) {
 
   let cartId;
 
+  console.log('session.user.id ==== ',session.user.id);
+
   if (cartRes.rows.length === 0) {
+
     const newCart = await pool.query(
-      `INSERT INTO store_carts (customer_id, store_id)
-       VALUES ($1, $2)
+      `INSERT INTO store_carts (customer_id)
+       VALUES ($1)
        RETURNING id`,
-      [session.user.id, "YOUR_STORE_ID"], // ⚠️ replace
+      [session.user.id], // ⚠️ replace
     );
+    // const newCart = await pool.query(
+    //   `INSERT INTO store_carts (customer_id, store_id)
+    //    VALUES ($1, $2)
+    //    RETURNING id`,
+    //   [session.user.id, "YOUR_STORE_ID"], // ⚠️ replace
+    // );
 
     cartId = newCart.rows[0].id;
   } else {
@@ -104,7 +288,6 @@ export async function DELETE(req: Request) {
   return NextResponse.json({ success: true });
 }
 
-/*
 
 // GET — fetch cart from DB
 export async function GET() {
