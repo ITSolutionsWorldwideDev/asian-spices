@@ -15,6 +15,9 @@ import { TiTickOutline } from "react-icons/ti";
 import { usePathname } from "next/navigation";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useCategoryFilterStore } from "@/store/useCategoryFilterStore";
+
+import { useSession } from "next-auth/react";
+
 type Product = {
   id: string;
   quantity: number;
@@ -40,6 +43,9 @@ export default function ProductCard() {
   const { selectedCategories } = useCategoryFilterStore();
   console.log(selectedCategories);
   const { symbol, selectedCurrency, rate } = useCurrencyStore();
+
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
   const path = usePathname();
   const pathname = path.startsWith("/") ? path.slice(1) : path;
@@ -172,15 +178,18 @@ export default function ProductCard() {
             <button
               className="cursor-pointer mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
               onClick={() => {
-                addToCart({
-                  id: product.id,
-                  title: product.name,
-                  price: product.price,
-                  image: `/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`,
-                  // quantity:product.
-                  // oldPrice: product.oldPrice,
-                  // weight: product.weight,
-                });
+                addToCart(
+                  {
+                    id: product.id,
+                    title: product.name,
+                    price: product.price,
+                    image: `/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`,
+                    // quantity:product.
+                    // oldPrice: product.oldPrice,
+                    // weight: product.weight,
+                  },
+                  isLoggedIn,
+                );
                 setCartBtn(product.id);
                 setTimeout(() => {
                   setCartBtn(null);
