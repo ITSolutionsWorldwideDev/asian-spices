@@ -221,25 +221,25 @@ export default function ProductsCatalogComponent() {
         </div>
       ),
     },
-    {
-      title: "Qty",
-      render: (_: any, record: CatalogProduct) => (
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            value={record.quantity ?? ""}
-            onChange={(e) =>
-              updateField(record.product_id, "quantity", Number(e.target.value))
-            }
-            className="w-20 border px-2 py-1"
-          />
+    // {
+    //   title: "Qty",
+    //   render: (_: any, record: CatalogProduct) => (
+    //     <div className="flex items-center gap-2">
+    //       <input
+    //         type="number"
+    //         value={record.quantity ?? ""}
+    //         onChange={(e) =>
+    //           updateField(record.product_id, "quantity", Number(e.target.value))
+    //         }
+    //         className="w-20 border px-2 py-1"
+    //       />
 
-          {updatingIds.has(record.product_id) && (
-            <span className="text-xs text-gray-400">Saving...</span>
-          )}
-        </div>
-      ),
-    },
+    //       {updatingIds.has(record.product_id) && (
+    //         <span className="text-xs text-gray-400">Saving...</span>
+    //       )}
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (
