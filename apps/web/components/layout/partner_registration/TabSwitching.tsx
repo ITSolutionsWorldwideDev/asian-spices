@@ -1,7 +1,7 @@
 // apps/web/components/layout/partner_registration/TabSwitching.tsx
 
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Form } from "lucide-react";
 import Prerequisites from "./Prerequisites";
 import BusinessVerification from "./BusinessVerification";
@@ -24,6 +24,31 @@ export default function TabSwitching() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("partner_registration");
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+
+        if (parsed.formData) setFormData(parsed.formData);
+        if (parsed.activeStep) setActiveStep(parsed.activeStep);
+        if (parsed.completedSteps) setCompletedSteps(parsed.completedSteps);
+      } catch (err) {
+        console.error("Failed to restore state", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("idin") === "success") {
+      setCompletedSteps((prev) => [...new Set([...prev, 5])]);
+      setActiveStep(6);
+    }
+  }, []);
 
   const stepComponents = (
     formData: any,
@@ -71,6 +96,7 @@ export default function TabSwitching() {
         activeStep={activeStep}
         formData={formData}
         setCompletedSteps={setCompletedSteps}
+        completedSteps={completedSteps}
         setFormData={setFormData}
       />
     ),

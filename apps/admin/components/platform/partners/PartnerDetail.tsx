@@ -153,6 +153,8 @@ function Field({ label, value }: any) {
 }
 
 function DocumentPreview({ label, files }: any) {
+
+  // console.log('files.length ==== ',files.length);
   if (!files || files.length === 0) {
     return (
       <div>
@@ -161,14 +163,15 @@ function DocumentPreview({ label, files }: any) {
       </div>
     );
   }
+  // console.log('files ==== ',files);
 
   return (
     <div className="col-span-2 space-y-2">
       <p className="text-xs text-gray-500">{label}</p>
 
       <div className="flex flex-wrap gap-3">
-        {files.map((file: string, index: number) => {
-          const isPdf = file.endsWith(".pdf");
+        {files?.map((file: string, index: number) => {
+          const isPdf = file?.endsWith(".pdf");
 
           return (
             <div key={index} className="border rounded p-2 w-40">

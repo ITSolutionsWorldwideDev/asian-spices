@@ -1,11 +1,13 @@
 // apps/web/components/layout/partner_registration/BusinessVerification.tsx
 
 "use client";
-import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
 
+import { useState, useEffect } from "react";
+import { useGlobalStore } from "@/store/useGlobalStore";
+import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
 import ReadAloudBtn from "./ReadAloudBtn";
 import { z } from "zod";
-import { useState } from "react";
+
 export default function BusinessVerification({
   formData,
   setFormData,
@@ -13,20 +15,17 @@ export default function BusinessVerification({
   setActiveStep,
   setCompletedSteps,
 }: any) {
-  // const businessSchema = z.object({
-  //   kvk_number: z
-  //     .string()
-  //     .min(1, "KVK number is required")
-  //     .regex(/^[0-9]+$/, "KVK must be numeric"),
-  //   company_name: z.string().min(1, "Company name is required"),
-  //   chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
-  //   country: z.string().min(1, "Country is required"),
-  //   street: z.string().min(1, "Street is required"),
-  //   house_number: z.string().min(1, "House number is required"),
-  //   postal_code: z.string().min(1, "Postal code is required"),
-  //   city: z.string().min(1, "City is required"),
-  //   additional_address: z.string().optional(),
-  // });
+  const countries = useGlobalStore((s) => s.countries);
+  const selectedCountry = useGlobalStore((s) => s.selectedCountry);
+
+  useEffect(() => {
+    if (!formData.country && selectedCountry) {
+      setFormData((prev: any) => ({
+        ...prev,
+        country: selectedCountry,
+      }));
+    }
+  }, [selectedCountry]);
 
   const businessSchema = z.object({
     kvk_number: z
@@ -45,10 +44,12 @@ export default function BusinessVerification({
       .min(6, "Chamber number too short")
       .regex(/^[0-9]+$/, "Must be numeric"),
 
-    country: z
-      .string()
-      .min(2, "Country required")
-      .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
+    country: z.string().min(2, "Country is required"), // ISO like "NL"
+
+    // country: z
+    //   .string()
+    //   .min(2, "Country required")
+    //   .regex(/^[a-zA-Z\s]+$/, "Only letters allowed"),
 
     street: z
       .string()
@@ -186,13 +187,37 @@ export default function BusinessVerification({
 
                 // value="12345678"
               />
-              <InputField
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Country
+                </label>
+
+                <select
+                  value={formData.country || selectedCountry || ""}
+                  onChange={(e) => handleChange("country", e.target.value)}
+                  className="w-full bg-gray-100 rounded-md px-3 py-2 text-gray-700"
+                >
+                  <option value="">Select a country</option>
+
+                  {countries.map((country) => (
+                    <option key={country.id} value={country.iso2}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+
+                {errors.country && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.country[0]}
+                  </p>
+                )}
+              </div>
+              {/* <InputField
                 label="Country"
                 value={formData.country || ""}
-                // value={formData.country}
                 onChange={(e) => handleChange("country", e.target.value)}
                 error={errors.country?.[0]}
-              />
+              /> */}
             </div>
           </div>
           {/* Registered Address */}
@@ -331,3 +356,19 @@ function InputField({
     </div>
   );
 }
+
+/* 
+  // const businessSchema = z.object({
+  //   kvk_number: z
+  //     .string()
+  //     .min(1, "KVK number is required")
+  //     .regex(/^[0-9]+$/, "KVK must be numeric"),
+  //   company_name: z.string().min(1, "Company name is required"),
+  //   chamber_of_commerce_number: z.string().min(1, "Chamber number is required"),
+  //   country: z.string().min(1, "Country is required"),
+  //   street: z.string().min(1, "Street is required"),
+  //   house_number: z.string().min(1, "House number is required"),
+  //   postal_code: z.string().min(1, "Postal code is required"),
+  //   city: z.string().min(1, "City is required"),
+  //   additional_address: z.string().optional(),
+  // }); */

@@ -73,8 +73,6 @@ export default function LoginForm() {
         return;
       }
 
-      // window.location.href = "/";
-
       // HANDLE CHECKOUT REDIRECT
       const redirect = localStorage.getItem("checkout_redirect");
 

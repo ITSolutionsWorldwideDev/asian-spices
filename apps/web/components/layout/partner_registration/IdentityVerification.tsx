@@ -5,17 +5,6 @@
 import { useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
 
-// const banks = [
-//   "ABN AMRO",
-//   "ING",
-//   "Rabobank",
-//   "SNS Bank",
-//   "ASN Bank",
-//   "RegioBank",
-//   "Triodos Bank",
-//   "Knab",
-// ];
-
 const banks = [
   { name: "ABN AMRO", issuer: "ABNANL2A" },
   { name: "ING", issuer: "INGBNL2A" },
@@ -24,11 +13,21 @@ const banks = [
   { name: "ASN Bank", issuer: "ASNBNL21" },
 ];
 
+// type Props = {
+//   activeStep: number;
+//   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+//   formData: Record<string, any>;
+//   setFormData: React.Dispatch<React.SetStateAction<any>>;
+//   completedSteps: number[];
+//   setCompletedSteps: React.Dispatch<React.SetStateAction<number[]>>;
+// };
+
 export default function IdentityVerification({
   activeStep,
   setActiveStep,
   formData,
   setCompletedSteps,
+  completedSteps,
   setFormData,
 }: any) {
   // const [selectedBank, setSelectedBank] = useState<string | null>(
@@ -37,7 +36,10 @@ export default function IdentityVerification({
 
   const selectedBank = formData.selected_bank;
 
-  const handleSubmit = async () => {
+  // const handleSubmit = async () => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
     // ✅ validation
     if (!formData.selected_bank) {
       alert("Please select a bank to continue");
@@ -65,7 +67,9 @@ export default function IdentityVerification({
       // ✅ move to next step ONLY once
       setActiveStep(activeStep + 1);
 
-      alert("Partner registration submitted successfully!");
+      localStorage.removeItem("partner_registration");
+
+      // alert("Partner registration submitted successfully!");
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong. Please try again.");
@@ -73,13 +77,22 @@ export default function IdentityVerification({
   };
 
   const handleIDIN = async () => {
-
     if (!selectedBank) {
       alert("Please select a bank");
       return;
     }
 
     try {
+      // ✅ persist form + step BEFORE redirect
+      localStorage.setItem(
+        "partner_registration",
+        JSON.stringify({
+          formData,
+          activeStep,
+          completedSteps,
+        }),
+      );
+
       const res = await fetch("/api/partner-registration/idin/start", {
         method: "POST",
         headers: {
@@ -164,17 +177,6 @@ export default function IdentityVerification({
 
         {/* Verify Button */}
         <div>
-          {/* <button
-            disabled={!formData.selected_bank}
-            className={`w-full py-3 rounded-lg text-white font-medium transition ${
-              selectedBank
-                ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
-          >
-            🛡 Verify with iDIN
-          </button> */}
-
           <button
             disabled={!selectedBank}
             onClick={handleIDIN}
@@ -232,6 +234,7 @@ export default function IdentityVerification({
           </button>
 
           <button
+            type="button"
             disabled={!formData.selected_bank}
             className={`px-6 py-2 rounded-lg text-white transition ${
               selectedBank
@@ -248,6 +251,29 @@ export default function IdentityVerification({
   );
 }
 
+// const banks = [
+//   "ABN AMRO",
+//   "ING",
+//   "Rabobank",
+//   "SNS Bank",
+//   "ASN Bank",
+//   "RegioBank",
+//   "Triodos Bank",
+//   "Knab",
+// ];
+
+{
+  /* <button
+            disabled={!formData.selected_bank}
+            className={`w-full py-3 rounded-lg text-white font-medium transition ${
+              selectedBank
+                ? "bg-orange-500 hover:bg-orange-600"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            🛡 Verify with iDIN
+          </button> */
+}
 /* const handleSubmit = async () => {
     setActiveStep(activeStep + 1);
 
