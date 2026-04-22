@@ -9,9 +9,7 @@ export const getCategoryWithSubcategories = async (slug: string) => {
        WHERE LOWER(slug) = LOWER($1)`,
       [slug],
     );
-    console.log(slug);
 
-    console.log("Category Result:", categoryResult.rows);
     if (categoryResult.rows.length === 0) {
       return { error: "Category not found" };
     }
@@ -26,7 +24,6 @@ export const getCategoryWithSubcategories = async (slug: string) => {
       [category.id],
     );
 
-    console.log("Subcategory Result:", subCategoryResult.rows);
     return {
       category,
       subcategories: subCategoryResult.rows,

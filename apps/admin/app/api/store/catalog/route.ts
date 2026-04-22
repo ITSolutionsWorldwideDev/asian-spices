@@ -46,11 +46,20 @@ export async function GET(req: NextRequest) {
       c.name AS category,
       b.name AS brand,
 
+      p.price AS base_price,
       spc.price as store_price,
+
+      COALESCE(spc.price, p.price) AS effective_price, 
+
       spc.quantity,
       spc.status,
 
-      CASE WHEN spc.id IS NOT NULL THEN true ELSE false END AS assigned
+      CASE 
+        WHEN spc.id IS NOT NULL THEN true 
+        ELSE false 
+      END AS is_overridden,
+      CASE WHEN spc.id IS NOT NULL THEN true ELSE false END AS assigned,
+      CASE WHEN spc.id IS NOT NULL THEN true ELSE false END AS is_assigned
 
     FROM store_products p
     LEFT JOIN store_product_catalog spc
@@ -76,3 +85,4 @@ export async function GET(req: NextRequest) {
     total: Number(count.rows[0].count),
   });
 }
+//  

@@ -85,7 +85,7 @@ export default function ContactDetails({
     "vat_number",
   ];
   const { validateForm } = useFormValidator(requiredFields, formData);
-  console.log(formData);
+
   return (
     <div className=" bg-gray-100 flex justify-center p-6" id="contact">
       <div className="w-full max-w-4xl space-y-8">

@@ -35,18 +35,7 @@ export default function CompanyRegistration() {
   const [result, setResult] = useState([]);
   const [activeTab, setActiveTab] = useState<SearchTab>("name");
   const [query, setQuery] = useState("");
-  // const [results, setResults] = useState<Company[]>(mockResults);
-  // const [selected, setSelected] = useState<Company | null>(
-  // mockResults[0] ?? null,
-  // );
-  // const [loading, setLoading] = useState(false);
-  // const searchCompany = async (name: string) => {
-  //   const res = await fetch(`/api/kvk?naam=${name}`);
-  //   const data = await res.json();
-  //   console.log(data);
-  //   setResult(data.resultaten || []); // Adjust based on actual KVK response structure
-  // };
-  console.log(query);
+
   const handleSearch = async () => {
     if (!query) return;
     // setLoading(true);
@@ -56,11 +45,9 @@ export default function CompanyRegistration() {
 
     const res = await fetch(`/api/kvk?naam=${name}`);
     const data = await res.json();
-    console.log(data);
     setResult(data.resultaten || []);
   };
 
-  console.log(result);
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSearch();
   };

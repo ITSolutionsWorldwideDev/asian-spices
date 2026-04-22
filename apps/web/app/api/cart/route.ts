@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const customerId = await getOrCreateCustomer(client, session.user);
 
-    console.log('customerId === ',customerId);
+    // console.log('customerId === ',customerId);
 
     const cartRes = await client.query(
       `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,

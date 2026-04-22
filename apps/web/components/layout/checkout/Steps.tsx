@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function Step({ currentStep, setStep }: Props) {
-  // console.log(label)
+
   const steps = [
     { id: "contact", name: "Contact", icon: MapPin },
     { id: "shipping", name: "Shipping", icon: Truck },

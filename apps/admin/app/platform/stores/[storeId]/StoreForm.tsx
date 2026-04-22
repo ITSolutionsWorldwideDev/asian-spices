@@ -40,7 +40,7 @@ export default function StoreForm({ store }: { store?: any }) {
     }
   };
 
-  console.log(FormData);
+  // console.log(FormData);
   return (
     <div className=" mx-auto">
       <form

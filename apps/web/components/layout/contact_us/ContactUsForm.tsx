@@ -29,8 +29,8 @@ const ContactUsForm = () => {
   };
 
   const handleSubmit = () => {
-    console.log("Form submitted:", formData);
-    alert("Message sent successfully!");
+    
+    // alert("Message sent successfully!");
     setFormData({
       fullName: "",
       email: "",

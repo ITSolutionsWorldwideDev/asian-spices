@@ -43,7 +43,7 @@ export async function getCurrentStore() {
   const headersList = await headers();
   const subdomain = headersList.get("x-tenant-subdomain");
 
-  console.log('getCurrentStore subdomain ==== ',subdomain);
+  // console.log('getCurrentStore subdomain ==== ',subdomain);
 
   if (!subdomain) {
     notFound();
@@ -70,11 +70,11 @@ export async function getCurrentStore() {
 export async function getCurrentStoreFromPath(pathname: string) {
   const parts = pathname.split("/");
 
-  console.log('parts ',parts);
+  // console.log('parts ',parts);
   // Expecting: /store/{tenant}/...
   const subdomain = parts[2];
 
-  console.log('subdomain ',subdomain);
+  // console.log('subdomain ',subdomain);
 
   if (!subdomain) {
     notFound();
@@ -89,7 +89,7 @@ export async function getCurrentStoreFromPath(pathname: string) {
 
   const store = storeRes.rows[0];
 
-  console.log('store db ',store);
+  // console.log('store db ',store);
 
   if (store.status === "suspended") {
     redirect("/store-suspended");

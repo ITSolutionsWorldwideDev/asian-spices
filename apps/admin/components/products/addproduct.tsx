@@ -326,7 +326,7 @@ export default function AddProductComponent({
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
-    console.log("formData === ", formData);
+    // console.log("formData === ", formData);
 
     if (!formData.name.trim()) newErrors.name = "Product name is required";
     if (!formData.slug.trim()) newErrors.slug = "Slug is required";
@@ -445,57 +445,57 @@ export default function AddProductComponent({
   };
 
   const mediaGrid = useMemo(() => {
-      // If in view mode, only show selected media
-      const itemsToRender =
-        mode === "view"
-          ? media.filter((item) => selectedMedia.includes(item.media_id))
-          : media;
+    // If in view mode, only show selected media
+    const itemsToRender =
+      mode === "view"
+        ? media.filter((item) => selectedMedia.includes(item.media_id))
+        : media;
 
-          console.log("selectedMedia 2=== ", selectedMedia);
-    console.log("itemsToRender2 === ", itemsToRender);
-  
-      return itemsToRender.map((item) => {
-        const isSelected = selectedMedia.includes(item.media_id);
-        const isPrimary = primaryMedia === item.media_id;
-  
-        return (
-          <div
-            key={item.media_id}
-            onClick={() => {
-              if (mode === "edit") {
-                setSelectedMedia((prev) =>
-                  isSelected
-                    ? prev.filter((id) => id !== item.media_id)
-                    : [...prev, item.media_id],
-                );
-                if (!primaryMedia) setPrimaryMedia(item.media_id);
-              }
-            }}
-            className={`relative cursor-pointer rounded border bg-white p-1 transition ${
-              isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
-            }`}
-          >
-            <Image
-              src={getThumb(item.file_url, 200)}
-              alt={item.file_name}
-              width={200}
-              height={200}
-              className="rounded object-cover"
-            />
-  
-            {isPrimary && (
-              <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
-                Primary
-              </span>
-            )}
-  
-            {isSelected && mode === "edit" && (
-              <div className="absolute inset-0 rounded bg-blue-500/10" />
-            )}
-          </div>
-        );
-      });
-    }, [media, selectedMedia, primaryMedia, mode]);
+    // console.log("selectedMedia 2=== ", selectedMedia);
+    // console.log("itemsToRender2 === ", itemsToRender);
+
+    return itemsToRender.map((item) => {
+      const isSelected = selectedMedia.includes(item.media_id);
+      const isPrimary = primaryMedia === item.media_id;
+
+      return (
+        <div
+          key={item.media_id}
+          onClick={() => {
+            if (mode === "edit") {
+              setSelectedMedia((prev) =>
+                isSelected
+                  ? prev.filter((id) => id !== item.media_id)
+                  : [...prev, item.media_id],
+              );
+              if (!primaryMedia) setPrimaryMedia(item.media_id);
+            }
+          }}
+          className={`relative cursor-pointer rounded border bg-white p-1 transition ${
+            isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
+          }`}
+        >
+          <Image
+            src={getThumb(item.file_url, 200)}
+            alt={item.file_name}
+            width={200}
+            height={200}
+            className="rounded object-cover"
+          />
+
+          {isPrimary && (
+            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+              Primary
+            </span>
+          )}
+
+          {isSelected && mode === "edit" && (
+            <div className="absolute inset-0 rounded bg-blue-500/10" />
+          )}
+        </div>
+      );
+    });
+  }, [media, selectedMedia, primaryMedia, mode]);
 
   /* const mediaGrid = useMemo(() => {
     return media.map((item) => {
@@ -814,7 +814,9 @@ export default function AddProductComponent({
                 </div>
 
                 <div>
-                  <label className="block mb-1 font-medium">Health Benefits</label>
+                  <label className="block mb-1 font-medium">
+                    Health Benefits
+                  </label>
 
                   <MemoTextEditor
                     value={formData.health_benefits}
@@ -827,9 +829,6 @@ export default function AddProductComponent({
                     }
                   />
                 </div>
-
-
-                
               </div>
             </Accordion>
 
@@ -977,7 +976,9 @@ export default function AddProductComponent({
                       placeholder="Choose"
                     />
                     {errors.discount_type && (
-                      <p className="text-red-600 text-sm">{errors.discount_type}</p>
+                      <p className="text-red-600 text-sm">
+                        {errors.discount_type}
+                      </p>
                     )}
                   </div>
 
@@ -1001,7 +1002,9 @@ export default function AddProductComponent({
                       step="0.01"
                     />
                     {errors.discount_value && (
-                      <p className="text-red-600 text-sm">{errors.discount_value}</p>
+                      <p className="text-red-600 text-sm">
+                        {errors.discount_value}
+                      </p>
                     )}
                   </div>
 

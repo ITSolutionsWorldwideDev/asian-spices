@@ -176,7 +176,9 @@ export async function saveStore(
     businessEmail,
     vatNumber,
   } = data;
-  console.log("Captured Data:", data);
+
+  // console.log("Captured Data:", data);
+
   if (!name || !slug) {
     throw new Error("Missing required fields");
   }

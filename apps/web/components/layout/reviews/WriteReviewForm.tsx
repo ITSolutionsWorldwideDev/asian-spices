@@ -7,7 +7,7 @@ interface ProductTabsProps {
 export default function WriteReviewForm({ id }: ProductTabsProps) {
   const [loading, setLoading] = useState(false);
   const [hover, setHover] = useState(0);
-  console.log(id);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,7 +16,7 @@ export default function WriteReviewForm({ id }: ProductTabsProps) {
     product_id: id,
   });
 
-  console.log(formData);
+
   const handleChnage = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {

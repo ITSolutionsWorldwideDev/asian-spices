@@ -6,8 +6,8 @@ import { FileChartColumn } from "lucide-react";
 export default function UploadDocument() {
   const [chamberFiles, setChamberFiles] = useState<File[]>([]);
   const [poaFiles, setPoaFiles] = useState<File[]>([]);
-   console.log(chamberFiles)
-   console.log(poaFiles)
+  //  console.log(chamberFiles)
+  //  console.log(poaFiles)
   // Format file size
   const formatSize = (size: number) => {
     if (size < 1024) return size + " B";

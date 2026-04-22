@@ -20,7 +20,7 @@ type Tab = (typeof tabs)[number];
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab>("Description");
-// console.log(id)
+
   return (
     <div className=" container mx-auto p-6 bg-gray-50">
       {/* Tabs */}

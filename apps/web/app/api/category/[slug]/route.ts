@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { slug } = await params;
 
-  console.log(slug);
+  // console.log(slug);
 
   const result = await getCategoryWithSubcategories(slug);
 

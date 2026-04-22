@@ -70,26 +70,111 @@ export async function POST(req: NextRequest) {
        ACTION HANDLERS
     ------------------------------------ */
 
-    console.log('action ==== ',action);
+    // console.log('action ==== ',action);
 
-    /* ========= 1. UNASSIGN ========= */
-    if (action === "UNASSIGN") {
+    /* ========= 0. ASSIGN ========= */
+
+    if (action === "ASSIGN") {
+      // await client.query(
+      //   `
+      //   INSERT INTO store_product_catalog (store_id, product_id)
+      //   SELECT $1, p.id
+      //   FROM store_products p
+      //   WHERE p.id = ANY($2::uuid[])
+      //   ON CONFLICT (store_id, product_id) DO NOTHING
+      //   `,
+      //   [store_id, selection.ids],
+      // );
+
+      if (!filters && (!selection?.ids || selection.ids.length === 0)) {
+        throw new Error("Bulk assign all products is restricted");
+      }
+
       await client.query(
         `
-        DELETE FROM store_product_catalog spc
-        USING store_products p
-        WHERE spc.product_id = p.id
-        AND spc.store_id = $1
-        ${where.replace("WHERE", "AND")}
+        INSERT INTO store_product_catalog (store_id, product_id)
+        SELECT $1, p.id
+        FROM store_products p
+        ${where}
+        ON CONFLICT (store_id, product_id) DO NOTHING
         `,
-        [store_id, ...values],
+        values,
       );
 
       await client.query("COMMIT");
 
       return NextResponse.json({
         success: true,
-        message: "Products removed from catalog",
+        message: "Products assigned",
+      });
+    }
+
+    /* ========= 1. UNASSIGN ========= */
+    if (action === "UNASSIGN") {
+      await client.query(
+        `
+        DELETE FROM store_product_catalog
+        WHERE store_id = $1
+        AND product_id = ANY($2::uuid[])
+        `,
+        [store_id, selection.ids],
+      );
+      // await client.query(
+      //   `
+      //   DELETE FROM store_product_catalog spc
+      //   USING store_products p
+      //   WHERE spc.product_id = p.id
+      //   AND spc.store_id = $1
+      //   ${where.replace("WHERE", "AND")}
+      //   `,
+      //   [store_id, ...values],
+      // );
+
+      await client.query("COMMIT");
+
+      return NextResponse.json({
+        success: true,
+        message: "Products unassigned",
+      });
+    }
+
+    /* ========= 2. UPSERT (Assign + Update together) ========= */
+
+    if (action === "UPSERT") {
+      if (!selection?.ids?.length) {
+        throw new Error("No products selected for upsert");
+      }
+
+      const price = data?.price ?? 0;
+      const quantity = data?.quantity ?? 0;
+
+      await client.query(
+        `
+    INSERT INTO store_product_catalog 
+      (store_id, product_id, price, quantity, status)
+    SELECT 
+      $1,
+      p.id,
+      COALESCE($3, p.price), -- fallback to base price
+      COALESCE($4, 0),
+      1
+    FROM store_products p
+    WHERE p.id = ANY($2::uuid[])
+
+    ON CONFLICT (store_id, product_id)
+    DO UPDATE SET
+      price = COALESCE(EXCLUDED.price, store_product_catalog.price),
+      quantity = COALESCE(EXCLUDED.quantity, store_product_catalog.quantity),
+      updated_at = now()
+    `,
+        [store_id, selection.ids, price, quantity],
+      );
+
+      await client.query("COMMIT");
+
+      return NextResponse.json({
+        success: true,
+        message: "Product assigned/updated successfully",
       });
     }
 
@@ -120,8 +205,8 @@ export async function POST(req: NextRequest) {
       selectionParam = selection.ids;
     }
 
-    console.log('setUpdates ==== ',setUpdates);
-    console.log('updateValues ==== ',updateValues);
+    // console.log('setUpdates ==== ',setUpdates);
+    // console.log('updateValues ==== ',updateValues);
 
     const queryValues: any[] = [store_id, ...updateValues];
 
@@ -154,9 +239,8 @@ export async function POST(req: NextRequest) {
             updated_at = now()
     `;
 
-    
-    console.log('query ==== ',query);
-    console.log('queryValues ==== ',queryValues);
+    // console.log('query ==== ',query);
+    // console.log('queryValues ==== ',queryValues);
 
     await client.query(query, queryValues);
 

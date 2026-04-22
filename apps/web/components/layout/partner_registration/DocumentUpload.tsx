@@ -120,7 +120,7 @@ export default function DocumentUploadPage({
     type: "chamber" | "poa";
     required?: boolean;
   }) => {
-    console.log(files);
+    
     return (
       <div className="space-y-3">
         <div>

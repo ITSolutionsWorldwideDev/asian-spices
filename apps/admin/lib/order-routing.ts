@@ -159,14 +159,14 @@ export const assignNextStore = async (client: any, orderId: string) => {
     for (const store of stores) {
       const isOpen = await isStoreOpenNow(client, store.store_id);
 
-      console.log("assignNextStore isOpen ==== ", isOpen);
+      // console.log("assignNextStore isOpen ==== ", isOpen);
 
       if (isOpen) {
         availableStores.push(store);
       }
     }
 
-    console.log("assignNextStore availableStores ==== ", availableStores);
+    // console.log("assignNextStore availableStores ==== ", availableStores);
 
     if (availableStores.length === 0) {
       await logOrderEvent(client, {
@@ -394,10 +394,10 @@ export const isStoreOpenNow = async (client: any, storeId: string) => {
   const wh = rows[0];
   if (wh.is_closed) return false;
 
-  console.log(
-    "isStoreOpenNow currentTime === ",
-    currentTime >= wh.open_time && currentTime <= wh.close_time,
-  );
+  // console.log(
+  //   "isStoreOpenNow currentTime === ",
+  //   currentTime >= wh.open_time && currentTime <= wh.close_time,
+  // );
 
   return currentTime >= wh.open_time && currentTime <= wh.close_time;
 };

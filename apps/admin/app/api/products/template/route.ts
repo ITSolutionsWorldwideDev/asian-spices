@@ -52,10 +52,10 @@ export async function GET() {
 
     const workbook = new ExcelJS.Workbook();
 
-    console.log("Categories:", categories.rows.length);
-    console.log("Subcategories:", subcategories.rows.length);
-    console.log("Brands:", brands.rows.length);
-    console.log("Countries:", countries.rows.length);
+    // console.log("Categories:", categories.rows.length);
+    // console.log("Subcategories:", subcategories.rows.length);
+    // console.log("Brands:", brands.rows.length);
+    // console.log("Countries:", countries.rows.length);
 
     /* ---------------- PRODUCTS SHEET ---------------- */
 

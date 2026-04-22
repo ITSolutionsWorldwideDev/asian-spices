@@ -26,7 +26,6 @@ type AllowedSlug =
   | "shampoos"
   | "hair-masks";
 const HealthyLivingProductpage = ({ slug }: props) => {
-  console.log(slug);
   const allowedSlugs: AllowedSlug[] = [
     "supports-immunity",
     "aids-digestion",
@@ -68,7 +67,7 @@ const HealthyLivingProductpage = ({ slug }: props) => {
   }
 
   const image = slugToImage[slug as AllowedSlug];
-  console.log(image);
+
   const products = [
     {
       id: 1,
@@ -280,7 +279,7 @@ const HealthyLivingProductpage = ({ slug }: props) => {
           title1={"Spices Category"}
           title2={"Stores"}
         />
-        <ProductCard  />
+        <ProductCard />
       </div>
 
       <RegisterOnApp />

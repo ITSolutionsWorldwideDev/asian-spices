@@ -34,8 +34,6 @@ export default function Cart() {
     0,
   );
 
-  console.log(cart);
-
   const TAX_RATE = 0.08;
 
   const tax = subtotal * TAX_RATE;

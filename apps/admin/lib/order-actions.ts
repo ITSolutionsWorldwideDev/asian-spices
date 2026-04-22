@@ -21,7 +21,7 @@ export const getOrderActionState = (order: any): OrderActionState => {
     cancel: { disabled: false },
   };
 
-  console.log("order ==== ", order);
+  // console.log("order ==== ", order);
 
   // 🔴 Cancelled orders
   if (order.order_status === "cancelled") {

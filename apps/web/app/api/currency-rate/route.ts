@@ -5,7 +5,7 @@ import { pool } from "@acme/db";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
-  console.log("code", code);
+
   if (!code) {
     return NextResponse.json(
       { error: "Currency code is required" },
@@ -22,8 +22,6 @@ export async function GET(req: NextRequest) {
       `,
       [code],
     );
-
-    console.log(result.rows[0]);
 
     return NextResponse.json(result.rows[0]);
   } catch (error: any) {

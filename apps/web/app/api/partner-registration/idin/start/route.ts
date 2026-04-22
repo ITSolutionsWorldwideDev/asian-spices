@@ -5,10 +5,10 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const { bank } = await req.json();
 
-  console.log("bank === ", bank);
-  console.log("ADYEN_API_KEY :", process.env.ADYEN_API_KEY);
-  console.log("ADYEN_MERCHANT :", process.env.ADYEN_MERCHANT);
-  console.log("NEXT_PUBLIC_SITE_URL :", process.env.NEXT_PUBLIC_SITE_URL);
+  // console.log("bank === ", bank);
+  // console.log("ADYEN_API_KEY :", process.env.ADYEN_API_KEY);
+  // console.log("ADYEN_MERCHANT :", process.env.ADYEN_MERCHANT);
+  // console.log("NEXT_PUBLIC_SITE_URL :", process.env.NEXT_PUBLIC_SITE_URL);
 
   try {
     // ⚠️ This depends on your provider (Adyen example structure)
@@ -55,9 +55,9 @@ export async function POST(req: Request) {
     );
 
     const data = await response.json();
-    console.log("status:", response.status);
-    console.log("headers:", response.headers);
-    console.log("data:", data);
+    // console.log("status:", response.status);
+    // console.log("headers:", response.headers);
+    // console.log("data:", data);
 
     return NextResponse.json({
       redirectUrl: data.action?.url, // 🔥 redirect here

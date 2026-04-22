@@ -17,7 +17,7 @@ const getProducts = async (category: string, categoryParam: string[] = []) => {
     }
 
     const result = await pool.query(query, values);
-    // console.log("product results", result);
+
     return result.rows;
   } catch (error) {
     console.error("Error fetching categories:", error);

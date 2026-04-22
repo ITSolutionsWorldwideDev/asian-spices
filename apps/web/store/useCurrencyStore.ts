@@ -62,7 +62,7 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
     try {
       const res = await fetch(`/api/currency-rate?code=${code}`);
       const data = await res.json();
-      console.log("data from rate api", data);
+
       if (data?.rate) {
         set({ rate: data.rate, symbol: data.symbol });
       }

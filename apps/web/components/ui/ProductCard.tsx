@@ -41,7 +41,6 @@ interface ProductCardProps {
 
 export default function ProductCard() {
   const { selectedCategories } = useCategoryFilterStore();
-  console.log(selectedCategories);
   const { symbol, selectedCurrency, rate } = useCurrencyStore();
 
   const { data: session } = useSession();
@@ -65,7 +64,6 @@ export default function ProductCard() {
         }
         const res = await fetch(url);
         const data = await res.json();
-        // console.log("iniside function", data.data);
         setProductData(data.data);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -73,8 +71,6 @@ export default function ProductCard() {
     };
     fetchProductsData();
   }, [selectedCategories, pathname]);
-
-  // console.log(productData);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
@@ -87,9 +83,6 @@ export default function ProductCard() {
     setMounted(true);
   }, []);
   const addToCart = useCartStore((state) => state.addToCart);
-  // console.log(addToCart)
-  // const items = useWishlistStore((state) => state.items);
-  // console.log(item);
 
   const [showAll, setShowAll] = useState(false);
 

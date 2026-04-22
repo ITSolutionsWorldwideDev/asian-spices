@@ -7,9 +7,15 @@ export type CatalogProduct = {
   category: string;
   brand: string;
 
-  assigned: boolean;
 
+  base_price: number;
   store_price?: number;
+  effective_price: number;
+
   quantity?: number;
   status?: number;
+
+  is_overridden: boolean;
+  assigned: boolean;
+  is_assigned: boolean;
 };

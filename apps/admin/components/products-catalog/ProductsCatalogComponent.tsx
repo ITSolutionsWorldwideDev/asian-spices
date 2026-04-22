@@ -93,14 +93,27 @@ export default function ProductsCatalogComponent() {
     value: number,
   ) => {
     // 1. update UI instantly
+    // setProducts((prev) =>
+    //   prev.map((p) =>
+    //     p.product_id === product_id
+    //       ? {
+    //           ...p,
+    //           ...(field === "price"
+    //             ? { store_price: value }
+    //             : { quantity: value }),
+    //         }
+    //       : p,
+    //   ),
+    // );
+
     setProducts((prev) =>
       prev.map((p) =>
         p.product_id === product_id
           ? {
               ...p,
-              ...(field === "price"
-                ? { store_price: value }
-                : { quantity: value }),
+              store_price: value,
+              is_overridden: true,
+              assigned: true, // ✅ instantly reflect in UI
             }
           : p,
       ),
@@ -164,6 +177,109 @@ export default function ProductsCatalogComponent() {
     }
   };
 
+  const handleAssignAllFiltered = async () => {
+    setLoading(true);
+    await fetch("/api/store/catalog/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "ASSIGN",
+        filters, // 🔥 key part
+        selection: {
+          type: "EXCLUDE", // means "everything except none"
+          ids: [],
+        },
+      }),
+    });
+
+    fetchProducts(); // refresh
+  };
+
+  const toggleAssign = async (record: CatalogProduct) => {
+    setLoading(true);
+
+    if (record.assigned) {
+      await fetch("/api/store/catalog/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "UNASSIGN",
+          selection: {
+            type: "INCLUDE",
+            ids: [record.product_id],
+          },
+        }),
+      });
+    } else {
+      await fetch("/api/store/catalog/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "UPSERT",
+          selection: {
+            type: "INCLUDE",
+            ids: [record.product_id],
+          },
+          data: {
+            price: record.base_price, // default price
+          },
+        }),
+      });
+    }
+
+    fetchProducts();
+  };
+
+  /* const toggleAssign = async (record: CatalogProduct) => {
+    setLoading(true);
+    const action = record.assigned ? "UNASSIGN" : "ASSIGN";
+
+    await fetch("/api/store/catalog/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action,
+        selection: {
+          type: "INCLUDE",
+          ids: [record.product_id],
+        },
+      }),
+    });
+
+    fetchProducts(); // refresh
+  }; */
+
+  const handleBulkAssignSelected = async () => {
+    if (bulk.ids.size === 0) return;
+
+    await fetch("/api/store/catalog/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "UPSERT",
+        selection: {
+          type: "INCLUDE",
+          ids: Array.from(bulk.ids),
+        },
+        data: {
+          price: null, // fallback to base price
+        },
+      }),
+    });
+
+    fetchProducts();
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setBulk({
@@ -187,10 +303,6 @@ export default function ProductsCatalogComponent() {
   ------------------------------------ */
 
   const columns = [
-    // {
-    //   title: "Name",
-    //   dataIndex: "name",
-    // },
     {
       title: "Name",
       render: (_: any, record: CatalogProduct) => (
@@ -205,41 +317,84 @@ export default function ProductsCatalogComponent() {
     {
       title: "Price",
       render: (_: any, record: CatalogProduct) => (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-1">
           <input
             type="number"
-            value={record.store_price ?? ""}
-            onChange={(e) =>
-              updateField(record.product_id, "price", Number(e.target.value))
+            min={0.01}
+            value={record.store_price ?? record.base_price}
+            onChange={
+              (e) => {
+                const value = Number(e.target.value);
+                if (!value || value <= 0) return; // ❌ block invalid
+
+                updateField(record.product_id, "price", value);
+              }
+              // updateField(record.product_id, "price", Number(e.target.value))
             }
             className="w-24 border px-2 py-1"
           />
 
-          {updatingIds.has(record.product_id) && (
-            <span className="text-xs text-gray-400">Saving...</span>
+          {!record.is_overridden && (
+            <span className="text-xs text-gray-400">Using default price</span>
           )}
+
+          {record.is_overridden && (
+            <span className="text-xs text-green-600 mt-2">Overridden</span>
+          )}
+
+          <span className="text-xs text-gray-500 mt-2">
+            Base: ${record.base_price}
+          </span>
         </div>
       ),
     },
     // {
-    //   title: "Qty",
+    //   title: "Price",
     //   render: (_: any, record: CatalogProduct) => (
     //     <div className="flex items-center gap-2">
     //       <input
     //         type="number"
-    //         value={record.quantity ?? ""}
+    //         value={record.store_price ?? ""}
     //         onChange={(e) =>
-    //           updateField(record.product_id, "quantity", Number(e.target.value))
+    //           updateField(record.product_id, "price", Number(e.target.value))
     //         }
-    //         className="w-20 border px-2 py-1"
+    //         className="w-24 border px-2 py-1"
     //       />
 
     //       {updatingIds.has(record.product_id) && (
     //         <span className="text-xs text-gray-400">Saving...</span>
     //       )}
     //     </div>
+    //     // disabled={!record.assigned}
     //   ),
     // },
+    {
+      title: "Assigned",
+      render: (_: any, record: CatalogProduct) => (
+        <span
+          className={`px-2 py-1 rounded text-xs ${
+            record.assigned
+              ? "bg-green-100 text-green-700"
+              : "bg-gray-100 text-gray-500"
+          }`}
+        >
+          {record.assigned ? "Assigned" : "Not Assigned"}
+        </span>
+      ),
+    },
+    {
+      title: "Action",
+      render: (_: any, record: CatalogProduct) => (
+        <button
+          onClick={() => toggleAssign(record)}
+          className={`px-3 py-1 rounded text-xs ${
+            record.assigned ? "bg-red-500 text-white" : "bg-blue-500 text-white"
+          }`}
+        >
+          {record.assigned ? "Unassign" : "Assign"}
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -257,6 +412,28 @@ export default function ProductsCatalogComponent() {
                 fetchProducts(f, 1);
               }}
             />
+
+            <button
+              onClick={handleAssignAllFiltered}
+              className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-4"
+            >
+              Assign All Filtered Products
+            </button>
+
+            <button
+              disabled={bulk.ids.size === 0}
+              onClick={handleBulkAssignSelected}
+              className="bg-blue-600 text-white px-4 py-2 rounded text-sm mt-4 disabled:opacity-50"
+            >
+              Assign Selected ({bulk.ids.size})
+            </button>
+
+            {/* <button
+  onClick={() => resetPrice(record.product_id)}
+  className="text-xs text-blue-500"
+>
+  Reset
+</button> */}
           </div>
         </div>
 
@@ -344,7 +521,8 @@ export default function ProductsCatalogComponent() {
                       </p>
 
                       <p className="text-sm text-gray-600">
-                        Description: {productDetail.description || "No description"}
+                        Description:{" "}
+                        {productDetail.description || "No description"}
                       </p>
 
                       <p className="text-sm text-gray-600">
@@ -380,3 +558,23 @@ export default function ProductsCatalogComponent() {
     </div>
   );
 }
+
+// {
+//   title: "Qty",
+//   render: (_: any, record: CatalogProduct) => (
+//     <div className="flex items-center gap-2">
+//       <input
+//         type="number"
+//         value={record.quantity ?? ""}
+//         onChange={(e) =>
+//           updateField(record.product_id, "quantity", Number(e.target.value))
+//         }
+//         className="w-20 border px-2 py-1"
+//       />
+
+//       {updatingIds.has(record.product_id) && (
+//         <span className="text-xs text-gray-400">Saving...</span>
+//       )}
+//     </div>
+//   ),
+// },

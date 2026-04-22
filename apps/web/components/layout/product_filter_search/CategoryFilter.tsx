@@ -14,7 +14,6 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
     (state) => state.selectedCategories,
   );
 
-  console.log(selectedCategories);
   const toggleCategory = useCategoryFilterStore(
     (state) => state.toggleCategory,
   );
@@ -34,9 +33,8 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   // const [data, setData] = useState<any>(null);
   const pathname = usePathname();
-  // console.log(pathname);
+
   const slug = pathname.split("/").filter(Boolean).pop();
-  console.log(slug);
 
   useEffect(() => {
     if (slug) {
@@ -44,18 +42,6 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
     }
   }, [slug, fetchCategories]);
 
-  // useEffect(() => {
-  //   if (!slug) return;
-
-  //   fetch(`/api/category/${slug}`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       // console.log(data); // categories + subcategories
-  //       setData(data.subcategories);
-  //     });
-  // }, [slug]);
-
-  console.log(data);
   const toggleMobile = () => {
     setIsMobileOpen((prev) => !prev);
   };
@@ -94,7 +80,7 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
   };
 
   return (
-    <>  
+    <>
       <div className="mb-8">
         {/* Mobile Toggle Button */}
         <button
@@ -127,7 +113,7 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
             // isObject && category.children && category.children.length > 0;
             // const isExpanded = expandedCategories.includes(categoryName);
             const isSelected = selectedCategories.includes(category.id);
-            console.log(category.name, isSelected);
+
             return (
               <div key={category.name}>
                 {/* Parent Category */}

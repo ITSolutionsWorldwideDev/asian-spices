@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    console.log("Webhook payload:", body);
+    // console.log("Webhook payload:", body);
 
     const transactionId = body.id;
     // const status = body.status?.toLowerCase();
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       [paymentStatus, transactionId, reference],
     );
 
-    console.log(`Order ${reference} → ${paymentStatus}`);
+    // console.log(`Order ${reference} → ${paymentStatus}`);
 
     return NextResponse.json({ success: true });
   } catch (err) {

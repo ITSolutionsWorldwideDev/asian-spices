@@ -12,8 +12,6 @@ interface Props {
 }
 
 export default function OrderSummary({ items, shippingMethod }: Props) {
-  // console.log(items);
-
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
 
