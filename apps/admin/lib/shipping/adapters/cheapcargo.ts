@@ -1,16 +1,42 @@
 // lib/shipping/adapters/cheapcargo.ts
 
-import { ShippingAdapter } from "../types";
-import { withRetry } from "@/lib/utils/retry";
-
-const BASE_URL = "https://api.cheapcargo.dev";
+import {
+  ShippingAdapter,
+  ShipmentInput,
+  ShipmentResult,
+  LabelResult,
+} from "../types";
 
 type Credentials = {
-  api_key: string;
-  api_secret: string;
+  apiKey: string;
+  email: string;
+  password: string;
 };
-
 export class CheapCargoAdapter implements ShippingAdapter {
+  constructor(private creds: Credentials) {}
+
+  async getRates(input: ShipmentInput): Promise<any> {
+    throw new Error("Use rateRequest flow (not implemented yet)");
+  }
+
+  async createShipment(input: ShipmentInput): Promise<ShipmentResult> {
+    throw new Error("CheapCargo shipment not implemented");
+  }
+
+  async generateLabel(externalId: string): Promise<LabelResult> {
+    throw new Error("CheapCargo label not supported");
+  }
+}
+
+// import { withRetry } from "@/lib/utils/retry";
+// type CheapCargoCreds = {
+//   apiKey: string;
+//   email: string;
+//   password: string;
+// };
+
+// const BASE_URL = "https://api.cheapcargo.dev";
+/* export class CheapCargoAdapter implements ShippingAdapter {
   private creds: Credentials;
 
   constructor(creds: Credentials) {
@@ -62,4 +88,4 @@ export class CheapCargoAdapter implements ShippingAdapter {
   async generateLabel(shipmentId: string) {
     return this.request(`/shipments/${shipmentId}/label`, "GET");
   }
-}
+} */

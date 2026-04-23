@@ -1,6 +1,7 @@
+// apps/web/app/api/partner-registration/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-// import nodemailer from "nodemailer";
 import nodemailer from "nodemailer";
 export async function POST(req: NextRequest) {
   {
@@ -77,6 +78,25 @@ export async function POST(req: NextRequest) {
           // idin,
         ],
       );
+
+      /* 
+      // Configure mail transporter
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT),
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        //   logger: true,
+        //   debug: true,
+        pool: true, // enable connection pooling
+        maxConnections: 3, // up to 3 concurrent SMTP connections
+        maxMessages: 10, // reuse each connection for up to 10 emails
+      });
+        */
 
       // const transporter = nodemailer.createTransport({
       //   host: process.env.SMTP_HOST,

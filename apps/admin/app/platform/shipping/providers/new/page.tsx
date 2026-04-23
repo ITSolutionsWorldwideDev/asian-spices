@@ -1,7 +1,7 @@
 // apps/admin/app/platform/shipping/providers/new/page.tsx
 
 import { requirePlatformAdmin } from "@/lib/auth/guards";
-import ProviderForm from "../[providerId]/ProviderForm";
+import ProviderForm from "./ProviderForm";
 
 export default async function NewProviderPage() {
   await requirePlatformAdmin();

@@ -15,7 +15,7 @@ export default async function ProvidersPage({
 
   const params = searchParams ? await searchParams : {};
 
-  const page = Number(params.page ?? 1);
+  const page = Math.max(1, Number(params.page) || 1);
   const q = params.q as string | undefined;
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -57,25 +57,3 @@ export default async function ProvidersPage({
     </div>
   );
 }
-
-/* import { pool } from "@acme/db";
-import { requirePlatformAdmin } from "@/lib/auth/guards";
-import ProvidersClient from "@/components/shipping/providers/ProvidersClient";
-
-export default async function ProvidersPage() {
-  await requirePlatformAdmin();
-
-  const { rows } = await pool.query(`
-    SELECT id, name, slug, is_active, created_at
-    FROM shipping_providers
-    ORDER BY created_at DESC
-  `);
-
-  return (
-    <div className="page-wrapper">
-      <div className="content">
-        <ProvidersClient providers={rows} />
-      </div>
-    </div>
-  );
-} */

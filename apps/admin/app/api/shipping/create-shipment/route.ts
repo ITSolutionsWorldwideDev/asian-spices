@@ -3,6 +3,88 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 import { createShipmentForOrder } from "@/lib/shipping/shippingService";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
+
+export async function POST(req: NextRequest) {
+  try {
+    const store = await getCurrentStoreAPI(req);
+    const { orderId, providerSlug } = await req.json();
+
+    if (!providerSlug) {
+      return NextResponse.json(
+        { success: false, error: "Missing providerSlug" },
+        { status: 400 }
+      );
+    }
+
+    // -----------------------------
+    // Get order (store-scoped)
+    // -----------------------------
+    const { rows } = await pool.query(
+      `
+      SELECT * 
+      FROM store_orders 
+      WHERE id = $1 
+        AND store_id = $2
+      `,
+      [orderId, store.id]
+    );
+
+    const order = rows[0];
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    // -----------------------------
+    // Create shipment (STORE SAFE)
+    // -----------------------------
+    const { shipment, label } = await createShipmentForOrder(
+      order,
+      providerSlug,
+      store.id // 🔥 IMPORTANT FIX
+    );
+
+    // -----------------------------
+    // Save shipment
+    // -----------------------------
+    await pool.query(
+      `
+      INSERT INTO shipments 
+        (order_id, store_id, provider, tracking_number, label_url, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      `,
+      [
+        order.id,
+        store.id,
+        providerSlug,
+        // shipment.tracking_number || null,
+        label?.url || null,
+        "created",
+      ]
+    );
+
+    return NextResponse.json({
+      success: true,
+      shipment,
+      label,
+    });
+  } catch (err) {
+    console.error("create-shipment error:", err);
+
+    return NextResponse.json(
+      { success: false, error: "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/* import { NextRequest, NextResponse } from "next/server";
+import { pool } from "@acme/db";
+import { createShipmentForOrder } from "@/lib/shipping/shippingService";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,7 +132,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+} */
 
 // import { getProviderCredentials } from "@/lib/shipping/providerService";
 // import {

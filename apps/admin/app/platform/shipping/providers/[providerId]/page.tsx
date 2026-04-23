@@ -1,8 +1,9 @@
 // apps/admin/app/platform/shipping/providers/[providerId]/page.tsx
 
 import { pool } from "@acme/db";
+import ProviderForm from "../new/ProviderForm";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
-import ProviderForm from "./ProviderForm";
+import { getProviderCredentials } from "@/lib/shipping/providerService";
 
 export default async function EditProviderPage({
   params,
@@ -14,19 +15,24 @@ export default async function EditProviderPage({
   const { providerId } = await params;
 
   const { rows } = await pool.query(
-    `
-    SELECT id, name, slug, is_active
-    FROM shipping_providers
-    WHERE id = $1
-    `,
+    `SELECT slug FROM shipping_providers WHERE id = $1`,
     [providerId]
   );
 
-  const provider = rows[0];
-
-  if (!provider) {
+  if (!rows.length) {
     return <p>Provider not found</p>;
   }
+
+  const slug = rows[0].slug;
+
+  // ✅ Use service (includes decrypted credentials)
+  const provider = await getProviderCredentials(slug);
+
+  console.log('provider  ==== ',provider);
+
+  // if (!provider) {
+  //   return <p>Provider not found</p>;
+  // }
 
   return (
     <div className="page-wrapper">

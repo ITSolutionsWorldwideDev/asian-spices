@@ -1,5 +1,5 @@
-// apps/admin/lib/shipping/adapters/CheapCargoAdapter.ts
-
+// apps/admin/lib/shipping/adapters/CheapCargoAdapter.ts (Not in use)
+/* 
 import {
   ShipmentInput,
   ShipmentResult,
@@ -103,4 +103,4 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     return data.label_url;
   }
-}
+} */
