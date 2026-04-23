@@ -1,3 +1,5 @@
+// apps/web/components/layout/navigation/CartandWhishBtn.tsx
+
 "use client";
 import React from "react";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
@@ -5,9 +7,7 @@ import { Heart } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
-// import Cart from "@/components/ui/Cart";
-// import { createPortal } from "react-dom";
-// import Link from "next/link";
+
 const CartandWhishBtn = () => {
   const [isCartOpen, setCartOpen] = useState<boolean>(false);
   const { cart } = useCartStore();
@@ -26,10 +26,7 @@ const CartandWhishBtn = () => {
         </Link>
       </div>
 
-      <div
-        className="bg-white rounded-full cursor-pointer relative"
-        // onClick={() => setCartOpen(!isCartOpen)}
-      >
+      <div className="bg-white rounded-full cursor-pointer relative">
         <Link href={"/cart"}>
           <button className="px-3 py-3 font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
             <HiOutlineShoppingBag />
@@ -41,14 +38,6 @@ const CartandWhishBtn = () => {
           </span>
         )}
       </div>
-
-      {/* {isCartOpen &&
-        createPortal(
-          <div className="absolute top-30 left-0 h-full w-full z-9999 ">
-            <Cart />
-          </div>,
-          document.body,
-        )} */}
     </div>
   );
 };

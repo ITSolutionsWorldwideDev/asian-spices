@@ -1,7 +1,7 @@
 // apps/web/components/layout/partner_registration/TabSwitching.tsx
 
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, Form } from "lucide-react";
 import Prerequisites from "./Prerequisites";
 import BusinessVerification from "./BusinessVerification";
@@ -11,6 +11,13 @@ import IdentityVerification from "./IdentityVerification";
 import Confirmation from "./Confirmation";
 // import { useState } from "react";
 export default function TabSwitching() {
+  // const [formData, setFormData] = useState([]);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [activeStep, setActiveStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  const formRef = useRef<HTMLFormElement | null>(null);
+
   const steps = [
     { id: 1, label: "Prerequisites" },
     { id: 2, label: "Business Verification" },
@@ -20,10 +27,20 @@ export default function TabSwitching() {
     { id: 6, label: "Confirmation" },
   ];
 
-  // const [formData, setFormData] = useState([]);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [activeStep, setActiveStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  // const currentStep = steps[activeStep - 1];
+  const safeActiveStep = Math.min(Math.max(activeStep, 1), steps.length);
+  const currentStep = steps[safeActiveStep - 1];
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      formRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [activeStep]);
 
   useEffect(() => {
     const saved = localStorage.getItem("partner_registration");
@@ -113,8 +130,28 @@ export default function TabSwitching() {
   return (
     <div className="w-full p-4 sm:p-8">
       {/* Stepper - scrollable on mobile */}
-      <div className="w-full overflow-x-auto pb-2">
-        <div className="flex items-center justify-between relative min-w-140 max-w-6xl mx-auto px-2">
+      <div className="w-full overflow-x-auto max-w-6xl mx-auto pb-2">
+        {/* Mobile View */}
+        <div className="sm:hidden  sticky top-0 z-10 bg-white pb-3 border-b shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">
+              Step {activeStep} of {steps.length}
+            </span>
+            <span className="text-sm font-semibold text-orange-500">
+              {currentStep?.label}
+            </span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-orange-500 transition-all duration-300"
+              style={{ width: `${(safeActiveStep / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
+        {/* Desktop Stepper */} {/* flex min-w-140 */}
+        <div className="hidden sm:flex  items-center justify-between relative  max-w-6xl mx-auto px-2">
           {/* Background Line */}
           <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-300 -z-10" />
 
@@ -160,7 +197,10 @@ export default function TabSwitching() {
       </div>
 
       {/* Step Content */}
-      <form className="mt-8 sm:mt-12 max-w-4xl mx-auto bg-white p-5 sm:p-8 rounded-lg shadow">
+      <form
+        ref={formRef}
+        className="mt-6 sm:mt-12 max-w-4xl mx-auto bg-white p-4 sm:p-8 rounded-xl shadow-sm sm:shadow"
+      >
         {
           stepComponents(formData, setFormData, activeStep, setActiveStep)[
             activeStep as keyof ReturnType<typeof stepComponents>

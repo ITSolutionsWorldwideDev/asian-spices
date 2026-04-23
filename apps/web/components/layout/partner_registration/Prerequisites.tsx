@@ -11,16 +11,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
-// import Prerequisities from "./Prerequisites";
-// import BusinessVerification from "./BusinessVerification";
 
 export default function Prerequisites({
   setActiveStep,
   activeStep,
   setCompletedSteps,
 }: any) {
-  // const [isSpeaking, setIsSpeaking] = useState(false);
-  // const [activeComponent, setActiveComponent] = useState("main");
 
   return (
     <div>
@@ -165,7 +161,6 @@ export default function Prerequisites({
 
               setActiveStep(activeStep + 1);
             }}
-            // onClick={() => setActiveStep(activeStep + 1)}
           >
             Getting Started
             <span className="text-xl leading-none">→</span>

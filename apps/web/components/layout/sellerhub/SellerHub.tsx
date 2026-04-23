@@ -6,7 +6,7 @@ import KickstartSales from "./KickstartSales";
 import Footer from "@/components/ui/Footer";
 import SalesCalltoAction from "./SalesCalltoAction";
 
-const SellerHub = () => {
+const PartnerPlatform = () => {
   return (
     <div>
       <div className="bg-black">
@@ -21,4 +21,4 @@ const SellerHub = () => {
   );
 };
 
-export default SellerHub;
+export default PartnerPlatform;

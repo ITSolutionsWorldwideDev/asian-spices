@@ -1,5 +1,6 @@
-import React from 'react';
-import { ShoppingCart, CheckCircle, XCircle, Clock } from 'lucide-react';
+import React from "react";
+import { ShoppingCart, CheckCircle, XCircle, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default function SalesCalltoAction() {
   return (
@@ -22,21 +23,23 @@ export default function SalesCalltoAction() {
         </p>
 
         {/* CTA Button */}
-        <button className="bg-white text-[#F54900] px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2 mx-auto mb-12">
-          Get Started Now
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+        <button className="bg-white text-[#F54900] hover:bg-orange-500 hover:text-white px-8 py-3 rounded-lg font-semibold  transition-colors duration-200 flex items-center gap-2 mx-auto mb-12">
+          <Link href="/partner-registration" className="flex">
+            Get Started Now
+            <svg
+              className="w-5 h-5 mt-1 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
         </button>
 
         {/* Features */}

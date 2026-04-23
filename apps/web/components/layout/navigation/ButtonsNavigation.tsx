@@ -17,7 +17,7 @@ const ButtonsNavigation = () => {
   }
 
   return (
-    <div className="lg:flex items-center space-x-3 hidden">
+    <div className="hidden lg:flex items-center space-x-3">
       {/* ✅ NOT LOGGED IN */}
       {!session && (
         <>

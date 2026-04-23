@@ -164,7 +164,7 @@ export default function Confirmation({ formData }: any) {
               </button>
             </Link>
 
-            <Link href="/sellerhub">
+            <Link href="/partnerplatform">
               <button className="px-6 py-2 rounded-lg border text-gray-700 hover:bg-gray-100 transition">
                 📄 View Partner Platform
               </button>

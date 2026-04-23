@@ -97,7 +97,7 @@ export default function KickstartSales() {
                   {step.description}
                 </p>
                 <a
-                  href="#"
+                  href="/partner-registration"
                   className="text-orange-600 font-semibold hover:text-orange-700"
                 >
                   Sign up in a few steps →

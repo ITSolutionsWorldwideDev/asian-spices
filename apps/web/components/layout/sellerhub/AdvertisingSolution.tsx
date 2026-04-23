@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 export default function AdvertisingSolution() {
   return (
     <div className="bg-linear-to-br from-orange-300 via-orange-400 to-orange-500">
@@ -29,8 +30,8 @@ export default function AdvertisingSolution() {
             </p>
 
             <div>
-              <button className="bg-white text-gray-900 px-8 py-3 rounded-md font-semibold hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl">
-                Register to Sell
+              <button className="bg-white text-gray-900 px-8 py-3 rounded-md font-semibold hover:bg-orange-500 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl">
+                <Link href="/partner-registration">Register to Sell</Link>
               </button>
             </div>
           </div>

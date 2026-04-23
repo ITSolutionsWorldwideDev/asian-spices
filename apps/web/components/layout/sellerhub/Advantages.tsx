@@ -40,10 +40,7 @@ export default function Advantages() {
       <div className=" rounded-2xl ">
         <div className="grid md:grid-cols-2 gap-12 ">
           {/* Left side - Image */}
-          {/* <div className=" rounded-3xl p-12 flex items-center justify-center"> */}
-          {/* <div className="relative"> */}
-          {/* You can replace this with actual Image component */}
-          {/* <div className="w-64 h-80 bg-white/20 rounded-lg flex items-center justify-center"> */}
+
           <Image
             src="/assets/sellerhub/2b8b516058d075d5075eb99fc1fdafbe6d4125b3.jpg"
             alt="advantages"
@@ -51,9 +48,6 @@ export default function Advantages() {
             height={600}
             className="w-full h-full object-cover rounded-3xl"
           />
-          {/* </div> */}
-          {/* </div> */}
-          {/* </div> */}
 
           {/* Right side - Content */}
           <div>
