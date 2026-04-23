@@ -36,6 +36,8 @@ export default function ProductsCatalogComponent() {
   });
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
+  const [showAssignedOnly, setShowAssignedOnly] = useState(false);
+
   /* ------------------------------------
      Debounced API Call
   ------------------------------------ */
@@ -92,20 +94,6 @@ export default function ProductsCatalogComponent() {
     field: "price" | "quantity",
     value: number,
   ) => {
-    // 1. update UI instantly
-    // setProducts((prev) =>
-    //   prev.map((p) =>
-    //     p.product_id === product_id
-    //       ? {
-    //           ...p,
-    //           ...(field === "price"
-    //             ? { store_price: value }
-    //             : { quantity: value }),
-    //         }
-    //       : p,
-    //   ),
-    // );
-
     setProducts((prev) =>
       prev.map((p) =>
         p.product_id === product_id
@@ -125,7 +113,8 @@ export default function ProductsCatalogComponent() {
     // 3. debounce API
     debouncedUpdate(
       {
-        action: "UPDATE",
+        // action: "UPDATE",
+        action: "UPSERT",
         selection: {
           type: "INCLUDE",
           ids: [product_id],
@@ -236,29 +225,10 @@ export default function ProductsCatalogComponent() {
     fetchProducts();
   };
 
-  /* const toggleAssign = async (record: CatalogProduct) => {
-    setLoading(true);
-    const action = record.assigned ? "UNASSIGN" : "ASSIGN";
-
-    await fetch("/api/store/catalog/bulk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action,
-        selection: {
-          type: "INCLUDE",
-          ids: [record.product_id],
-        },
-      }),
-    });
-
-    fetchProducts(); // refresh
-  }; */
-
   const handleBulkAssignSelected = async () => {
     if (bulk.ids.size === 0) return;
+
+    setLoading(true);
 
     await fetch("/api/store/catalog/bulk", {
       method: "POST",
@@ -271,9 +241,10 @@ export default function ProductsCatalogComponent() {
           type: "INCLUDE",
           ids: Array.from(bulk.ids),
         },
-        data: {
-          price: null, // fallback to base price
-        },
+        data: {},
+        // data: {
+        //   price: null, // fallback to base price
+        // },
       }),
     });
 
@@ -348,26 +319,6 @@ export default function ProductsCatalogComponent() {
         </div>
       ),
     },
-    // {
-    //   title: "Price",
-    //   render: (_: any, record: CatalogProduct) => (
-    //     <div className="flex items-center gap-2">
-    //       <input
-    //         type="number"
-    //         value={record.store_price ?? ""}
-    //         onChange={(e) =>
-    //           updateField(record.product_id, "price", Number(e.target.value))
-    //         }
-    //         className="w-24 border px-2 py-1"
-    //       />
-
-    //       {updatingIds.has(record.product_id) && (
-    //         <span className="text-xs text-gray-400">Saving...</span>
-    //       )}
-    //     </div>
-    //     // disabled={!record.assigned}
-    //   ),
-    // },
     {
       title: "Assigned",
       render: (_: any, record: CatalogProduct) => (
@@ -413,27 +364,56 @@ export default function ProductsCatalogComponent() {
               }}
             />
 
-            <button
-              onClick={handleAssignAllFiltered}
-              className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-4"
-            >
-              Assign All Filtered Products
-            </button>
+            <div className="flex flex-wrap gap-3 items-center">
+              {/* <button
+                onClick={handleAssignAllFiltered}
+                className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-4"
+              >
+                Assign All Filtered Products
+              </button> */}
 
-            <button
-              disabled={bulk.ids.size === 0}
-              onClick={handleBulkAssignSelected}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm mt-4 disabled:opacity-50"
-            >
-              Assign Selected ({bulk.ids.size})
-            </button>
+              <button
+                disabled={bulk.ids.size === 0}
+                onClick={handleBulkAssignSelected}
+                className="bg-blue-600 text-white px-4 py-2 rounded text-sm mt-4 disabled:opacity-50"
+              >
+                Assign Selected ({bulk.ids.size})
+              </button>
 
-            {/* <button
-  onClick={() => resetPrice(record.product_id)}
-  className="text-xs text-blue-500"
->
-  Reset
-</button> */}
+              <button
+                disabled={bulk.ids.size === 0}
+                onClick={async () => {
+                  await fetch("/api/store/catalog/bulk", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      action: "RESET_PRICE",
+                      selection: {
+                        type: "INCLUDE",
+                        ids: Array.from(bulk.ids),
+                      },
+                    }),
+                  });
+
+                  fetchProducts();
+                }}
+                className="bg-gray-600 text-white px-4 py-2  mt-4 rounded text-sm"
+              >
+                Reset to Base Price
+              </button>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm mt-3">
+              <input
+                type="checkbox"
+                checked={showAssignedOnly}
+                onChange={(e) => {
+                  setShowAssignedOnly(e.target.checked);
+                  fetchProducts({ ...filters, assigned: e.target.checked }, 1);
+                }}
+              />
+              Show only assigned products
+            </label>
           </div>
         </div>
 
@@ -449,7 +429,7 @@ export default function ProductsCatalogComponent() {
                     <div className="bg-blue-50 border px-4 py-2 mb-3 rounded text-sm">
                       {bulk.ids.size} items selected on this page.
                       <button
-                        onClick={handleSelectAllAcrossPages}
+                        // onClick={handleSelectAllAcrossPages}
                         className="ml-2 text-blue-600 underline"
                       >
                         Select all {totalCount} items
@@ -558,6 +538,60 @@ export default function ProductsCatalogComponent() {
     </div>
   );
 }
+
+/* const toggleAssign = async (record: CatalogProduct) => {
+    setLoading(true);
+    const action = record.assigned ? "UNASSIGN" : "ASSIGN";
+
+    await fetch("/api/store/catalog/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action,
+        selection: {
+          type: "INCLUDE",
+          ids: [record.product_id],
+        },
+      }),
+    });
+
+    fetchProducts(); // refresh
+  }; */
+// 1. update UI instantly
+// setProducts((prev) =>
+//   prev.map((p) =>
+//     p.product_id === product_id
+//       ? {
+//           ...p,
+//           ...(field === "price"
+//             ? { store_price: value }
+//             : { quantity: value }),
+//         }
+//       : p,
+//   ),
+// );
+// {
+//   title: "Price",
+//   render: (_: any, record: CatalogProduct) => (
+//     <div className="flex items-center gap-2">
+//       <input
+//         type="number"
+//         value={record.store_price ?? ""}
+//         onChange={(e) =>
+//           updateField(record.product_id, "price", Number(e.target.value))
+//         }
+//         className="w-24 border px-2 py-1"
+//       />
+
+//       {updatingIds.has(record.product_id) && (
+//         <span className="text-xs text-gray-400">Saving...</span>
+//       )}
+//     </div>
+//     // disabled={!record.assigned}
+//   ),
+// },
 
 // {
 //   title: "Qty",

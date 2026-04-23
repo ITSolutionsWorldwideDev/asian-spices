@@ -72,42 +72,68 @@ export async function POST(req: NextRequest) {
 
     // console.log('action ==== ',action);
 
-    /* ========= 0. ASSIGN ========= */
-
-    if (action === "ASSIGN") {
-      // await client.query(
-      //   `
-      //   INSERT INTO store_product_catalog (store_id, product_id)
-      //   SELECT $1, p.id
-      //   FROM store_products p
-      //   WHERE p.id = ANY($2::uuid[])
-      //   ON CONFLICT (store_id, product_id) DO NOTHING
-      //   `,
-      //   [store_id, selection.ids],
-      // );
-
-      if (!filters && (!selection?.ids || selection.ids.length === 0)) {
-        throw new Error("Bulk assign all products is restricted");
+    if (action === "RESET_PRICE") {
+      if (!selection?.ids?.length) {
+        throw new Error("No products selected");
       }
 
       await client.query(
         `
-        INSERT INTO store_product_catalog (store_id, product_id)
-        SELECT $1, p.id
+        UPDATE store_product_catalog spc
+        SET price = p.price,
+            updated_at = now()
         FROM store_products p
-        ${where}
-        ON CONFLICT (store_id, product_id) DO NOTHING
+        WHERE spc.product_id = p.id
+          AND spc.store_id = $1
+          AND spc.product_id = ANY($2::uuid[])
         `,
-        values,
+        [store_id, selection.ids],
       );
 
       await client.query("COMMIT");
 
       return NextResponse.json({
         success: true,
-        message: "Products assigned",
+        message: "Prices reset to base",
       });
     }
+
+    /* ========= 0. ASSIGN ========= */
+
+    // if (action === "ASSIGN") {
+    //   // await client.query(
+    //   //   `
+    //   //   INSERT INTO store_product_catalog (store_id, product_id)
+    //   //   SELECT $1, p.id
+    //   //   FROM store_products p
+    //   //   WHERE p.id = ANY($2::uuid[])
+    //   //   ON CONFLICT (store_id, product_id) DO NOTHING
+    //   //   `,
+    //   //   [store_id, selection.ids],
+    //   // );
+
+    //   if (!filters && (!selection?.ids || selection.ids.length === 0)) {
+    //     throw new Error("Bulk assign all products is restricted");
+    //   }
+
+    //   await client.query(
+    //     `
+    //     INSERT INTO store_product_catalog (store_id, product_id)
+    //     SELECT $1, p.id
+    //     FROM store_products p
+    //     ${where}
+    //     ON CONFLICT (store_id, product_id) DO NOTHING
+    //     `,
+    //     values,
+    //   );
+
+    //   await client.query("COMMIT");
+
+    //   return NextResponse.json({
+    //     success: true,
+    //     message: "Products assigned",
+    //   });
+    // }
 
     /* ========= 1. UNASSIGN ========= */
     if (action === "UNASSIGN") {
@@ -145,28 +171,30 @@ export async function POST(req: NextRequest) {
         throw new Error("No products selected for upsert");
       }
 
-      const price = data?.price ?? 0;
-      const quantity = data?.quantity ?? 0;
+      // const price = data?.price ?? 0;
+      // const quantity = data?.quantity ?? 0;
+      const price = data?.price ?? null;
+      const quantity = data?.quantity ?? null;
 
       await client.query(
         `
-    INSERT INTO store_product_catalog 
-      (store_id, product_id, price, quantity, status)
-    SELECT 
-      $1,
-      p.id,
-      COALESCE($3, p.price), -- fallback to base price
-      COALESCE($4, 0),
-      1
-    FROM store_products p
-    WHERE p.id = ANY($2::uuid[])
+        INSERT INTO store_product_catalog 
+          (store_id, product_id, price, quantity, status)
+        SELECT 
+          $1,
+          p.id,
+          COALESCE($3::numeric, p.price),
+          COALESCE($4, 0),
+          1
+        FROM store_products p
+        WHERE p.id = ANY($2::uuid[])
 
-    ON CONFLICT (store_id, product_id)
-    DO UPDATE SET
-      price = COALESCE(EXCLUDED.price, store_product_catalog.price),
-      quantity = COALESCE(EXCLUDED.quantity, store_product_catalog.quantity),
-      updated_at = now()
-    `,
+        ON CONFLICT (store_id, product_id)
+        DO UPDATE SET
+          price = COALESCE(EXCLUDED.price, store_product_catalog.price),
+          quantity = COALESCE(EXCLUDED.quantity, store_product_catalog.quantity),
+          updated_at = now()
+        `,
         [store_id, selection.ids, price, quantity],
       );
 

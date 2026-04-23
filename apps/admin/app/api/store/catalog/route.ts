@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
   const brand = searchParams.get("brand");
   const status = searchParams.get("status");
 
+  const assigned = searchParams.get("assigned");
+
   let where = `WHERE 1=1`;
   const values: any[] = [];
 
@@ -35,6 +37,10 @@ export async function GET(req: NextRequest) {
   if (brand) {
     values.push(brand);
     where += ` AND p.brand_id = $${values.length}`;
+  }
+
+  if (assigned === "true") {
+    where += ` AND spc.id IS NOT NULL`;
   }
 
   const result = await pool.query(
@@ -75,9 +81,20 @@ export async function GET(req: NextRequest) {
     [...values, store_id],
   );
 
+  // const count = await pool.query(
+  //   `SELECT COUNT(*) FROM store_products p ${where}`,
+  //   values,
+  // );
+
   const count = await pool.query(
-    `SELECT COUNT(*) FROM store_products p ${where}`,
-    values,
+    `
+    SELECT COUNT(*)
+    FROM store_products p
+    LEFT JOIN store_product_catalog spc
+      ON spc.product_id = p.id AND spc.store_id = $1
+    ${where}
+    `,
+    [store_id, ...values],
   );
 
   return NextResponse.json({
@@ -85,4 +102,4 @@ export async function GET(req: NextRequest) {
     total: Number(count.rows[0].count),
   });
 }
-//  
+//
