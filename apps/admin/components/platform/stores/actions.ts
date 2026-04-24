@@ -144,13 +144,7 @@ export async function saveStore(
 ) {
   await requirePlatformAdmin();
 
-  // const name = formData.get("name") as string;
-  // const slug = formData.get("slug") as string;
-  // const status = formData.get("status") as string;
-
-  // const adminName = formData.get("adminName") as string | null;
-  // const adminEmail = formData.get("adminEmail") as string | null;
-  // const adminPassword = formData.get("adminPassword") as string | null;
+  // console.log("saveStore formData ==== ", formData);
 
   const data = Object.fromEntries(formData.entries());
   const {
@@ -177,8 +171,6 @@ export async function saveStore(
     vatNumber,
   } = data;
 
-  // console.log("Captured Data:", data);
-
   if (!name || !slug) {
     throw new Error("Missing required fields");
   }
@@ -189,13 +181,118 @@ export async function saveStore(
     await client.query("BEGIN");
 
     let finalStoreId = storeId;
+    let partnerRegId: string | null = null;
 
     // 1️⃣ CREATE OR UPDATE STORE
     if (storeId) {
-      await client.query(
-        `UPDATE stores SET name = $1, slug = $2, status = $3 WHERE id = $4`,
+      // 1️⃣ Update store basic info
+      const storeRes = await client.query(
+        `UPDATE stores 
+         SET name = $1, slug = $2, status = $3
+         WHERE id = $4
+         RETURNING partner_registration_id`,
         [name, slug, status, storeId],
       );
+
+      partnerRegId = storeRes.rows[0]?.partner_registration_id;
+
+      // 2️⃣ UPSERT partner_registration
+      if (partnerRegId) {
+        // ✅ UPDATE existing
+        await client.query(
+          `
+          UPDATE partner_registration SET
+            kvk_number = $1,
+            company_name = $2,
+            chamber_of_commerce_number = $3,
+            country = $4,
+            street = $5,
+            house_number = $6,
+            additional_address = $7,
+            postal_code = $8,
+            city = $9,
+            first_name = $10,
+            middle_name = $11,
+            last_name = $12,
+            business_phone_number = $13,
+            business_email_address = $14,
+            vat_number = $15
+          WHERE partner_id = $16
+          `,
+          [
+            kvkNumber,
+            companyName,
+            chamberOfCommerceNumber,
+            country,
+            street,
+            houseNumber,
+            addition,
+            postalCode,
+            city,
+            firstName,
+            middleName,
+            lastName,
+            businessPhone,
+            businessEmail,
+            vatNumber,
+            partnerRegId,
+          ],
+        );
+      } else {
+        // ✅ INSERT new (edge case)
+        const partnerRes = await client.query(
+          `
+          INSERT INTO partner_registration (
+            kvk_number,
+            company_name,
+            chamber_of_commerce_number,
+            country,
+            street,
+            house_number,
+            additional_address,
+            postal_code,
+            city,
+            first_name,
+            middle_name,
+            last_name,
+            business_phone_number,
+            business_email_address,
+            vat_number
+          )
+          VALUES (
+            $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+            $11,$12,$13,$14,$15
+          )
+          RETURNING partner_id
+          `,
+          [
+            kvkNumber,
+            companyName,
+            chamberOfCommerceNumber,
+            country,
+            street,
+            houseNumber,
+            addition,
+            postalCode,
+            city,
+            firstName,
+            middleName,
+            lastName,
+            businessPhone,
+            businessEmail,
+            vatNumber,
+          ],
+        );
+
+        partnerRegId = partnerRes.rows[0].partner_id;
+
+        await client.query(
+          `UPDATE stores 
+           SET partner_registration_id = $1
+           WHERE id = $2`,
+          [partnerRegId, storeId],
+        );
+      }
     } else {
       const partnerRegData = await client.query(
         `INSERT INTO partner_registration (
@@ -315,7 +412,7 @@ export async function saveStore(
     client.release();
   }
 
-  redirect("/platform/stores");
+  // redirect("/platform/stores");
 }
 
 /* export async function createStore(formData: FormData) {

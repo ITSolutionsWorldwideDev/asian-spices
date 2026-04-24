@@ -47,14 +47,6 @@ export default function RatesManager({
     fetchCountries();
   }, []);
 
-  //   useEffect(() => {
-  //     fetch("/api/countries")
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         setCountries(data);
-  //       });
-  //   }, []);
-
   // ---------------------------
   // Fetch rates
   // ---------------------------

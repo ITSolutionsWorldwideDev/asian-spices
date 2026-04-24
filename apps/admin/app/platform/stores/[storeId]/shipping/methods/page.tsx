@@ -39,8 +39,9 @@ export default async function StoreShippingMethodsPage({
     assignments.find((a) => a.method_id === methodId);
 
   return (
-    <div className="page-wrapper">
-      <div className="content space-y-6">
+    
+    <div className=" mx-auto">
+      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6">
         {/* Header */}
         <div>
           <h2 className="text-xl font-semibold">

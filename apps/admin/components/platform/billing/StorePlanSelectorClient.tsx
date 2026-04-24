@@ -25,25 +25,30 @@ export default function StorePlanSelectorClient({
   return (
     <div className="card space-y-4">
       <div className="bg-white p-6 rounded shadow max-w-xl space-y-4">
-        <h2 className="font-semibold">Subscription</h2>
+        <div className="flex items-center justify-between border-b border-gray-100 pb-5">
+          <h4 className="text-xl font-bold text-gray-900">Subscription</h4>
+        </div>
+        <div className=" mx-auto">
+          <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6">
+            <p>
+              Current Plan: <strong>{currentPlanName ?? "None"}</strong>
+            </p>
 
-        <p>
-          Current Plan: <strong>{currentPlanName ?? "None"}</strong>
-        </p>
-
-        <select
-          defaultValue={currentPlanId ?? ""}
-          onChange={(e) => handleChange(e.target.value)}
-          disabled={isPending}
-          className="input"
-        >
-          <option value="">No Plan</option>
-          {plans.map((p: any) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+            <select
+              defaultValue={currentPlanId ?? ""}
+              onChange={(e) => handleChange(e.target.value)}
+              disabled={isPending}
+              className="input"
+            >
+              <option value="">No Plan</option>
+              {plans.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );

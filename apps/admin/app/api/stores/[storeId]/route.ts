@@ -13,17 +13,22 @@ export async function GET(_req: NextRequest, context: RouteContext) {
   await requirePlatformAdmin();
   const { storeId } = await context.params;
 
-  const result = await pool.query(`SELECT * FROM stores WHERE id = $1`, [
-    storeId,
-  ]);
+  const result = await pool.query(
+    `SELECT 
+      s.*, 
+      pr.*
+    FROM stores s
+    LEFT JOIN partner_registration pr 
+      ON pr.partner_id::text = s.partner_registration_id
+    WHERE s.id = $1
+    `,
+    [storeId],
+  );
 
   return NextResponse.json(result.rows[0]);
 }
 
-export async function PUT(
-  req: NextRequest,
-  context: RouteContext
-) {
+export async function PUT(req: NextRequest, context: RouteContext) {
   await requirePlatformAdmin();
 
   const { storeId } = await context.params;
@@ -39,10 +44,7 @@ export async function PUT(
   return NextResponse.json(result.rows[0]);
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  context: RouteContext
-) {
+export async function DELETE(_req: NextRequest, context: RouteContext) {
   await requirePlatformAdmin();
 
   const { storeId } = await context.params;

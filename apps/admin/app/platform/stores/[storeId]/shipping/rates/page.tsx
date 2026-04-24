@@ -6,11 +6,11 @@ import StoreRatesClient from "@/components/shipping/store/StoreRatesClient";
 export default async function StoreShippingRatesPage({
   params,
 }: {
-  params: { storeId: string };
+  params: Promise<{ storeId: string }>;
 }) {
   await requirePlatformAdmin();
 
-  const { storeId } = params;
+  const { storeId } = await params;
 
   // -----------------------------
   // Get all shipping methods
@@ -28,7 +28,7 @@ export default async function StoreShippingRatesPage({
       ON sp.id = sm.provider_id
     WHERE sm.is_active = true
     ORDER BY sm.created_at DESC
-    `
+    `,
   );
 
   // -----------------------------
@@ -40,7 +40,7 @@ export default async function StoreShippingRatesPage({
     FROM store_shipping_rates
     WHERE store_id = $1
     `,
-    [storeId]
+    [storeId],
   );
 
   // -----------------------------
@@ -52,26 +52,27 @@ export default async function StoreShippingRatesPage({
     FROM countries
     WHERE country_status = 'active'
     ORDER BY country_name ASC
-    `
+    `,
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header (optional - keep minimal because layout already has tabs) */}
-      <div>
-        <h2 className="text-xl font-semibold">Shipping Rates</h2>
-        <p className="text-sm text-gray-500">
-          Configure pricing rules per country and weight
-        </p>
-      </div>
+    <div className=" mx-auto">
+      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold">Shipping Rates</h2>
+          <p className="text-sm text-gray-500">
+            Configure pricing rules per country and weight
+          </p>
+        </div>
 
-      {/* Client UI */}
-      <StoreRatesClient
-        storeId={storeId}
-        methods={methodsRes.rows}
-        rates={ratesRes.rows}
-        countries={countriesRes.rows}
-      />
+        {/* Client UI */}
+        <StoreRatesClient
+          storeId={storeId}
+          methods={methodsRes.rows}
+          rates={ratesRes.rows}
+          countries={countriesRes.rows}
+        />
+      </div>
     </div>
   );
 }

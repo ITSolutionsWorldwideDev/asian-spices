@@ -2,12 +2,17 @@
 
 "use client";
 
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { saveStore } from "@/components/platform/stores/actions";
 import Link from "next/link";
 import { ArrowLeft } from "react-feather";
 // import { Building2, MapPin } from "lucide-react";
 // import UploadDocument from "./UploadDocument";
+type Countries = {
+  id: number;
+  name: string;
+  iso2: string;
+};
 
 export default function StoreForm({ store }: { store?: any }) {
   const [pending, startTransition] = useTransition();
@@ -20,28 +25,49 @@ export default function StoreForm({ store }: { store?: any }) {
   const [formState, setFormState] = useState({
     name: store?.name || "",
     slug: store?.slug || "",
-    kvkNumber: store?.kvkNumber || "",
-    companyName: store?.companyName || "",
-    chamberOfCommerceNumber: store?.chamberOfCommerceNumber || "",
+    kvkNumber: store?.kvk_number || "",
+    companyName: store?.company_name || "",
+    chamberOfCommerceNumber: store?.chamber_of_commerce_number || "",
     country: store?.country || "",
     street: store?.street || "",
-    houseNumber: store?.houseNumber || "",
-    addition: store?.addition || "",
-    postalCode: store?.postalCode || "",
+    houseNumber: store?.house_number || "",
+    addition: store?.additional_address || "",
+    postalCode: store?.postal_code || "",
     city: store?.city || "",
-    firstName: store?.firstName || "",
-    middleName: store?.middleName || "",
-    lastName: store?.lastName || "",
-    businessPhone: store?.businessPhone || "",
-    businessEmail: store?.businessEmail || "",
-    vatNumber: store?.vatNumber || "",
+    firstName: store?.first_name || "",
+    middleName: store?.middle_name || "",
+    lastName: store?.last_name || "",
+    businessPhone: store?.business_phone_number || "",
+    businessEmail: store?.business_email_address || "",
+    vatNumber: store?.vat_number || "",
     status: store?.status || "active",
   });
 
-  // Local state to manage the slug based on the name
-  // const [slug, setSlug] = useState(store?.slug || "");
-  // const [name, setName] = useState(store?.name || "");
   const [isSlugLocked, setIsSlugLocked] = useState(isEdit);
+  const [countries, setCountries] = useState<Countries[]>([]);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await fetch("/api/countries");
+        const data = await res.json();
+        setCountries(data || []);
+      } catch (err) {
+        console.error("Failed to load countries", err);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    if (countries.length && !formState.country) {
+      setFormState((prev) => ({
+        ...prev,
+        country: "NL", // default
+      }));
+    }
+  }, [countries]);
 
   // Helper to convert text to URL-friendly slug
   const generateSlug = (text: string) => {
@@ -80,7 +106,10 @@ export default function StoreForm({ store }: { store?: any }) {
           formData.set(key, String(value ?? ""));
         });
 
+        // console.log("formState === ", formState);
+
         const result = await saveStore(store?.id, formData);
+        // const result = await saveStore(store?.id, formState);
 
         if (!result?.success) {
           alert(result?.error || "Failed to save store");
@@ -94,17 +123,6 @@ export default function StoreForm({ store }: { store?: any }) {
     });
   };
 
-  // const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const newName = e.target.value;
-  //   setName(newName);
-  //   // Only auto-generate slug if we are creating a NEW store
-  //   // Usually, we avoid changing slugs for existing stores to prevent broken URLs
-  //   if (!isEdit) {
-  //     setSlug(generateSlug(newName));
-  //   }
-  // };
-
-  // console.log(FormData);
   return (
     <div className=" mx-auto">
       <form
@@ -216,24 +234,96 @@ export default function StoreForm({ store }: { store?: any }) {
             label="KVK Number"
             name="kvkNumber"
             placeHolder="123456"
+            value={formState.kvkNumber}
+            onChange={handleChange}
           />
 
-          <InputField label="Company Name" name="companyName" />
+          <InputField
+            label="Company Name"
+            name="companyName"
+            value={formState.companyName}
+            onChange={handleChange}
+          />
           <InputField
             label="Chamber of Commerce Number"
             name="chamberOfCommerceNumber"
+            value={formState.chamberOfCommerceNumber}
+            onChange={handleChange}
           />
-          <InputField label="Country" name="country" />
-          <InputField label="Street" name="street" />
+          {/* <InputField
+            label="Country"
+            name="country"
+            value={formState.country}
+            onChange={handleChange}
+          /> */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Country<span className="text-red-500 ml-1">*</span>
+            </label>
+
+            <select
+              name="country"
+              value={formState.country || ""}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  country: e.target.value,
+                }))
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg 
+               focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+              required
+            >
+              <option value="">Select country</option>
+
+              {countries?.map((c) => (
+                <option key={c.id} value={c.iso2}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <InputField
+            label="Street"
+            name="street"
+            value={formState.street}
+            onChange={handleChange}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField label="House Number" name="houseNumber" />
-            <InputField label="Addition (Optional)" name="addition" />
+            <InputField
+              label="House Number"
+              name="houseNumber"
+              value={formState.houseNumber}
+              onChange={handleChange}
+            />
+            {/* <InputField label="Addition (Optional)" name="addition" /> */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 ">
+                Addition (Optional)
+              </label>
+              <input
+                name="addition"
+                value={formState.addition}
+                onChange={(e) => handleChange("addition", e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField label="Postal Code" name="postalCode" />
-            <InputField label="City" name="city" />
+            <InputField
+              label="Postal Code"
+              name="postalCode"
+              value={formState.postalCode}
+              onChange={handleChange}
+            />
+            <InputField
+              label="City"
+              name="city"
+              value={formState.city}
+              onChange={handleChange}
+            />
           </div>
           <hr />
           <div className="mt-6 bg-white rounded-lg   ">
@@ -246,17 +336,32 @@ export default function StoreForm({ store }: { store?: any }) {
                 label="First Name"
                 name="firstName"
                 placeHolder="First Name"
+                value={formState.firstName}
+                onChange={handleChange}
               />
 
-              <InputField
+              {/* <InputField
                 label="Middle Name"
                 name="middleName"
                 placeHolder="Middle Name"
-              />
+              /> */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 ">
+                  Middle Name
+                </label>
+                <input
+                  name="middleName"
+                  value={formState.middleName}
+                  onChange={(e) => handleChange("middleName", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                />
+              </div>
               <InputField
                 label="Last Name"
                 name="lastName"
                 placeHolder="Last Name"
+                value={formState.lastName}
+                onChange={handleChange}
               />
             </div>
 
@@ -265,11 +370,15 @@ export default function StoreForm({ store }: { store?: any }) {
                 label="Business Phone Number"
                 name="businessPhone"
                 placeHolder="+31 612345678"
+                value={formState.businessPhone}
+                onChange={handleChange}
               />
               <InputField
                 label="Business Email Address"
                 name="businessEmail"
                 placeHolder="info@compnat.com"
+                value={formState.businessEmail}
+                onChange={handleChange}
               />
             </div>
 
@@ -278,6 +387,8 @@ export default function StoreForm({ store }: { store?: any }) {
                 label="VAT Number"
                 name="vatNumber"
                 placeHolder="NL12345678B01"
+                value={formState.vatNumber}
+                onChange={handleChange}
               />
             </div>
 
@@ -389,10 +500,14 @@ function InputField({
   label,
   name,
   placeHolder,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
   placeHolder?: string;
+  value: string;
+  onChange: (key: string, value: string) => void;
 }) {
   return (
     <div>
@@ -403,142 +518,12 @@ function InputField({
       <input
         type="text"
         name={name}
+        value={value}
         placeholder={placeHolder}
+        onChange={(e) => onChange(name, e.target.value)}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
         required
       />
     </div>
   );
 }
-
-/* "use client";
-
-import { useTransition } from "react";
-import { saveStore } from "@/components/platform/stores/actions";
-import Link from "next/link";
-import { ArrowLeft } from "react-feather";
-
-export default function StoreForm({ store }: { store?: any }) {
-  const [pending, startTransition] = useTransition();
-
-  const isEdit = !!store;
-
-  return (
-    <form
-      action={(formData) =>
-        startTransition(() => saveStore(store?.id, formData))
-      }
-      className="bg-white p-6 rounded shadow  space-y-4"
-    >
-      <div className="page-header border-b-2 pb-2">
-        <div className="add-item d-flex">
-          <div className="page-title">
-            <h4>{isEdit ? "Edit Store" : "Create Store"}</h4>
-            <h6>Manage Store Details</h6>
-          </div>
-        </div>
-        <ul className="table-top-head">
-          <li>
-            <div className="page-btn">
-              <Link href="/platform/stores" className="btn btn-secondary">
-                <ArrowLeft className="me-2" />
-                Back to Product
-              </Link>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <label className="form-label">
-          Name<span className="text-danger ms-1">*</span>
-        </label>
-        <input
-          name="name"
-          defaultValue={store?.name}
-          placeholder="Store name"
-          className="input w-full form-control"
-          required
-        />
-      </div>
-      <div>
-        <label className="form-label">
-          Store-Slug<span className="text-danger ms-1">*</span>
-        </label>
-
-        <input
-          name="slug"
-          defaultValue={store?.slug}
-          placeholder="store-slug"
-          className="input w-full form-control"
-          required
-        />
-      </div>
-      <div>
-        <label className="form-label">
-          Status<span className="text-danger ms-1">*</span>
-        </label>
-
-        <select
-          name="status"
-          defaultValue={store?.status ?? "active"}
-          className="input w-full form-control"
-        >
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-        </select>
-      </div>
-
-      {!isEdit && (
-        <>
-          <hr />
-          <h3 className="font-semibold text-sm">Store Admin</h3>
-          <div>
-            <label className="form-label">
-              Name<span className="text-danger ms-1">*</span>
-            </label>
-
-            <input
-              name="adminName"
-              placeholder="Admin Name"
-              className="input w-full form-control"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="form-label">
-              Email<span className="text-danger ms-1">*</span>
-            </label>
-
-            <input
-              name="adminEmail"
-              type="email"
-              placeholder="Admin Email"
-              className="input w-full form-control"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="form-label">
-              Password<span className="text-danger ms-1">*</span>
-            </label>
-
-            <input
-              name="adminPassword"
-              type="password"
-              placeholder="Temporary Password"
-              className="input w-full form-control"
-              required
-            />
-          </div>
-        </>
-      )}
-
-      <button disabled={pending} className="btn btn-primary w-full">
-        {pending ? "Saving..." : "Save Store"}
-      </button>
-    </form>
-  );
-}
- */
