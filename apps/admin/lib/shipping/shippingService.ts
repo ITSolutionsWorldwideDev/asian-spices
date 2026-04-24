@@ -14,10 +14,20 @@ export async function createShipmentForOrder(
 
   const shipment = await provider.createShipment({
     orderId: order.id,
-    to: order.shippingAddress,
-    from: order.storeAddress,
-    parcel: order.items,
+    to: {
+      city: order.customer_city,
+      postalCode: order.customer_postcode,
+    },
+    from: order.store_address, // adjust
+    parcel: order.shippingInput, // from UI
   });
+
+  // const shipment = await provider.createShipment({
+  //   orderId: order.id,
+  //   to: order.shippingAddress,
+  //   from: order.storeAddress,
+  //   parcel: order.items,
+  // });
 
   if (!shipment?.externalId) {
     throw new Error("Shipment creation failed: missing externalId");

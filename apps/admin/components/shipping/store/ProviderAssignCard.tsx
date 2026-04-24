@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { PROVIDER_CONFIGS } from "@/lib/shipping/providerConfigs";
+import Link from "next/link";
 
 export default function ProviderAssignCard({
   storeId,
@@ -73,7 +74,8 @@ export default function ProviderAssignCard({
       {/* ✅ Dynamic credentials */}
 
       {enabled && (
-        <>
+        <div className="space-y-3">
+          
           <label>
             <input
               type="checkbox"
@@ -101,7 +103,7 @@ export default function ProviderAssignCard({
               ))}
             </div>
           )}
-        </>
+        </div>
       )}
 
       <button

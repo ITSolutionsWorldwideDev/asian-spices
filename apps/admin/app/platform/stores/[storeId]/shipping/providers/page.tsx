@@ -1,23 +1,20 @@
-// apps/admin/app/platform/stores/[storeId]/shipping/page.tsx
+// apps/admin/app/platform/stores/[storeId]/shipping/providers/page.tsx
 
-// import { pool } from "@acme/db";
-// import { requirePlatformAdmin } from "@/lib/auth/guards";
-// import ShippingTabs from "@/components/shipping/store/ShippingTabs";
-
-import { redirect } from "next/navigation";
+import { pool } from "@acme/db";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
+import StoreShippingClient from "@/components/shipping/store/StoreShippingClient";
 
 export default async function StoreShippingPage({
   params,
 }: {
   params: Promise<{ storeId: string }>;
 }) {
-  // await requirePlatformAdmin();
+  await requirePlatformAdmin();
 
   const { storeId } = await params;
-  redirect(`/platform/stores/${storeId}/shipping/providers`);
 
   // Get all providers
-  /* const { rows: providers } = await pool.query(`
+  const { rows: providers } = await pool.query(`
     SELECT id, name, slug, is_active
     FROM shipping_providers
     WHERE is_active = true
@@ -37,20 +34,12 @@ export default async function StoreShippingPage({
   return (
     <div className=" mx-auto">
       <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6">
-        
-        <ShippingTabs storeId={storeId}/>
-      </div>
-    </div>
-  ); */
-}
-
-
-/* 
-  
-  
-import StoreShippingClient from "@/components/shipping/store/StoreShippingClient";
-  <StoreShippingClient
+        <StoreShippingClient
           storeId={storeId}
           providers={providers}
           assignments={assignments}
-        /> */
+        />
+      </div>
+    </div>
+  );
+}

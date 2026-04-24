@@ -14,6 +14,8 @@ export default function StoreTabs({ storeId }: { storeId: string }) {
 
   const base = `/platform/stores/${storeId}`;
 
+  const isShipping = pathname.includes("/shipping");
+
   const tabs = [
     {
       label: "General",
@@ -30,10 +32,13 @@ export default function StoreTabs({ storeId }: { storeId: string }) {
     {
       label: "Shipping",
       icon: Truck,
-      href: `${base}/shipping`,
-      isActive: pathname.includes("shipping"),
+      // href: `${base}/shipping`,
+      href: `${base}/shipping/providers`,
+      isActive: isShipping,
+      // isActive: pathname.includes("shipping"),
     },
   ];
+
 
   const activeIndex = Math.max(
     tabs.findIndex((t) => t.isActive),

@@ -64,6 +64,11 @@ const PLATFORM_MENU = [
         icon: "truck",
         link: "/platform/shipping/providers",
       },
+      {
+        label: "Shipping Methods",
+        icon: "truck",
+        link: "/platform/shipping/methods",
+      },
 
       
     ],

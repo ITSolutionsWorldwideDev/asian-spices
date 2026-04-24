@@ -60,11 +60,26 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
 
   const [shippingStatus, setShippingStatus] = useState("");
+  const [provider, setProvider] = useState("cheapcargo");
+
+  const [methods, setMethods] = useState([]);
+  const [shippingMethodId, setShippingMethodId] = useState("");
 
   useEffect(() => {
     if (order?.fulfillment_status) {
       setShippingStatus(order.fulfillment_status);
     }
+  }, [order]);
+
+  useEffect(() => {
+    const fetchMethods = async () => {
+      const res = await fetch(`/api/store/shipping-methods`);
+
+      const data = await res.json();
+      setMethods(data.methods);
+    };
+
+    if (order) fetchMethods();
   }, [order]);
 
   const [updating, setUpdating] = useState(false);
@@ -105,54 +120,6 @@ export default function OrderDetailPage() {
     return <div className="p-10 text-center text-red-500">Order not found</div>;
 
   const total = Number(order.total_amount);
-
-  const handleShippingUpdate = async () => {
-    try {
-      setUpdating(true);
-
-      const res = await fetch(`/api/orders/${orderId}/shipping`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: shippingStatus }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error);
-
-      showToast("success", "Shipping status updated");
-    } catch (err: any) {
-      showToast("error", err.message);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDecision = async (action: "approve" | "reject") => {
-    try {
-      setLoading(true);
-
-      const res = await fetch(`/api/orders/${orderId}/decision`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error);
-
-      showToast("success", `Order ${action}d successfully`);
-
-      window.location.reload();
-    } catch (err: any) {
-      showToast("error", err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateQty = (itemId: string, value: string) => {
     if (!order) return;
@@ -221,26 +188,50 @@ export default function OrderDetailPage() {
 
   const handleShipOrder = async () => {
     try {
-      
       setShippingLoading(true);
 
-      const res = await fetch(`/api/orders/${orderId}/ship`, {
+      // const res = await fetch("/api/shipping/create-shipment", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     orderId,
+      //     providerSlug: "cheapcargo", // 🔥 make dynamic later
+      //     // storeId: "CURRENT_STORE_ID", // 🔥 pass real tenant/store
+      //     shipmentInput: {
+      //       weight: shipping.weight,
+      //       length: shipping.length,
+      //       width: shipping.width,
+      //       height: shipping.height,
+      //       boxes: shipping.boxes,
+      //     },
+      //   }),
+      // });
+
+      const res = await fetch("/api/shipping/create-shipment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(shipping),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          shippingMethodId, // ✅ IMPORTANT
+          parcel: shipping,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to generate label");
+      const data = await res.json();
 
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (!res.ok) throw new Error(data.error);
 
-      // open in new tab
-      window.open(url);
+      if (data.label?.url) {
+        window.open(data.label.url);
+      }
 
       showToast("success", "Shipment created");
 
-      // window.location.reload();
+      window.location.reload();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
@@ -318,27 +309,6 @@ export default function OrderDetailPage() {
             <p className="text-sm capitalize mb-2">
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
-
-            {/* <select
-              value={shippingStatus}
-              onChange={(e) => setShippingStatus(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm"
-            >
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="out_for_delivery">Out for Delivery</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            
-            <button
-              onClick={handleShippingUpdate}
-              disabled={updating}
-              className="mt-4 w-full py-2 bg-primary text-white text-sm rounded hover:bg-primary/90 transition disabled:opacity-50"
-            >
-              {updating ? "Updating..." : "Update Shipping Status"}
-            </button> */}
 
             <button
               onClick={() => handleAction("reject")}
@@ -444,19 +414,6 @@ export default function OrderDetailPage() {
                             )}
                           </div>
                         </td>
-
-                        {/* <td className="p-4 text-center">
-                        <input
-                          type="number"
-                          min={0}
-                          max={item.quantity}
-                          value={item.fulfilled_quantity}
-                          onChange={(e) =>
-                            updateQty(item.order_item_id, e.target.value)
-                          }
-                          className="w-20 text-center border rounded"
-                        />
-                      </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -575,6 +532,29 @@ export default function OrderDetailPage() {
               />
             </div>
 
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="input w-full mb-3"
+            >
+              <option value="cheapcargo">CheapCargo</option>
+              <option value="dhl">DHL</option>
+            </select>
+
+            <select
+              value={shippingMethodId}
+              onChange={(e) => setShippingMethodId(e.target.value)}
+              className="input w-full"
+            >
+              <option value="">Select Shipping Method</option>
+
+              {methods.map((m: any) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+
             <button
               onClick={handleShipOrder}
               disabled={shippingLoading}
@@ -605,8 +585,122 @@ export default function OrderDetailPage() {
   );
 }
 
-{
-  /* <div className="card bg-white border rounded-lg shadow-sm p-5">
+/* 
+
+
+
+  const handleShippingUpdate = async () => {
+    try {
+      setUpdating(true);
+
+      const res = await fetch(`/api/orders/${orderId}/shipping`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: shippingStatus }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      showToast("success", "Shipping status updated");
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDecision = async (action: "approve" | "reject") => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/orders/${orderId}/decision`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      showToast("success", `Order ${action}d successfully`);
+
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
+  const handleShipOrder = async () => {
+    try {
+      setShippingLoading(true);
+
+      const res = await fetch(`/api/orders/${orderId}/ship`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(shipping),
+      });
+
+      if (!res.ok) throw new Error("Failed to generate label");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // open in new tab
+      window.open(url);
+
+      showToast("success", "Shipment created");
+
+      // window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+*/
+/* <td className="p-4 text-center">
+                        <input
+                          type="number"
+                          min={0}
+                          max={item.quantity}
+                          value={item.fulfilled_quantity}
+                          onChange={(e) =>
+                            updateQty(item.order_item_id, e.target.value)
+                          }
+                          className="w-20 text-center border rounded"
+                        />
+                      </td> */
+/* <select
+              value={shippingStatus}
+              onChange={(e) => setShippingStatus(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-sm"
+            >
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="out_for_delivery">Out for Delivery</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            
+            <button
+              onClick={handleShippingUpdate}
+              disabled={updating}
+              className="mt-4 w-full py-2 bg-primary text-white text-sm rounded hover:bg-primary/90 transition disabled:opacity-50"
+            >
+              {updating ? "Updating..." : "Update Shipping Status"}
+            </button> */
+
+/* <div className="card bg-white border rounded-lg shadow-sm p-5">
             <div className="flex items-center gap-2 mb-4 text-gray-800 border-b pb-2">
               <Truck size={18} />
               <h4 className="font-bold  pt-2">Fulfillment</h4>
@@ -618,4 +712,3 @@ export default function OrderDetailPage() {
               Update Shipping Status
             </button>
           </div> */
-}

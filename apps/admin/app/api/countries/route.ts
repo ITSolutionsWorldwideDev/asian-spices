@@ -1,17 +1,19 @@
 // apps/admin/app/api/countries/route.ts
+
 import { NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
 export async function GET() {
   try {
     const result = await pool.query(
-      `SELECT country_id as id, country_name as  name, country_code as iso2 FROM countries 
-       ORDER BY name ASC`,
+      `SELECT country_id as id, country_name as  name, country_code as iso2, currency_code
+       FROM countries
+       ORDER BY country_name ASC`,
     );
 
     if (!result.rows.length) {
       return NextResponse.json(
-        { error: "Category not found" },
+        { error: "Country not found" },
         { status: 404 },
       );
     }

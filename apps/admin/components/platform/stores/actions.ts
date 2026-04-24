@@ -162,7 +162,7 @@ export async function saveStore(
     adminPassword,
     kvkNumber,
     companyName,
-    cahamberOfCommerceNumber,
+    chamberOfCommerceNumber,
     country,
     street,
     houseNumber,
@@ -223,7 +223,7 @@ export async function saveStore(
         [
           kvkNumber,
           companyName,
-          cahamberOfCommerceNumber,
+          chamberOfCommerceNumber,
           country,
           street,
           houseNumber,
@@ -298,8 +298,18 @@ export async function saveStore(
 
     revalidatePath("/platform/stores");
     revalidatePath(`/platform/stores/${finalStoreId}`);
-  } catch (err) {
+
+    return {
+      success: true,
+      storeId: finalStoreId,
+      message: storeId ? "Store updated" : "Store created",
+    };
+  } catch (err: any) {
     await client.query("ROLLBACK");
+    return {
+      success: false,
+      error: err.message || "Failed to save store",
+    };
     throw err;
   } finally {
     client.release();
