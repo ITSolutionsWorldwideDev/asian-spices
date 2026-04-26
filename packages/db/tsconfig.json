@@ -1,3 +1,4 @@
+// packages/db/tsconfig.json
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
@@ -7,5 +8,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts"]
+  // "include": ["src"]
 }

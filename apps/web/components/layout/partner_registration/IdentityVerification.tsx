@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
 
 const banks = [
@@ -13,15 +13,6 @@ const banks = [
   { name: "ASN Bank", issuer: "ASNBNL21" },
 ];
 
-// type Props = {
-//   activeStep: number;
-//   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-//   formData: Record<string, any>;
-//   setFormData: React.Dispatch<React.SetStateAction<any>>;
-//   completedSteps: number[];
-//   setCompletedSteps: React.Dispatch<React.SetStateAction<number[]>>;
-// };
-
 export default function IdentityVerification({
   activeStep,
   setActiveStep,
@@ -30,11 +21,125 @@ export default function IdentityVerification({
   completedSteps,
   setFormData,
 }: any) {
-  // const [selectedBank, setSelectedBank] = useState<string | null>(
-  //   formData.selected_bank || null,
-  // );
-
   const selectedBank = formData.selected_bank;
+
+  // 🔥 NEW STATE MACHINE
+  const [verificationState, setVerificationState] = useState<
+    "idle" | "pending" | "success" | "failed"
+  >("idle");
+
+  const [loading, setLoading] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  /**
+   * STEP 1: START IDIN
+   */
+  const handleIDIN = async () => {
+    if (!selectedBank) {
+      alert("Please select a bank");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setVerificationState("pending");
+
+      localStorage.setItem(
+        "partner_registration",
+        JSON.stringify({ formData, activeStep, completedSteps }),
+      );
+
+      // 1️⃣ create tenant
+      const tenant_res = await fetch("/api/adyen/tenants/create", {
+        method: "POST",
+        body: JSON.stringify({
+          name: formData.store_name,
+          email: formData.email,
+        }),
+      });
+
+      const tenant = await tenant_res.json();
+      setTenantId(tenant.id);
+
+      // 2️⃣ start IDIN
+      const res = await fetch("/api/partner-registration/idin/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bank: selectedBank,
+          tenantId: tenant.id,
+        }),
+      });
+
+      const data = await res.json();
+
+      // store for recovery
+      localStorage.setItem(
+        "idin_transaction",
+        JSON.stringify({
+          tenantId: tenant.id,
+          transactionId: data.transactionId,
+        }),
+      );
+
+      // 🚀 open bank in NEW TAB (best UX)
+      window.open(data.redirectUrl, "_blank");
+
+      // start polling
+      startPolling(tenant.id);
+    } catch (err) {
+      console.error(err);
+      setVerificationState("failed");
+      setLoading(false);
+      alert("Failed to start verification");
+    }
+  };
+
+  /**
+   * STEP 2: POLLING (DB state via webhook)
+   */
+  const startPolling = (tenantId: string) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/partner-registration/idin/status?tenantId=${tenantId}`,
+        );
+        const data = await res.json();
+
+        if (data.status === "success") {
+          clearInterval(intervalRef.current!);
+          setVerificationState("success");
+          setLoading(false);
+
+          setCompletedSteps((prev: number[]) => [
+            ...new Set([...prev, activeStep]),
+          ]);
+
+          setActiveStep(activeStep + 1);
+        }
+
+        if (data.status === "failed") {
+          clearInterval(intervalRef.current!);
+          setVerificationState("failed");
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("poll error", err);
+      }
+    }, 3000);
+  };
+
+  /**
+   * CLEANUP
+   */
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   // const handleSubmit = async () => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -73,45 +178,6 @@ export default function IdentityVerification({
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong. Please try again.");
-    }
-  };
-
-  const handleIDIN = async () => {
-    if (!selectedBank) {
-      alert("Please select a bank");
-      return;
-    }
-
-    try {
-      // ✅ persist form + step BEFORE redirect
-      localStorage.setItem(
-        "partner_registration",
-        JSON.stringify({
-          formData,
-          activeStep,
-          completedSteps,
-        }),
-      );
-
-      const res = await fetch("/api/partner-registration/idin/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          bank: selectedBank,
-          formData,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl; // 🔥 redirect to bank
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to start verification");
     }
   };
 
@@ -251,6 +317,19 @@ export default function IdentityVerification({
   );
 }
 
+// type Props = {
+//   activeStep: number;
+//   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+//   formData: Record<string, any>;
+//   setFormData: React.Dispatch<React.SetStateAction<any>>;
+//   completedSteps: number[];
+//   setCompletedSteps: React.Dispatch<React.SetStateAction<number[]>>;
+// };
+
+// const [selectedBank, setSelectedBank] = useState<string | null>(
+//   formData.selected_bank || null,
+// );
+
 // const banks = [
 //   "ABN AMRO",
 //   "ING",
@@ -262,8 +341,59 @@ export default function IdentityVerification({
 //   "Knab",
 // ];
 
-{
-  /* <button
+/* const handleIDIN = async () => {
+    if (!selectedBank) {
+      alert("Please select a bank");
+      return;
+    }
+
+    try {
+      // ✅ persist form + step BEFORE redirect
+      localStorage.setItem(
+        "partner_registration",
+        JSON.stringify({
+          formData,
+          activeStep,
+          completedSteps,
+        }),
+      );
+
+      const tenant_res = await fetch("/api/adyen/tenants/create", {
+        method: "POST",
+        body: JSON.stringify({
+          name: formData.store_name,
+          email: formData.email,
+        }),
+      });
+
+      const tenant = await tenant_res.json();
+
+      console.log("tenant adat === ", tenant);
+
+      const res = await fetch("/api/partner-registration/idin/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bank: selectedBank,
+          tenantId: tenant.id,
+          // formData,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl; // 🔥 redirect to bank
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start verification");
+    }
+  }; */
+
+/* <button
             disabled={!formData.selected_bank}
             className={`w-full py-3 rounded-lg text-white font-medium transition ${
               selectedBank
@@ -273,7 +403,7 @@ export default function IdentityVerification({
           >
             🛡 Verify with iDIN
           </button> */
-}
+
 /* const handleSubmit = async () => {
     setActiveStep(activeStep + 1);
 
