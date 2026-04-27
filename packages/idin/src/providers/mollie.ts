@@ -1,19 +1,30 @@
 // packages/idin/src/providers/mollie.ts
 
 import mollieClient from "@mollie/api-client";
+import createMollieClient from "@mollie/api-client";
 import {
   IDINStartInput,
   IDINStartResponse,
   IDINVerifyResponse,
 } from "../types";
 
-const mollie = mollieClient({
-  apiKey: process.env.MOLLIE_API_KEY!,
-});
+// const mollie = mollieClient({
+//   apiKey: process.env.MOLLIE_API_KEY!,
+// });
 
 /**
  * Start iDIN session (Mollie)
  */
+
+function getMollie() {
+  const apiKey = process.env.MOLLIE_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("MOLLIE_API_KEY is missing");
+  }
+
+  return createMollieClient({ apiKey });
+}
 
 export async function startMollieIDIN(
   input: IDINStartInput,
@@ -25,6 +36,8 @@ export async function startMollieIDIN(
   //     "webhookUrl === ",
   //     `${process.env.NEXT_PUBLIC_SITE_URL}/api/partner-registration/idin/webhook`,
   //   );
+
+  const mollie = getMollie();
 
   const payment = (await mollie.payments.create({
     amount: {
@@ -56,6 +69,8 @@ export async function startMollieIDIN(
 export async function verifyMollieIDIN(
   transactionId: string,
 ): Promise<IDINVerifyResponse> {
+  const mollie = getMollie();
+
   const payment = (await mollie.payments.get(transactionId)) as any;
 
   if (payment.status === "paid") {
