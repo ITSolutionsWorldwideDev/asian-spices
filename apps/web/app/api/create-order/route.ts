@@ -108,26 +108,6 @@ export async function POST(req: NextRequest) {
       throw new Error("No store can fulfill this order");
     }
 
-    // 6️⃣ Create Order
-    // const orderResult = await client.query(
-    //   `
-    //   INSERT INTO store_orders
-    //   (order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-    //   VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-    //   RETURNING id
-    //   `,
-    //   [
-    //     `ORD-${Date.now()}`,
-    //     customer_id,
-    //     "pending",
-    //     pricing.subtotal,
-    //     pricing.discount,
-    //     pricing.shipping,
-    //     pricing.total,
-    //     "pending",
-    //   ],
-    // );
-
     const orderResult = await client.query(
       `INSERT INTO store_orders
         (store_id, order_number, customer_id, customer_email, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
@@ -165,21 +145,6 @@ export async function POST(req: NextRequest) {
         [order_id, item.id, item.quantity, Number(product.price)],
       );
     }
-    // for (const item of cartItems) {
-    //   await client.query(
-    //     `
-    //     INSERT INTO store_order_items
-    //     (order_id, product_id, quantity, price)
-    //     VALUES ($1,$2,$3,$4)
-    //     `,
-    //     [
-    //       order_id,
-    //       item.id,
-    //       item.quantity,
-    //       Number(item.price), // 🔥 FIX (string → number)
-    //     ],
-    //   );
-    // }
 
     await client.query("COMMIT");
 
@@ -236,3 +201,43 @@ const selectBestStore = (stores: any[], cartItems: any[], catalog: any[]) => {
 
   return bestStore;
 };
+
+
+
+
+    // 6️⃣ Create Order
+    // const orderResult = await client.query(
+    //   `
+    //   INSERT INTO store_orders
+    //   (order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
+    //   VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+    //   RETURNING id
+    //   `,
+    //   [
+    //     `ORD-${Date.now()}`,
+    //     customer_id,
+    //     "pending",
+    //     pricing.subtotal,
+    //     pricing.discount,
+    //     pricing.shipping,
+    //     pricing.total,
+    //     "pending",
+    //   ],
+    // );
+
+    
+    // for (const item of cartItems) {
+    //   await client.query(
+    //     `
+    //     INSERT INTO store_order_items
+    //     (order_id, product_id, quantity, price)
+    //     VALUES ($1,$2,$3,$4)
+    //     `,
+    //     [
+    //       order_id,
+    //       item.id,
+    //       item.quantity,
+    //       Number(item.price), // 🔥 FIX (string → number)
+    //     ],
+    //   );
+    // }

@@ -10,8 +10,8 @@ const page = ({ item }: any) => {
       <div className="bg-black">
         <Nav />
       </div>
-      <ProductDesc />
-      <ProductTabs />
+      {/* <ProductDesc />
+      <ProductTabs /> */}
       {/* <div className="mt-10 p-5">
         <h1 className="text-black font-bold">You May Also Like</h1>
       </div> */}

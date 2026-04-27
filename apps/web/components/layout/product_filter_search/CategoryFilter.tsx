@@ -1,3 +1,5 @@
+// apps/web/components/layout/product_filter_search/CategoryFilter.tsx
+
 "use client";
 import { usePathname } from "next/navigation";
 import { use, useEffect } from "react";
@@ -45,35 +47,6 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
   const toggleMobile = () => {
     setIsMobileOpen((prev) => !prev);
   };
-
-  // const toggleExpand = (name: string) => {
-  //   setExpandedCategories((prev) =>
-  //     prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name],
-  //   );
-  // };
-
-  // const firstItem = data && data.length > 0 ? data[0] : null;
-
-  // const firstCategory =
-  //   firstItem && typeof firstItem === "object"
-  //     ? firstItem.name
-  //     : typeof firstItem === "string"
-  //       ? firstItem
-  //       : "";
-
-  // const firstCategoryHasChildren =
-  //   firstItem &&
-  //   typeof firstItem === "object" &&
-  //   firstItem.children &&
-  //   firstItem.children.length > 0;
-
-  // const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  //   firstCategory ? [firstCategory] : [],
-  // );
-
-  // const [expandedCategories, setExpandedCategories] = useState<string[]>(
-  //   firstCategory && firstCategoryHasChildren ? [firstCategory] : [],
-  // );
 
   const handleCategoryToggle = (categoryId: string) => {
     toggleCategory(categoryId);
@@ -189,3 +162,35 @@ const CategoryFilter = ({ title1 }: CategoryDataProp) => {
 };
 
 export default CategoryFilter;
+
+
+
+
+  // const toggleExpand = (name: string) => {
+  //   setExpandedCategories((prev) =>
+  //     prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name],
+  //   );
+  // };
+
+  // const firstItem = data && data.length > 0 ? data[0] : null;
+
+  // const firstCategory =
+  //   firstItem && typeof firstItem === "object"
+  //     ? firstItem.name
+  //     : typeof firstItem === "string"
+  //       ? firstItem
+  //       : "";
+
+  // const firstCategoryHasChildren =
+  //   firstItem &&
+  //   typeof firstItem === "object" &&
+  //   firstItem.children &&
+  //   firstItem.children.length > 0;
+
+  // const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  //   firstCategory ? [firstCategory] : [],
+  // );
+
+  // const [expandedCategories, setExpandedCategories] = useState<string[]>(
+  //   firstCategory && firstCategoryHasChildren ? [firstCategory] : [],
+  // );

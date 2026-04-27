@@ -1,4 +1,120 @@
-"use client";
+// apps/web/app/spices/page.tsx
+
+import Footer from "@/components/ui/Footer";
+import HeadingDescription from "@/components/ui/HeadingDescription";
+import ProductPageHeader from "@/components/ui/ProductPageHeader";
+import RegisterOnApp from "@/components/ui/RegisterOnApp";
+import Reviews from "@/components/ui/Reviews";
+
+import {
+  getBrands,
+  getProducts,
+  getSubcategories,
+} from "@/lib/dbactions/products";
+
+import FilterSidebar from "@/components/layout/products/FilterSidebar";
+import InfiniteProducts from "@/components/layout/products/InfiniteProducts";
+import SortDropdown from "@/components/layout/product_filter_search/SortDropdown";
+
+interface PageProps {
+  searchParams: Promise<{
+    subcategories?: string;
+    brands?: string;
+    min?: string;
+    max?: string;
+    search?: string;
+    page?: string;
+  }>;
+}
+
+type Filters = {
+  category: string;
+  subcategories: string[];
+  brands: string[];
+  minPrice?: string;
+  maxPrice?: string;
+  search?: string;
+  page: number;
+};
+
+export default async function SpicesPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const cleanArray = (val?: string) => {
+    if (!val) return [];
+
+    return val
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v !== "" && v !== "null" && v !== "undefined");
+  };
+
+  const filters: Filters = {
+    category: "spices",
+    subcategories: cleanArray(params.subcategories),
+    brands: cleanArray(params.brands),
+    minPrice: params.min,
+    maxPrice: params.max,
+    search: params.search,
+    page: Number(params.page || 1),
+  };
+
+  const subcategories = await getSubcategories("spices");
+  const brands = await getBrands();
+
+  const products = await getProducts(filters);
+
+  return (
+    <div className="category-animation">
+      <ProductPageHeader
+        heading="Every Grain, A Burst of Taste"
+        text="Handpicked, pure spices"
+        videoLink="/spices/Comp 1_10.mp4"
+      />
+
+      <HeadingDescription
+        heading="Explore Our Collection"
+        text="Shop By All Spices"
+        description="Discover authentic spices"
+      />
+
+      <div className="grid lg:grid-cols-[260px_1fr] gap-6 container mx-auto p-5">
+        <FilterSidebar subcategories={subcategories} brands={brands} />
+
+        <div>
+          <SortDropdown />
+
+          <InfiniteProducts initialProducts={products} filters={filters} />
+        </div>
+      </div>
+
+      <RegisterOnApp />
+      <Reviews />
+      <Footer />
+    </div>
+  );
+}
+
+{
+  /* 
+  
+  
+// import ProductGrid from "@/components/layout/products/ProductGrid";
+
+  // const filters = {
+  //   category: "spices",
+  //   subcategories: params.subcategories?.split(",") || [],
+  //   brands: params.brands?.split(",") || [],
+  //   minPrice: params.min,
+  //   maxPrice: params.max,
+  //   search: params.search,
+  //   page: Number(params.page || 1),
+  // };
+  <ProductGrid products={products} /> */
+}
+/* "use client";
+
+import React from "react";
 import Footer from "@/components/ui/Footer";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 import ProductCard from "@/components/ui/ProductCard";
@@ -6,12 +122,57 @@ import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
-import React from "react";
-import { useEffect, useState } from "react";
-import { NextResponse } from "next/server";
-// import Testimonial from "react-testimonial";
 
 const SpicesPage = () => {
+
+  return (
+    <div className="category-animation">
+      <ProductPageHeader
+        heading="Every Grain, A Burst of Taste"
+        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
+        videoLink={"/spices/Comp 1_10.mp4"}
+      />
+
+      <HeadingDescription
+        heading="Explore Our Collection"
+        text="Shop By All Spices"
+        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
+      />
+      <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
+        <ProductFilterSearch
+          title1={"Spices Category"}
+          title2={"Stores"}
+        />
+        <ProductCard />
+      </div>
+
+      <RegisterOnApp />
+      <Reviews />
+      <Footer />
+    </div>
+  );
+};
+
+export default SpicesPage; */
+
+/* 
+
+
+  const storesData = [
+    "Bvr Spices",
+    "Neam Spices",
+    "Thika Masala",
+    "Too Spicy",
+    "Aron Masalas",
+    "Farm Special",
+    "Zafrani Mehal",
+    "Chili Fresh",
+    "Good Spices",
+  ];
+  
+          storesData={storesData}
+
+
   // const [product2s, setProducts] = useState([]);
   // const [loading, setLoading] = useState(true);
 
@@ -178,62 +339,18 @@ const SpicesPage = () => {
       weight: "5g",
     },
   ];
-  const title = "Spices";
-  // const categoriesData = [
-  //   { name: "All Spices" },
-  //   {
-  //     name: "Indian Spices",
-  //     children: ["Garam Masala", "Turmeric", "Cumin", "Cardamom"],
-  //   },
-  //   {
-  //     name: "Chinese Spices",
-  //     children: ["Star Anise", "Szechuan Pepper", "Five Spice"],
-  //   },
+  const title = "Spices"; */
+// const categoriesData = [
+//   { name: "All Spices" },
+//   {
+//     name: "Indian Spices",
+//     children: ["Garam Masala", "Turmeric", "Cumin", "Cardamom"],
+//   },
+//   {
+//     name: "Chinese Spices",
+//     children: ["Star Anise", "Szechuan Pepper", "Five Spice"],
+//   },
 
-  //   { name: "Thai Spices" }, // No children
-  //   { name: "Blend Spices" },
-  // ];
-
-  const storesData = [
-    "Bvr Spices",
-    "Neam Spices",
-    "Thika Masala",
-    "Too Spicy",
-    "Aron Masalas",
-    "Farm Special",
-    "Zafrani Mehal",
-    "Chili Fresh",
-    "Good Spices",
-  ];
-
-  return (
-    <div className="category-animation">
-      <ProductPageHeader
-        heading="Every Grain, A Burst of Taste"
-        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
-        videoLink={"/spices/Comp 1_10.mp4"}
-      />
-
-      <HeadingDescription
-        heading="Explore Our Collection"
-        text="Shop By All Spices"
-        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
-      />
-      <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
-        <ProductFilterSearch
-          // categoriesData={categoriesData}
-          storesData={storesData}
-          title1={"Spices Category"}
-          title2={"Stores"}
-        />
-        <ProductCard />
-      </div>
-
-      <RegisterOnApp />
-      <Reviews />
-      <Footer />
-    </div>
-  );
-};
-
-export default SpicesPage;
+//   { name: "Thai Spices" }, // No children
+//   { name: "Blend Spices" },
+// ];

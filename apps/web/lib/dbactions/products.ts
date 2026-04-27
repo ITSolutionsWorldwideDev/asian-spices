@@ -1,4 +1,221 @@
+// apps/web/lib/dbactions/products.ts
+
 import { pool } from "@acme/db";
+
+export const getProducts = async (filters: any) => {
+  const {
+    category,
+    subcategories,
+    brands,
+    minPrice,
+    maxPrice,
+    search,
+    sort = "newest",
+    page = 1,
+  } = filters;
+
+  let values: any[] = [];
+  let index = 0;
+
+  let query = `
+    SELECT 
+      p.*,
+      ${
+        search
+          ? "ts_rank(p.search_vector, plainto_tsquery($1)) AS rank"
+          : "0 as rank"
+      }
+    FROM store_products p
+    INNER JOIN store_categories c ON p.category_id = c.id
+    WHERE 1=1
+  `;
+
+  // ts_rank(p.search_vector, plainto_tsquery($1)) AS rank
+
+  if (search) {
+    values.push(search);
+    index = values.length;
+  }
+
+  // 🔹 Category
+  if (category) {
+    index++;
+    query += ` AND c.slug = $${index}`;
+    values.push(category);
+  }
+
+  // 🔹 Subcategories
+  if (subcategories?.length > 0) {
+    index++;
+    query += ` AND p.subcategory_id = ANY($${index}::uuid[])`;
+    values.push(subcategories);
+  }
+
+  // 🔹 Brands
+  if (brands?.length > 0) {
+    index++;
+    query += ` AND p.brand_id = ANY($${index}::uuid[])`;
+    values.push(brands);
+  }
+  // 🔹 Price (GLOBAL BASE PRICE or fallback logic later)
+  if (minPrice) {
+    index++;
+    query += ` AND p.price >= $${index}`;
+    values.push(minPrice);
+  }
+
+  if (maxPrice) {
+    index++;
+    query += ` AND p.price <= $${index}`;
+    values.push(maxPrice);
+  }
+  if (search) {
+    index++;
+    query += ` AND p.search_vector @@ plainto_tsquery($${index})`;
+    values.push(search);
+  }
+
+  // 🔥 Sorting
+  switch (sort) {
+    case "price_asc":
+      query += ` ORDER BY p.price ASC`;
+      break;
+
+    case "price_desc":
+      query += ` ORDER BY p.price DESC`;
+      break;
+
+    case "popular":
+      query += ` ORDER BY p.created_at DESC`; // later replace with sales
+      break;
+
+    case "relevance":
+      query += ` ORDER BY rank DESC`;
+      break;
+
+    default:
+      query += ` ORDER BY p.created_at DESC`;
+  }
+
+  // 🔥 Pagination
+  const limit = 12;
+  const offset = (page - 1) * limit;
+
+  index++;
+  query += ` LIMIT $${index}`;
+  values.push(limit);
+
+  index++;
+  query += ` OFFSET $${index}`;
+  values.push(offset);
+
+  // console.log('query ==== ',query);
+  // console.log('values ==== ',values);
+
+  const result = await pool.query(query, values);
+
+  return result.rows;
+};
+
+export const getProductBySlug = async (slug: string) => {
+  const query = `
+    SELECT p.*, c.name as category_name
+    FROM store_products p
+    INNER JOIN store_categories c ON p.category_id = c.id
+    WHERE p.slug = $1
+    LIMIT 1
+  `;
+
+  // console.log("query ==== ", query);
+  // console.log("slug ==== ", slug);
+
+  const result = await pool.query(query, [slug]);
+
+  return {
+    ...result.rows[0],
+    images: result.rows[0]?.images || [], // fallback
+    highlights: result.rows[0]?.highlights || [],
+  };
+
+  // return result.rows[0] || null;
+};
+
+export const getRelatedProducts = async (category_id: string) => {
+  const query = `
+    SELECT *
+    FROM store_products
+    WHERE category_id = $1
+    ORDER BY created_at DESC
+    LIMIT 8
+  `;
+
+  const result = await pool.query(query, [category_id]);
+
+  return result.rows;
+};
+
+export const getSubcategories = async (category: string) => {
+  const query = `
+    SELECT 
+      sc.id,
+      sc.name,
+      COUNT(p.id) AS product_count
+    FROM store_subcategories sc
+    INNER JOIN store_categories c 
+      ON sc.category_id = c.id
+    LEFT JOIN store_products p 
+      ON p.subcategory_id = sc.id
+      AND p.status = 1
+    WHERE c.slug = $1
+    GROUP BY sc.id, sc.name
+    ORDER BY sc.name;
+  `;
+
+  const result = await pool.query(query, [category]);
+  return result.rows;
+};
+
+export const getBrands = async () => {
+  const query = `
+    SELECT 
+      b.brand_id,
+      b.name,
+      COUNT(p.id) AS product_count
+    FROM store_brands b
+    LEFT JOIN store_products p 
+      ON p.brand_id = b.brand_id
+      AND p.status = 1
+    GROUP BY b.brand_id, b.name
+    ORDER BY b.name;
+  `;
+
+  const result = await pool.query(query);
+  return result.rows;
+};
+
+/* 
+
+
+    // 🔹 Subcategories
+  if (subcategories?.length) {
+    index++;
+    query += ` AND p.subcategory_id = ANY($${index})`;
+    values.push(subcategories);
+  }
+
+  // 🔹 Brands
+  if (brands?.length) {
+    index++;
+    query += ` AND p.brand_id = ANY($${index})`;
+    values.push(brands);
+  }
+
+
+  // 🔥 Full text search (correct position fix)
+  // if (search) {
+  //   index++;
+  //   query += ` AND p.search_vector @@ plainto_tsquery($1)`;
+  // }
 
 const getProducts = async (category: string, categoryParam: string[] = []) => {
   try {
@@ -26,3 +243,4 @@ const getProducts = async (category: string, categoryParam: string[] = []) => {
 };
 
 export { getProducts };
+ */

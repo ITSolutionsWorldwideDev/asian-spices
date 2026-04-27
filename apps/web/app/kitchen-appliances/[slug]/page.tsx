@@ -1,4 +1,31 @@
-import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
+// apps/web/app/kitchen-appliances/[slug]/page.tsx
+
+import SpicesProductDesc from "@/components/layout/productdescallpages/SpicesProductDesc";
+import { getProductBySlug, getRelatedProducts } from "@/lib/dbactions/products";
+
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+export default async function SpicesDetailPage({ params }: PageProps) {
+
+  const {slug} = await params;
+  const product = await getProductBySlug(slug);
+
+  if (!product) {
+    return <div className="p-10">Product not found</div>;
+  }
+
+  const relatedProducts = await getRelatedProducts(product.category_id);
+
+  return (
+    <SpicesProductDesc product={product} relatedProducts={relatedProducts} />
+  );
+}
+
+/* import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
 import ProductDesc from "@/components/ui/ProductDesc";
 import React from "react";
 import ProductCard from "@/components/ui/ProductCard";
@@ -69,3 +96,4 @@ const kitchenDetailPage = () => {
 };
 
 export default kitchenDetailPage;
+ */

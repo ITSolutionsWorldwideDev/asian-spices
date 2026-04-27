@@ -1,4 +1,4 @@
-import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
+/* import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
 import ProductDesc from "@/components/ui/ProductDesc";
 import React from "react";
 import ProductCard from "@/components/ui/ProductCard";
@@ -78,3 +78,4 @@ const FoodAndBeveragesProductDesc = () => {
 };
 
 export default FoodAndBeveragesProductDesc;
+ */

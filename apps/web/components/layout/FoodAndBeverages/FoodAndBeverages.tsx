@@ -194,13 +194,13 @@ const FoodAndBeverages = () => {
       />
 
       <div className="lg:grid lg:grid-cols-[auto_1fr] lg:gap-4 container mx-auto p-5 lg:items-start ">
-        <ProductFilterSearch
+        {/* <ProductFilterSearch
           // categoriesData={categoriesData}
           storesData={storesData}
           title1={"Kitchens Category"}
           title2={"Stores"}
         />
-        <ProductCard  />
+        <ProductCard  /> */}
       </div>
       <RegisterOnApp />
       <Reviews />

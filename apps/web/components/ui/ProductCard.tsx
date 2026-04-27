@@ -1,3 +1,5 @@
+// apps/web/components/ui/ProductCard.tsx
+
 "use client";
 
 import Image from "next/image";
@@ -22,6 +24,7 @@ type Product = {
   id: string;
   quantity: number;
   name: string;
+  slug: string;
   image: string;
   price: number;
   oldPrice: number | null;
@@ -36,10 +39,10 @@ type Product = {
 };
 
 interface ProductCardProps {
-  item: Product[];
+  products: Product[];
 }
 
-export default function ProductCard() {
+export default function ProductCard({ products }: ProductCardProps) {
   const { selectedCategories } = useCategoryFilterStore();
   const { symbol, selectedCurrency, rate } = useCurrencyStore();
 
@@ -48,29 +51,7 @@ export default function ProductCard() {
 
   const path = usePathname();
   const pathname = path.startsWith("/") ? path.slice(1) : path;
-
-  const [productData, setProductData] = useState<Product[]>([]);
   const [cartBtn, setCartBtn] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProductsData = async () => {
-      try {
-        let url = `/api/products?path=${pathname}`;
-        if (selectedCategories.length > 0) {
-          const query = selectedCategories
-            .map((cat) => `categories=${encodeURIComponent(cat)}`)
-            .join("&");
-          url += `&${query}`;
-        }
-        const res = await fetch(url);
-        const data = await res.json();
-        setProductData(data.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-    fetchProductsData();
-  }, [selectedCategories, pathname]);
 
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
 
@@ -86,7 +67,8 @@ export default function ProductCard() {
 
   const [showAll, setShowAll] = useState(false);
 
-  const visibleProducts = showAll ? productData : productData.slice(0, 8);
+  // const visibleProducts = showAll ? productData : productData.slice(0, 8);
+  const visibleProducts = showAll ? products : products.slice(0, 8);
 
   return (
     <div>
@@ -146,7 +128,7 @@ export default function ProductCard() {
             </div> */}
 
             {/* Title */}
-            <Link href={`${path}/${product.name}`}>
+            <Link href={`${path}/${product.slug}`}>
               <h3 className="font-semibold mt-1">
                 {product.name.split(" ").slice(0, 3).join(" ")}
               </h3>
@@ -209,7 +191,7 @@ export default function ProductCard() {
 
       {/* See More/See Less Button */}
 
-      {productData.length > 8 && (
+      {products.length > 8 && (
         <div className="flex justify-center mt-8 mb-10">
           <button
             onClick={() => setShowAll(!showAll)}
@@ -230,3 +212,29 @@ export default function ProductCard() {
     </div>
   );
 }
+
+/* 
+
+
+  // const [productData, setProductData] = useState<Product[]>([]);
+
+  // useEffect(() => {
+  //   const fetchProductsData = async () => {
+  //     try {
+  //       let url = `/api/products?path=${pathname}`;
+  //       if (selectedCategories.length > 0) {
+  //         const query = selectedCategories
+  //           .map((cat) => `categories=${encodeURIComponent(cat)}`)
+  //           .join("&");
+  //         url += `&${query}`;
+  //       }
+  //       const res = await fetch(url);
+  //       const data = await res.json();
+  //       setProductData(data.data);
+  //     } catch (error) {
+  //       console.error("Error fetching products:", error);
+  //     }
+  //   };
+  //   fetchProductsData();
+  // }, [selectedCategories, pathname]);
+*/

@@ -1,4 +1,4 @@
-import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
+/* import ProductTabs from "@/components/layout/productdescpage/ProductTabs";
 import ProductDesc from "@/components/ui/ProductDesc";
 import React from "react";
 import ProductCard from "@/components/ui/ProductCard";
@@ -67,7 +67,7 @@ const KitchenAppliancesProductDesc = () => {
       </div>
 
       <ProductDesc />
-      {/* <ProductTabs /> */}
+
       <div className="mt-10 p-5">
         <h1 className="text-black font-bold">You May Also Like</h1>
       </div>
@@ -78,3 +78,4 @@ const KitchenAppliancesProductDesc = () => {
 };
 
 export default KitchenAppliancesProductDesc;
+ */

@@ -157,7 +157,7 @@ export default function Premium_Spice_Collection() {
       </div>
 
      
-          <ProductCard  />
+          {/* <ProductCard  /> */}
       
     </div>
   );
