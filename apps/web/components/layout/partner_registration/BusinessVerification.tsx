@@ -15,6 +15,11 @@ export default function BusinessVerification({
   setActiveStep,
   setCompletedSteps,
 }: any) {
+  const [results, setResult] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
   const countries = useGlobalStore((s) => s.countries);
   const selectedCountry = useGlobalStore((s) => s.selectedCountry);
 
@@ -85,6 +90,41 @@ export default function BusinessVerification({
     }));
   };
 
+  const handleSearch = async () => {
+    if (!query) return;
+
+    setLoading(true);
+    setHasSearched(true);
+
+    try {
+      const res = await fetch(`/api/kvk?naam=${query}`);
+      const data = await res.json();
+
+      const rawResults = data.resultaten || [];
+
+      // ✅ remove duplicates by kvkNummer
+      const uniqueResults: any = Array.from(
+        new Map(rawResults.map((item: any) => [item.kvkNummer, item])).values(),
+      );
+
+      setResult(uniqueResults);
+
+      // setResult(data.resultaten || []);
+    } catch (err) {
+      console.error("Search failed", err);
+      setResult([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // ✅ stops form submit
+      handleSearch();
+    }
+  };
+
   return (
     <div id="business-verification">
       <div className="bg-gray-100 flex items-start justify-center pt-10 px-4 sm:px-6 lg:px-10">
@@ -106,28 +146,45 @@ export default function BusinessVerification({
             {/* KVK Number */}Chamber of Commerce Number.
           </label>
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <input
-              onKeyDown={(e) => {
-                const allowedKeys = [
-                  "Backspace",
-                  "Delete",
-                  "ArrowLeft",
-                  "ArrowRight",
-                  "Tab",
-                ];
-              }}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleChange("kvk_number", value);
-              }}
-              value={formData.kvk_number || ""}
-              placeholder="12345678"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              className="flex-1 border border-gray-300 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm "
-              required
-            />
+            <div className="flex-1">
+              <input
+                // onKeyDown={(e) => {
+                //   const allowedKeys = [
+                //     "Backspace",
+                //     "Delete",
+                //     "ArrowLeft",
+                //     "ArrowRight",
+                //     "Tab",
+                //   ];
+                // }}
+                // onKeyDown={handleKeyDown}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  handleChange("kvk_number", value);
+                  setQuery(value);
+                }}
+                value={formData.kvk_number || ""}
+                placeholder="12345678"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className=" w-full border border-gray-300 rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm "
+                required
+              />
+              <p className="text-gray-500 text-xs sm:text-sm mb-3 pt-2">
+                e.g: 90004973,90004760,90001745,55505201{" "}
+              </p>
+            </div>
+            <div className="w-1/6">
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={loading}
+                className="bg-orange-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+              >
+                {loading ? "Searching..." : "Search"}
+              </button>
+            </div>
           </div>
           {/* ✅ Error */}
           {errors.kvk_number && (
@@ -135,8 +192,66 @@ export default function BusinessVerification({
               field is required Please Enter a valid input
             </p>
           )}
+
+          {loading && (
+            <p className="text-sm text-gray-500 mb-4">Searching company...</p>
+          )}
+
+          {hasSearched && !loading && results.length === 0 && (
+            <p className="text-sm text-red-500 mb-4">
+              No companies found. Try a different KVK number.
+            </p>
+          )}
+
+          {!loading && results.length > 0 && (
+            <div className="mb-4">
+              <p className="font-semibold text-gray-800 mb-3">
+                Search Results:
+              </p>
+              <div className="flex flex-col gap-3">
+                {results.map((company: any, index: number) => (
+                  <button key={`${company.kvkNummer}-${index}`}>
+                    <div className="flex items-center gap-3">
+                      <Building2 size={22} className="text-gray-400 shrink-0" />
+                      <div>
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {company.naam}
+                        </p>
+
+                        <p className="text-gray-500 text-xs">
+                          KVK: {company.kvkNummer}
+                        </p>
+
+                        <p className="text-gray-500 text-xs">
+                          {company.adres?.binnenlandsAdres?.straatnaam},{" "}
+                          {company.adres?.binnenlandsAdres?.plaats}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* <div className="bg-orange-500 text-white rounded-full p-1.5">
+                      <ArrowRight size={16} />
+                    </div> */}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* {results.length > 0 && (
+            <div className="mb-4">
+              <p className="font-semibold text-gray-800 mb-3">
+                Search Results:
+              </p>
+              <div className="flex flex-col gap-3">
+                {results.map((company: any) => (
+                  <div key={company.kvkNummer}>{company}</div>
+                ))}
+              </div>
+            </div>
+          )} */}
 
       <div className=" bg-gray-100 flex justify-center py-10 px-4">
         <div className="w-full max-w-3xl">
@@ -372,3 +487,8 @@ function InputField({
   //   city: z.string().min(1, "City is required"),
   //   additional_address: z.string().optional(),
   // }); */
+{
+  /* Results */
+}
+{
+}
