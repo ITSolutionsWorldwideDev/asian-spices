@@ -1,11 +1,14 @@
 // apps/web/app/api/partner-registration/idin/callback/route.ts
 
+export const dynamic = "force-dynamic";
+
 import { verifyIDIN } from "@acme/idin";
 import {
   updateVerificationByReference,
   getVerificationByReference,
   updateTenantById,
 } from "@acme/db";
+
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -17,15 +20,17 @@ export async function GET(req: Request) {
 
     if (!ref && !transactionId) {
       return NextResponse.redirect(
-        new URL("/partner-registration/failed", req.url),
+        new URL("/partner-registration/idin/failed", req.url),
       );
     }
 
     let verification = ref ? await getVerificationByReference(ref) : null;
 
+    console.log('verification process completed === ',verification);
+
     if (!verification) {
       return NextResponse.redirect(
-        new URL("/partner-registration/failed", req.url),
+        new URL("/partner-registration/idin/failed", req.url),
       );
     }
 
@@ -33,6 +38,8 @@ export async function GET(req: Request) {
     const result = await verifyIDIN(
       transactionId || verification.merchant_reference,
     );
+
+    console.log('verify via Mollie result === ',result);
 
     if (result.status === "success") {
       await updateVerificationByReference(ref!, {
@@ -45,17 +52,17 @@ export async function GET(req: Request) {
       });
 
       return NextResponse.redirect(
-        new URL("/partner-registration/success", req.url),
+        new URL(`/partner-registration/success?ref=${ref}`, req.url),
       );
     }
 
     return NextResponse.redirect(
-      new URL("/partner-registration/failed", req.url),
+      new URL("/partner-registration/idin/failed", req.url),
     );
   } catch (err) {
     console.error(err);
     return NextResponse.redirect(
-      new URL("/partner-registration/failed", req.url),
+      new URL("/partner-registration/idin/failed", req.url),
     );
   }
 }
