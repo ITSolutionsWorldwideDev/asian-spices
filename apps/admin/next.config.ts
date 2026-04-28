@@ -7,7 +7,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "utfs.io",
-        pathname: "/f/**",
+        // pathname: "/f/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",
       },
     ],
   },

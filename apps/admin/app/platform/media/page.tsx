@@ -150,7 +150,8 @@ export default function MediaLibrary() {
                       >
                         {item.file_type.startsWith("image/") ? (
                           <Image
-                            src={getThumb(item.file_url, 200)}
+                            // src={getThumb(item.file_url, 200)}
+                            src={item.file_url}
                             alt={item.file_name}
                             width={200}
                             height={200}
