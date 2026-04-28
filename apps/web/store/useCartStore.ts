@@ -14,8 +14,6 @@ export interface CartItem {
   // weight: string;
 }
 
-
-
 interface CartState {
   cart: CartItem[];
 
@@ -41,7 +39,7 @@ export const useCartStore = create<CartState>()(
 
         if (existing) {
           updatedCart = get().cart.map((i) =>
-            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
           );
         } else {
           updatedCart = [...get().cart, { ...item, quantity: 1 }];
@@ -68,25 +66,49 @@ export const useCartStore = create<CartState>()(
       },
 
       /* ---------------- REMOVE ---------------- */
+
       removeFromCart: async (id, isLoggedIn) => {
+        // optimistic update
         set({
           cart: get().cart.filter((i) => i.id !== id),
         });
 
         if (!isLoggedIn) return;
 
-        await fetch("/api/cart", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product_id: id }),
-        });
+        try {
+          const res = await fetch("/api/cart", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_id: id }),
+          });
+
+          if (!res.ok) {
+            throw new Error("Delete failed");
+          }
+        } catch (err) {
+          console.error("Remove failed, reverting", err);
+
+          // ❗ rollback (important)
+          const res = await fetch("/api/cart");
+          const dbCart = await res.json();
+
+          set({
+            cart: dbCart.map((item: any) => ({
+              id: item.product_id,
+              title: item.title || "Product",
+              price: Number(item.price),
+              quantity: item.quantity,
+              image: item.image || "",
+            })),
+          });
+        }
       },
 
       /* ---------------- INCREASE ---------------- */
       increaseQty: async (id, isLoggedIn) => {
         set({
           cart: get().cart.map((i) =>
-            i.id === id ? { ...i, quantity: i.quantity + 1 } : i
+            i.id === id ? { ...i, quantity: i.quantity + 1 } : i,
           ),
         });
 
@@ -113,7 +135,7 @@ export const useCartStore = create<CartState>()(
 
         set({
           cart: get().cart.map((i) =>
-            i.id === id ? { ...i, quantity: i.quantity - 1 } : i
+            i.id === id ? { ...i, quantity: i.quantity - 1 } : i,
           ),
         });
 
@@ -135,14 +157,37 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "cart-storage",
-    }
-  )
+      version: 1,
+      migrate: (state: any): CartState => {
+        return {
+          cart: state?.cart || [],
+          addToCart: () => {},
+          removeFromCart: () => {},
+          increaseQty: () => {},
+          decreaseQty: () => {},
+          setCart: () => {},
+          clearCart: () => {},
+        };
+      },
+    },
+  ),
 );
+/* removeFromCart: async (id, isLoggedIn) => {
+        set({
+          cart: get().cart.filter((i) => i.id !== id),
+        });
 
+        if (!isLoggedIn) return;
+
+        await fetch("/api/cart", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: id }),
+        });
+      }, */
 // interface CartState {
 //   cart: CartItem[];
 //   addToCart: (item: Omit<CartItem, "quantity">) => void;
-
 
 //   setCart: (items: CartItem[]) => void;
 //   removeFromCart: (id: string) => void;
@@ -150,7 +195,6 @@ export const useCartStore = create<CartState>()(
 //   increaseQty: (id: string) => void;
 //   decreaseQty: (id: string) => void;
 // }
-
 
 /* export const useCartStore = create<CartState>()(
   persist(

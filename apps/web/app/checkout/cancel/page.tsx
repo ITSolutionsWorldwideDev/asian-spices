@@ -6,10 +6,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 interface Props {
-  searchParams: { orderId?: string };
+  searchParams: { orderId?: string; token?: string };
 }
 
 export default function Page({ searchParams }: Props) {
+  const token = searchParams?.token;
+
   return (
     <div>
       <div className="bg-black">
@@ -24,9 +26,13 @@ export default function Page({ searchParams }: Props) {
             </p>
           </Link>
 
-          <h1 className="text-2xl font-semibold mt-2">
-            Payment Cancelled
-          </h1>
+          {token && (
+            <p className="text-sm text-gray-500 mt-2">
+              Payment was cancelled on PayPal.
+            </p>
+          )}
+
+          <h1 className="text-2xl font-semibold mt-2">Payment Cancelled</h1>
         </div>
 
         <div className="bg-red-50 border p-6 rounded">

@@ -19,7 +19,7 @@ export const useCartSync = () => {
       try {
         /* ---------------- MERGE LOCAL → DB ---------------- */
 
-        if (cart.length > 0) {
+        /* if (cart.length > 0) {
           await fetch("/api/cart/merge", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -27,7 +27,7 @@ export const useCartSync = () => {
           });
 
           clearCart(); // 🧹 clear local
-        }
+        } */
 
         /* ---------------- FETCH DB CART ---------------- */
 

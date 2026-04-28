@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     // 4️⃣ Fetch catalog for nearby stores
     const catalogResult = await client.query(
       `
-      SELECT store_id, product_id, price, quantity
+      SELECT store_id, product_id, price, 9999 AS quantity
       FROM store_product_catalog
       WHERE product_id = ANY($1) AND store_id = ANY($2)
       `,
@@ -101,8 +101,14 @@ export async function POST(req: NextRequest) {
     );
     const catalog = catalogResult.rows;
 
+    console.log('nearestStores === ',nearestStores);
+    console.log('cartItems === ',cartItems);
+    console.log('catalog === ',catalog);
+
     // 5️⃣ Select best store (lowest price, available stock)
     const bestStore = selectBestStore(nearestStores, cartItems, catalog);
+
+    console.log('bestStore === ',bestStore);
 
     if (!bestStore) {
       throw new Error("No store can fulfill this order");

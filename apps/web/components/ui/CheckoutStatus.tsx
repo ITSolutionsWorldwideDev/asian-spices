@@ -81,17 +81,15 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   if (order.payment_status === "failed") {
     return (
       <div className="bg-red-50 border p-6 rounded">
-        <h2 className="text-red-700 text-xl font-bold">
-          ❌ Payment Failed
-        </h2>
+        <h2 className="text-red-700 text-xl font-bold">❌ Payment Failed</h2>
 
-      <OrderTimeline status={order.payment_status} />
+        <OrderTimeline status={order.payment_status} />
 
-      <RetryPaymentButton
-        orderId={order.id}
-        amount={order.total_amount}
-        email={order.customer_email || ""}
-      />
+        <RetryPaymentButton
+          orderId={order.id}
+          amount={order.total_amount}
+          email={order.customer_email || ""}
+        />
         {/* <p>Your payment was not completed.</p>
 
         <Link
@@ -107,14 +105,20 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   // default = pending
   return (
     <div className="bg-yellow-50 border p-6 rounded">
-      <h2 className="text-yellow-700 text-xl font-bold">
-        ⏳ Payment Pending
-      </h2>
+      <h2 className="text-yellow-700 text-xl font-bold">⏳ Payment Pending</h2>
 
       <p>
         We are waiting for confirmation from{" "}
-        <strong>Pay.nl</strong>.
+        <strong>
+          {order.payment_method === "paypal" ? "PayPal" : "Pay.nl"}
+        </strong>
+        .
       </p>
+
+      {/* <p>
+        We are waiting for confirmation from{" "}
+        <strong>Pay.nl</strong>.
+      </p> */}
 
       <p className="text-sm mt-2 text-gray-600">
         This page will update automatically.

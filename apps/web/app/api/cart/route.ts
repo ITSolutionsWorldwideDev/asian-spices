@@ -27,8 +27,25 @@ export async function GET() {
 
     if (!cartRes.rowCount) return NextResponse.json([]);
 
-    const items = await client.query(
+    /* const items = await client.query(
       `SELECT * FROM store_cart_items WHERE cart_id = $1`,
+      [cartRes.rows[0].id],
+    ); */
+
+    const items = await client.query(
+      `
+        SELECT 
+          sci.product_id,
+          sci.quantity,
+          p.name AS title,
+          p.price::numeric AS price,
+          md.file_url AS image
+        FROM store_cart_items sci
+        LEFT JOIN store_products p ON p.id = sci.product_id
+        LEFT JOIN store_product_images pi ON pi.product_id = p.id AND pi.is_primary = true
+        LEFT JOIN media md ON md.media_id = pi.url::int
+        WHERE sci.cart_id = $1
+      `,
       [cartRes.rows[0].id],
     );
 
@@ -58,14 +75,11 @@ export async function POST(req: Request) {
     FROM store_products 
     WHERE id = $1
     `,
-    [product_id]
+    [product_id],
   );
 
   if (!productRes.rowCount) {
-    return NextResponse.json(
-      { error: "Product not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
   const price = productRes.rows[0].price;
@@ -119,39 +133,47 @@ export async function DELETE(req: Request) {
 
   /* ---------------- FIND CUSTOMER ---------------- */
 
-  const customerRes = await pool.query(
+  /* const customerRes = await pool.query(
     `SELECT id FROM store_customers WHERE user_id = $1 LIMIT 1`,
-    [session.user.id]
+    [session.user.id],
   );
 
   if (!customerRes.rowCount) {
     return NextResponse.json({ success: true });
   }
 
-  const customerId = customerRes.rows[0].id;
+  const customerId = customerRes.rows[0].id; */
 
   /* ---------------- FIND CART ---------------- */
 
-  const cartRes = await pool.query(
-    `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,
-    [customerId]
-  );
+  const client = await pool.connect();
 
-  if (!cartRes.rowCount) {
-    return NextResponse.json({ success: true });
-  }
+  try {
+    const customerId = await getOrCreateCustomer(client, session.user);
 
-  const cartId = cartRes.rows[0].id;
+    const cartRes = await client.query(
+      `SELECT id FROM store_carts WHERE global_customer_id = $1 LIMIT 1`,
+      [customerId],
+    );
 
-  /* ---------------- DELETE ITEM ---------------- */
+    if (!cartRes.rowCount) {
+      return NextResponse.json({ success: true });
+    }
 
-  await pool.query(
-    `DELETE FROM store_cart_items 
+    const cartId = cartRes.rows[0].id;
+
+    /* ---------------- DELETE ITEM ---------------- */
+
+    await pool.query(
+      `DELETE FROM store_cart_items 
      WHERE cart_id = $1 AND product_id = $2`,
-    [cartId, product_id]
-  );
+      [cartId, product_id],
+    );
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } finally {
+    client.release();
+  }
 }
 
 async function getOrCreateCustomer(client: any, user: any) {

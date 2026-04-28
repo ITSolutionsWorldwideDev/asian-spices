@@ -15,7 +15,12 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
 
-  const subtotal = cart.reduce(
+  /* const subtotal = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  ); */
+
+  const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
