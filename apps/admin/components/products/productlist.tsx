@@ -89,79 +89,6 @@ export default function ProductListComponent() {
     }
   };
 
-  /* const columns = [
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      sorter: (a: any, b: any) => a.sku.localeCompare(b.sku),
-    },
-    {
-      title: "Product",
-      dataIndex: "name",
-      render: (text: string, record: any) => (
-        <div className="flex items-center">
-          <Link href="#" className="avatar avatar-md mr-2">
-            <img src={record.productImage} alt="product" />
-          </Link>
-          <Link href={`products/${record.id}`}>{text}</Link>
-        </div>
-      ),
-      sorter: (a: any, b: any) => a.product.localeCompare(b.product),
-    },
-    {
-      title: "Category",
-      dataIndex: "category",
-      sorter: (a: any, b: any) => a.category.localeCompare(b.category),
-    },
-    {
-      title: "Brand",
-      dataIndex: "brand",
-      sorter: (a: any, b: any) => a.brand.localeCompare(b.brand),
-    },
-    {
-      title: "Price",
-      dataIndex: "price",
-      sorter: (a: any, b: any) => a.price - b.price,
-    },
-    {
-      title: "Qty",
-      dataIndex: "quantity",
-      sorter: (a: any, b: any) => a.quantity - b.quantity,
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      render: (s: number) => (
-        <span className={`badge ${s ? "badge-success" : "badge-danger"}`}>
-          {s ? "Active" : "Inactive"}
-        </span>
-      ),
-    },
-    {
-      title: "Action",
-      dataIndex: "action",
-      render: (text: any, record: any) => (
-        <div className="flex gap-2">
-          <Link href={`products/${record.id}`} className="p-2">
-            <Eye size={16} />
-          </Link>
-          <Link href={`products/${record.id}/edit`} className="p-2">
-            <Edit size={16} />
-          </Link>
-          <button
-            onClick={() => {
-              setSelectedId(record.category_id);
-              setShowDeleteModal(true);
-            }}
-            className="p-2 text-red-500 hover:text-red-700"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-    },
-  ]; */
-
   const columns = [
   // {
   //   title: "SKU",
@@ -331,6 +258,82 @@ export default function ProductListComponent() {
     </>
   );
 }
+
+
+
+
+  /* const columns = [
+    {
+      title: "SKU",
+      dataIndex: "sku",
+      sorter: (a: any, b: any) => a.sku.localeCompare(b.sku),
+    },
+    {
+      title: "Product",
+      dataIndex: "name",
+      render: (text: string, record: any) => (
+        <div className="flex items-center">
+          <Link href="#" className="avatar avatar-md mr-2">
+            <img src={record.productImage} alt="product" />
+          </Link>
+          <Link href={`products/${record.id}`}>{text}</Link>
+        </div>
+      ),
+      sorter: (a: any, b: any) => a.product.localeCompare(b.product),
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      sorter: (a: any, b: any) => a.category.localeCompare(b.category),
+    },
+    {
+      title: "Brand",
+      dataIndex: "brand",
+      sorter: (a: any, b: any) => a.brand.localeCompare(b.brand),
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      sorter: (a: any, b: any) => a.price - b.price,
+    },
+    {
+      title: "Qty",
+      dataIndex: "quantity",
+      sorter: (a: any, b: any) => a.quantity - b.quantity,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (s: number) => (
+        <span className={`badge ${s ? "badge-success" : "badge-danger"}`}>
+          {s ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      render: (text: any, record: any) => (
+        <div className="flex gap-2">
+          <Link href={`products/${record.id}`} className="p-2">
+            <Eye size={16} />
+          </Link>
+          <Link href={`products/${record.id}/edit`} className="p-2">
+            <Edit size={16} />
+          </Link>
+          <button
+            onClick={() => {
+              setSelectedId(record.category_id);
+              setShowDeleteModal(true);
+            }}
+            className="p-2 text-red-500 hover:text-red-700"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+    },
+  ]; */
 
 {
   /* <div className="bg-white rounded-lg p-6 max-w-lg w-full">

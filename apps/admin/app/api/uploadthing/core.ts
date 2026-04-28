@@ -47,6 +47,8 @@ export const mediaRouter = {
 
       const fileUrl = file.ufsUrl ? file.ufsUrl : file.url;
 
+  return { ok: true };
+
       // 🔒 VALIDATION
       if (!fileUrl || !file.name) {
         throw new Error("Invalid file upload");

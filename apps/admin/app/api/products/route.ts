@@ -7,6 +7,90 @@ import { pool } from "@acme/db";
 /* ------------------ GET (List Products) ------------------ */
 
 export async function GET(req: NextRequest) {
+  await requirePlatformAdmin();
+
+  const { searchParams } = new URL(req.url);
+
+  const search = searchParams.get("search");
+  const category = searchParams.get("category");
+  const brand = searchParams.get("brand");
+  const status = searchParams.get("status");
+  const sort = searchParams.get("sort");
+
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  /* ---------------- FILTERS ---------------- */
+
+  if (search) {
+    values.push(`%${search}%`);
+    conditions.push(`(p.name ILIKE $${values.length} OR p.sku ILIKE $${values.length})`);
+  }
+
+  if (category) {
+    values.push(`%${category}%`);
+    conditions.push(`c.name ILIKE $${values.length}`);
+  }
+
+  if (brand) {
+    values.push(`%${brand}%`);
+    conditions.push(`b.name ILIKE $${values.length}`);
+  }
+
+  if (status !== null && status !== "") {
+    values.push(Number(status));
+    conditions.push(`p.status = $${values.length}`);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  /* ---------------- SORTING ---------------- */
+
+  let orderBy = `ORDER BY p.created_at DESC`;
+
+  if (sort === "price_asc") {
+    orderBy = `ORDER BY p.price ASC`;
+  } else if (sort === "price_desc") {
+    orderBy = `ORDER BY p.price DESC`;
+  } else if (sort === "newest") {
+    orderBy = `ORDER BY p.created_at DESC`;
+  }
+
+  /* ---------------- QUERY ---------------- */
+
+  const result = await pool.query(
+    `
+    SELECT 
+      p.*,
+      c.name AS category,
+      sc.name AS subcategory,
+      b.name AS brand,
+      pi.url AS primary_image,
+      (
+        SELECT price
+        FROM store_product_prices spp
+        WHERE spp.product_id = p.id
+          AND spp.customer_type = 'B2C'
+        ORDER BY min_quantity ASC
+        LIMIT 1
+      ) AS b2c_price
+    FROM store_products p
+    LEFT JOIN store_categories c ON c.id = p.category_id
+    LEFT JOIN store_subcategories sc ON sc.id = p.subcategory_id
+    LEFT JOIN store_brands b ON b.brand_id = p.brand_id
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id AND pi.is_primary = true
+    ${whereClause}
+    ${orderBy}
+    `,
+    values
+  );
+
+  return NextResponse.json({ items: result.rows });
+}
+
+/* export async function GET(req: NextRequest) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
   // const store = await getCurrentStoreAPI(req);
   
@@ -40,7 +124,7 @@ export async function GET(req: NextRequest) {
   );
 
   return NextResponse.json({ items: result.rows });
-}
+} */
 
 
 /* ------------------ POST (Create Product) ------------------ */
