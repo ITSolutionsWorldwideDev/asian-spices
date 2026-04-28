@@ -47,7 +47,7 @@ export default function WriteReviewForm({
     setMessage("");
 
     try {
-      const res = await fetch("/api/reviews", {
+      const res = await fetch("/api/products/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

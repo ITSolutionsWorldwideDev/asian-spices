@@ -11,7 +11,7 @@ export default function ReviewsSection({ productId }: { productId: string }) {
 
   const fetchReviews = async () => {
     const res = await fetch(
-      `/api/reviews?productId=${productId}&page=${page}`
+      `/api/products/reviews?productId=${productId}&page=${page}`
     );
     const json = await res.json();
 

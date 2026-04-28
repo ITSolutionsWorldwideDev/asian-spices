@@ -15,23 +15,77 @@ export const mediaRouter = {
       maxFileCount: 5,
     },
   })
-    .middleware(async () => {
-      // const session = await getServerSession(authOptions);
-        const session = await getServerSession(adminAuthOptions);
-      if (!session?.user?.id) throw new Error("Unauthorized");
+    .middleware(async ({ req }) => {
+      const isCallback = req.headers.get("x-uploadthing-hook");
+
+      // ✅ Allow UploadThing callback
+      if (isCallback) {
+        return { userId: "system" };
+      }
+
+      const session = await getServerSession(adminAuthOptions);
+
+      if (!session?.user?.id) {
+        throw new Error("Unauthorized");
+      }
 
       return { userId: session.user.id };
     })
+    // .middleware(async () => {
+    //   const session = await getServerSession(adminAuthOptions);
+
+    //   console.log("!session?.user?.id :", session?.user?.id);
+    //   if (!session?.user?.id) throw new Error("Unauthorized");
+
+    //   return { userId: session.user.id };
+    // })
     .onUploadComplete(async ({ file, metadata }) => {
+      console.log("🔥 Upload complete triggered");
+
+      console.log("file:", file);
+      console.log("metadata:", metadata);
+
+      const fileUrl = file.ufsUrl ? file.ufsUrl : file.url;
+
+      // 🔒 VALIDATION
+      if (!fileUrl || !file.name) {
+        throw new Error("Invalid file upload");
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error("Only JPG, PNG, WEBP allowed");
+      }
+
+      if (file.size > 8 * 1024 * 1024) {
+        throw new Error("File too large (max 8MB)");
+      }
+
+      console.log("uploadthing file ====", file);
+      console.log("uploadthing metadata.userId ====", metadata.userId);
+
+      const cleanFileName = file.name
+        .toLowerCase()
+        .replace(/[^a-z0-9.\-_]/g, "-")
+        .replace(/-+/g, "-");
+
       const result = await pool.query(
         `INSERT INTO media
           (file_name, file_url, file_type, size, uploaded_by)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING media_id`,
-        [file.name, file.url, file.type, file.size, metadata.userId]
+        [cleanFileName, fileUrl, file.type, file.size, metadata.userId],
       );
 
-      return { mediaId: result.rows[0].media_id };
+      console.log("✅ inserted media:", result.rows[0]);
+
+      return {
+        mediaId: result.rows[0].media_id,
+        url: fileUrl,
+      };
+
+      // return { mediaId: result.rows[0].media_id };
     }),
 } satisfies FileRouter;
 

@@ -165,9 +165,9 @@ export const getProductReviews = async (productId: string, page = 1) => {
       r.title,
       r.comment,
       r.created_at,
-      c.name
+      COALESCE(c.company_name, r.guest_name, 'Anonymous') as name
     FROM store_product_reviews r
-    JOIN store_customers c ON r.customer_id = c.id
+    Left JOIN store_customers c ON r.customer_id = c.id
     WHERE r.product_id = $1
       AND r.status = 'approved'
     ORDER BY r.created_at DESC
@@ -241,8 +241,6 @@ export const getBrands = async () => {
   const result = await pool.query(query);
   return result.rows;
 };
-
-
 
 /* 
 

@@ -83,11 +83,21 @@ export default function MediaLibrary() {
                   <UploadButton<MediaRouter, "productImage">
                     endpoint="productImage"
                     className="rounded border border-dashed border-gray-400 px-6 py-3 hover:border-primary "
-                    onClientUploadComplete={() => {
+                    onClientUploadComplete={(res) => {
+                      console.log("CLIENT UPLOAD DONE", res);
+
+                      const file = res?.[0];
+
+                      console.log("CLIENT UPLOAD DONE", file);
+
+                      // if (file) {
+                      //   onUpload(file.serverData.mediaId, file.url); // url is fine here
+                      // }
+
                       showToast("success", "Upload complete");
                       fetchMedia();
                     }}
-                    onUploadError={(err:any) => {
+                    onUploadError={(err: any) => {
                       showToast("error", err.message);
                     }}
                   />

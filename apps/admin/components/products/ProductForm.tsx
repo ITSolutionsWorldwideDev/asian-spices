@@ -2,6 +2,7 @@
 
 "use client";
 
+import { memo } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 import { Info, LifeBuoy, Figma, PlusCircle, X } from "react-feather";
@@ -18,7 +19,6 @@ import { productSchema } from "./FormSections/product.schema";
 
 import TextEditorNew from "@/core/common/texteditor/texteditor";
 
-import { memo } from "react";
 import RHFSelect from "./FormSections/RHFSelect";
 
 // const MemoTextEditor = memo(TextEditorNew);
@@ -1042,7 +1042,7 @@ export default function ProductFormComponent({
 
                     <input
                       type="number"
-                      {...register("promo_discount", { valueAsNumber: true })}
+                      {...register("promo_discount")} // , { valueAsNumber: true }
                       placeholder="0.00"
                       className="w-full rounded border px-3 py-2 text-sm"
                       disabled={isView}
