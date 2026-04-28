@@ -83,19 +83,55 @@ export default function MediaLibrary() {
                   <UploadButton<MediaRouter, "productImage">
                     endpoint="productImage"
                     className="rounded border border-dashed border-gray-400 px-6 py-3 hover:border-primary "
-                    onClientUploadComplete={(res) => {
+                    onClientUploadComplete={async (res) => {
                       console.log("CLIENT UPLOAD DONE", res);
-
                       const file = res?.[0];
 
-                      console.log("CLIENT UPLOAD DONE", file);
+                      // ✅ Safety checks
+                      if (!file || !file.ufsUrl) {
+                        showToast(
+                          "error",
+                          "Upload failed: invalid file response",
+                        );
+                        return;
+                      }
 
-                      // if (file) {
-                      //   onUpload(file.serverData.mediaId, file.url); // url is fine here
-                      // }
+                      try {
+                        const response = await fetch("/api/media/save", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            file_name: file.name,
+                            file_url: file.ufsUrl, // ✅ correct
+                            file_type: file.type,
+                            size: file.size,
+                          }),
+                        });
 
-                      showToast("success", "Upload complete");
-                      fetchMedia();
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                          throw new Error(
+                            data?.error || "Failed to save media",
+                          );
+                        }
+
+                        console.log("DB SAVED ✅", data);
+
+                        // ✅ SINGLE success message
+                        showToast("success", "Upload + Save successful ✅");
+
+                        // ✅ SINGLE refresh
+                        fetchMedia();
+                      } catch (err: any) {
+                        console.error("SAVE ERROR ❌", err);
+                        showToast(
+                          "error",
+                          err.message || "Something went wrong",
+                        );
+                      }
                     }}
                     onUploadError={(err: any) => {
                       showToast("error", err.message);
