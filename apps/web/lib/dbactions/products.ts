@@ -19,7 +19,7 @@ export const getProducts = async (filters: any) => {
 
   let query = `
     SELECT 
-      p.*,
+      p.*, c.slug as category_slug,
       ${
         search
           ? "ts_rank(p.search_vector, plainto_tsquery($1)) AS rank"
@@ -154,6 +154,55 @@ export const getRelatedProducts = async (category_id: string) => {
   return result.rows;
 };
 
+export const getProductReviews = async (productId: string, page = 1) => {
+  const limit = 5;
+  const offset = (page - 1) * limit;
+
+  const reviewsQuery = `
+    SELECT 
+      r.id,
+      r.rating,
+      r.title,
+      r.comment,
+      r.created_at,
+      c.name
+    FROM store_product_reviews r
+    JOIN store_customers c ON r.customer_id = c.id
+    WHERE r.product_id = $1
+      AND r.status = 'approved'
+    ORDER BY r.created_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+
+  const statsQuery = `
+    SELECT 
+      COUNT(*)::int as total,
+      ROUND(AVG(rating)::numeric, 1) as avg
+    FROM store_product_reviews
+    WHERE product_id = $1 AND status = 'approved'
+  `;
+
+  const breakdownQuery = `
+    SELECT rating, COUNT(*)::int as count
+    FROM store_product_reviews
+    WHERE product_id = $1 AND status = 'approved'
+    GROUP BY rating
+  `;
+
+  const [reviewsRes, statsRes, breakdownRes] = await Promise.all([
+    pool.query(reviewsQuery, [productId, limit, offset]),
+    pool.query(statsQuery, [productId]),
+    pool.query(breakdownQuery, [productId]),
+  ]);
+
+  return {
+    reviews: reviewsRes.rows,
+    total: statsRes.rows[0]?.total || 0,
+    average: statsRes.rows[0]?.avg || 0,
+    breakdown: breakdownRes.rows,
+  };
+};
+
 export const getSubcategories = async (category: string) => {
   const query = `
     SELECT 
@@ -192,6 +241,8 @@ export const getBrands = async () => {
   const result = await pool.query(query);
   return result.rows;
 };
+
+
 
 /* 
 

@@ -19,7 +19,7 @@ const RecipesProductCard = ({ card }: RecipesProductCardProps) => {
     <div className="h-auto cursor-pointer overflow-hidden">
       <div className="relative  h-64 rounded-2xl overflow-hidden m-5">
         <Image
-          src={`/assets/home/spicy_story/${card.image}`}
+          src={`/assets/recipes/${card.image}`}
           alt="food"
           fill
           className=" object-cover"

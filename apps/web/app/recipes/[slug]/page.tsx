@@ -7,6 +7,21 @@ interface RecipesDetailProps {
   searchParams: { title: string; description: string; image: string };
 }
 
+export async function generateMetadata({ searchParams }: RecipesDetailProps) {
+  const { title, description } = await searchParams;
+
+  if (!title) {
+    return {
+      title: "Product not found",
+    };
+  }
+
+  return {
+    title: title,
+    description: description || "Product details",
+  };
+}
+
 const RecipesDetail = async ({ searchParams }: RecipesDetailProps) => {
   const { title, description, image } = await searchParams;
   if (!searchParams.title) {

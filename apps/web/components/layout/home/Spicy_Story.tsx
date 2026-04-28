@@ -19,8 +19,8 @@ const recipes_product_data = [
   },
 
   {
-    title: "Chicken Pizza Recipe",
-    image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+    title: "Fish",
+    image: "recipe-5.png",
 
     description:
       "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",

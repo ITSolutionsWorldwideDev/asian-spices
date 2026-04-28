@@ -24,6 +24,7 @@ type Product = {
   id: string;
   quantity: number;
   name: string;
+  category_slug: string;
   slug: string;
   image: string;
   price: number;
@@ -128,7 +129,7 @@ export default function ProductCard({ products }: ProductCardProps) {
             </div> */}
 
             {/* Title */}
-            <Link href={`${path}/${product.slug}`}>
+            <Link href={`/${product.category_slug || "spices"}/${product.slug}`}>
               <h3 className="font-semibold mt-1">
                 {product.name.split(" ").slice(0, 3).join(" ")}
               </h3>

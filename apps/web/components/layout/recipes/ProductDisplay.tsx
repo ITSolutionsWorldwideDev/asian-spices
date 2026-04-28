@@ -8,14 +8,14 @@ const ProductDisplay = () => {
   const recipes_product_data = [
     {
       title: "Chicken Biryani Recipe",
-      image: "0735f42afcaa80549c8b8ffa399da983921128e8.png", // replace with your image
+      image: "recipe-1.png", // replace with your image
 
       description:
         "Chicken Biryani is a fragrant South Asian dish made by layering aromatic basmati rice with tender, spiced chicken, caramelized onions, fresh herbs, and saffron. Slow-cooked using the traditional dum method, it blends rich flavors and textures, making it a festive favorite for family gatherings and celebrations.",
     },
     {
       title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+      image: "recipe-2.png",
 
       description:
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
@@ -23,7 +23,7 @@ const ProductDisplay = () => {
 
     {
       title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+      image: "recipe-3.png",
 
       description:
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
@@ -31,7 +31,7 @@ const ProductDisplay = () => {
 
     {
       title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+      image: "recipe-4.png",
 
       description:
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",
@@ -39,7 +39,7 @@ const ProductDisplay = () => {
 
     {
       title: "Chicken Pizza Recipe",
-      image: "511d75edd299a537dadb2933ba8ea0178e2c3185.png",
+      image: "recipe-5.png",
 
       description:
         "A golden crust topped with tender chicken chunks, rich tomato sauce, and a generous layer of melted mozzarella and cheddar cheese. Seasoned with herbs and spices, this pizza blends savory chicken flavor with gooey, creamy cheese — a hearty favorite for casual meals, parties, and family gatherings.",

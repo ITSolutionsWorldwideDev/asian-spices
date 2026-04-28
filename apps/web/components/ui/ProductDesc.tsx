@@ -5,36 +5,11 @@ import { Star, ShoppingCart, Check } from "lucide-react";
 import Image from "next/image";
 import { Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import ProductTabs from "../layout/productdescpage/ProductTabs";
-import { getProductBySlug } from "@/lib/dbactions/products";
+import ProductImageGallery from "../layout/productdescpage/ProductImageGallery";
+import { Product } from "@/types/product";
 
-/* interface Product {
-  badge: string;
-  title: string;
-  origin: string;
-  rating: number;
-  reviews: number;
-  price: number;
-  oldPrice: number;
-  savings: number;
-  inStock: boolean;
-  shippingNote: string;
-  unit: string;
-  images: string[];
-  highlights: string[];
-} */
 
-// { product }: { product: Product }
-
-/* export async function generateMetadata({ params }: any) {
-  const product = await getProductBySlug(params.slug);
-
-  return {
-    title: product.name,
-    description: product.description,
-  };
-} */
-
-export default function ProductDesc({ product }: { product: any }) {
+export default function ProductDesc({ product }: { product: Product  }) {
   const features = [
     {
       icon: Truck,
@@ -53,10 +28,20 @@ export default function ProductDesc({ product }: { product: any }) {
   // const [activeImage, setActiveImage] = useState(product.images[0]);
 
   const highlights = product?.highlights || [];
-  const images = product?.images || [];
+  // const images = product?.images || [
+
+  const images =
+    product.images && product?.images?.length > 0
+      ? product.images
+      : [
+          "/assets/spices/spices-1.png",
+          "/assets/spices/spices-2.png",
+          "/assets/spices/spices-3.png",
+          "/assets/spices/spices-4.png",
+        ];
 
   const [activeImage, setActiveImage] = useState(
-    images.length > 0 ? images[0] : "/placeholder.png",
+    images.length > 0 ? images[0] : "/assets/spices/spices-1.png",
   );
 
   return (
@@ -76,7 +61,9 @@ export default function ProductDesc({ product }: { product: any }) {
       <div className="  grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Images */}
         <div>
-          <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
+          {/* 🔥 NEW GALLERY */}
+          <ProductImageGallery images={images} name={product.name} />
+          {/* <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
             {activeImage && (
               <Image
                 src={activeImage}
@@ -112,7 +99,7 @@ export default function ProductDesc({ product }: { product: any }) {
                 />
               </button>
             ))}
-          </div>
+          </div> */}
         </div>
 
         {/* Product Info */}
@@ -144,9 +131,9 @@ export default function ProductDesc({ product }: { product: any }) {
             <span className="text-4xl font-bold text-orange-500">
               ${product.price}
             </span>
-            <span className="line-through text-gray-400 text-xl">
+            {/* <span className="line-through text-gray-400 text-xl">
               ${product.oldPrice}
-            </span>
+            </span> */}
           </div>
 
           <p className="text-green-600 font-medium">

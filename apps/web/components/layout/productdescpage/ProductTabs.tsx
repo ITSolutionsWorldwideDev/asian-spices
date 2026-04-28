@@ -112,15 +112,22 @@ export default function ProductTabs({ product }: ProductTabsProps) {
         {/* 🔥 REVIEWS */}
         {activeTab.startsWith("Reviews") && (
           <div className="space-y-4">
-            {/* <ReviewsSection productId={product.id} /> */}
-            <ReviewsSection />
+            <ReviewsSection productId={product.id} />
+            {/* <ReviewsSection /> */}
           </div>
         )}
 
         {/* 🔥 WRITE REVIEW */}
-        {/* {activeTab === "Write a Review" && (
+        {activeTab === "Write a Review" && (
           // <WriteReviewForm productId={product.id} />
-        )} */}
+          <WriteReviewForm
+            productId={product.id}
+            onSuccess={() => {
+              // 🔥 optional: refresh reviews
+              window.location.reload();
+            }}
+          />
+        )}
       </div>
     </div>
   );
