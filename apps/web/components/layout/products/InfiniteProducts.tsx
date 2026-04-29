@@ -58,33 +58,6 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     setLoading(false);
   };
 
-  /* const fetchMore = async () => {
-    if (loading || !hasMore) return; // 🔥 STOP CONDITIONS
-
-    setLoading(true);
-
-    const params = new URLSearchParams(filters);
-
-    
-    params.set("page", page.toString());
-
-    const res = await fetch(`/api/products?${params.toString()}`);
-    const data = await res.json();
-
-    const newProducts = data.data || [];
-
-    // 🔥 APPEND
-    setProducts((prev: any) => [...prev, ...newProducts]);
-
-    // 🔥 STOP LOGIC (CRITICAL)
-    if (newProducts.length < limit) {
-      setHasMore(false);
-    }
-
-    setPage((prev) => prev + 1);
-    setLoading(false);
-  }; */
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -140,6 +113,35 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
   );
 }
 
+
+
+  /* const fetchMore = async () => {
+    if (loading || !hasMore) return; // 🔥 STOP CONDITIONS
+
+    setLoading(true);
+
+    const params = new URLSearchParams(filters);
+
+    
+    params.set("page", page.toString());
+
+    const res = await fetch(`/api/products?${params.toString()}`);
+    const data = await res.json();
+
+    const newProducts = data.data || [];
+
+    // 🔥 APPEND
+    setProducts((prev: any) => [...prev, ...newProducts]);
+
+    // 🔥 STOP LOGIC (CRITICAL)
+    if (newProducts.length < limit) {
+      setHasMore(false);
+    }
+
+    setPage((prev) => prev + 1);
+    setLoading(false);
+  }; */
+  
 /* const observer = new IntersectionObserver(
       (entries) => {
         if (

@@ -87,20 +87,28 @@ export default function Cart() {
               <div className="h-30 w-full sm:w-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                 {/* src={`${item.image}`}
                   alt={item.title} */}
-                <Image
-                  src={item.image || FALLBACK_IMAGE}
-                  alt={item.title || "Product"}
-                  width={96}
-                  height={96}
-                  className="object-cover h-full w-full"
-                />
+                <Link
+                  href={`/${item.category_slug || "products"}/${item.slug || item.id}`}
+                >
+                  <Image
+                    src={item.image || FALLBACK_IMAGE}
+                    alt={item.title || "Product"}
+                    width={96}
+                    height={96}
+                    className="object-cover h-full w-full"
+                  />
+                </Link>
               </div>
 
               {/* DETAILS */}
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                   <div>
-                    <h3 className="font-semibold">{item.title}</h3>
+                    <Link
+                      href={`/${item.category_slug || "products"}/${item.slug || item.id}`}
+                    >
+                      <h3 className="font-semibold">{item.title}</h3>
+                    </Link>
                     {/* <p className="text-sm text-gray-500">
                       Weight: {item.weight}
                     </p> */}

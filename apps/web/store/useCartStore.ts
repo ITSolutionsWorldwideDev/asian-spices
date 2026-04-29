@@ -12,6 +12,9 @@ export interface CartItem {
   // weight?: string;
   // oldPrice: number | null;
   // weight: string;
+
+  slug?: string;
+  category_slug?: string;
 }
 
 interface CartState {
@@ -114,14 +117,27 @@ export const useCartStore = create<CartState>()(
 
         if (!isLoggedIn) return;
 
-        await fetch("/api/cart", {
+        try {
+          await fetch("/api/cart/update", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              product_id: id,
+              delta: 1,
+            }),
+          });
+        } catch (err) {
+          console.error("Increase failed", err);
+        }
+
+        /* await fetch("/api/cart", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             product_id: id,
             quantity: 1,
           }),
-        });
+        }); */
       },
 
       /* ---------------- DECREASE ---------------- */
@@ -141,14 +157,18 @@ export const useCartStore = create<CartState>()(
 
         if (!isLoggedIn) return;
 
-        await fetch("/api/cart/update", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            product_id: id,
-            quantity: -1,
-          }),
-        });
+        try {
+          await fetch("/api/cart/update", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              product_id: id,
+              delta: -1,
+            }),
+          });
+        } catch (err) {
+          console.error("Decrease failed", err);
+        }
       },
 
       setCart: (items) => set({ cart: items }),

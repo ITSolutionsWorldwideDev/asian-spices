@@ -1,3 +1,5 @@
+// apps/web/components/ui/ProductDesc.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -7,9 +9,18 @@ import { Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import ProductTabs from "../layout/productdescpage/ProductTabs";
 import ProductImageGallery from "../layout/productdescpage/ProductImageGallery";
 import { Product } from "@/types/product";
+import { useCartStore } from "@/store/useCartStore";
+import { useSession } from "next-auth/react";
 
+export default function ProductDesc({ product }: { product: Product }) {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
-export default function ProductDesc({ product }: { product: Product  }) {
+  const { cart, addToCart, increaseQty, decreaseQty } = useCartStore();
+
+  // 🔥 find product in cart
+  const cartItem = cart.find((item) => item.id === product.id);
+
   const features = [
     {
       icon: Truck,
@@ -24,7 +35,7 @@ export default function ProductDesc({ product }: { product: Product  }) {
       title: "Quality Guarantee",
     },
   ];
-  const [quantity, setQuantity] = useState(1);
+  // const [quantity, setQuantity] = useState(1);
   // const [activeImage, setActiveImage] = useState(product.images[0]);
 
   const highlights = product?.highlights || [];
@@ -63,43 +74,6 @@ export default function ProductDesc({ product }: { product: Product  }) {
         <div>
           {/* 🔥 NEW GALLERY */}
           <ProductImageGallery images={images} name={product.name} />
-          {/* <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
-            {activeImage && (
-              <Image
-                src={activeImage}
-                alt={product.name}
-                width={600}
-                height={600}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-
-          <div className="flex gap-3 mt-4 overflow-x-auto sm:overflow-visible">
-            {images.map((img: any, idx: any) => (
-              <button
-                key={idx}
-                onClick={() => setActiveImage(img)}
-                className={`
-                  h-20 w-20 
-                  sm:h-24 sm:w-24 
-                  md:h-28 md:w-28 
-                  lg:h-30 lg:w-80 
-                  rounded-xl overflow-hidden border transition
-                  ${activeImage === img ? "border-orange-500" : "border-transparent"}`}
-              >
-                <Image
-                  src={img}
-                  alt=""
-                  width={320}
-                  height={120}
-                  className="h-full w-full object-cover"
-                />
-              </button>
-            ))}
-          </div> */}
         </div>
 
         {/* Product Info */}
@@ -148,7 +122,48 @@ export default function ProductDesc({ product }: { product: Product  }) {
           )}
 
           {/* Quantity */}
+
           <div className="flex items-center gap-6">
+            {cartItem ? (
+              <div className="flex border rounded-lg">
+                <button
+                  onClick={() => decreaseQty(product.id, isLoggedIn)}
+                  className="px-4 py-2"
+                >
+                  –
+                </button>
+
+                <span className="px-6 py-2">{cartItem.quantity}</span>
+
+                <button
+                  onClick={() => increaseQty(product.id, isLoggedIn)}
+                  className="px-4 py-2"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() =>
+                  addToCart(
+                    {
+                      id: product.id,
+                      title: product.name,
+                      price: product.price,
+                      image: images[0] || "/images/placeholder.png",
+                    },
+                    isLoggedIn,
+                  )
+                }
+                className="px-6 py-2 bg-orange-500 text-white rounded-lg"
+              >
+                Add to Cart
+              </button>
+            )}
+
+            <span className="text-sm text-gray-500">{product.unit}</span>
+          </div>
+          {/* <div className="flex items-center gap-6">
             <div className="flex border rounded-lg">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -165,13 +180,41 @@ export default function ProductDesc({ product }: { product: Product  }) {
               </button>
             </div>
             <span className="text-sm text-gray-500">{product.unit}</span>
-          </div>
+          </div> */}
 
           {/* Add to cart */}
-          <button className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold">
+
+          {cartItem ? (
+            <button
+              onClick={() => increaseQty(product.id, isLoggedIn)}
+              className="w-full bg-green-600 text-white py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold"
+            >
+              <Check size={20} />
+              In Cart ({cartItem.quantity})
+            </button>
+          ) : (
+            <button
+              onClick={() =>
+                addToCart(
+                  {
+                    id: product.id,
+                    title: product.name,
+                    price: product.price,
+                    image: images[0] || "/images/placeholder.png",
+                  },
+                  isLoggedIn,
+                )
+              }
+              className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold"
+            >
+              <ShoppingCart size={20} />
+              Add To Cart
+            </button>
+          )}
+          {/* <button className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold">
             <ShoppingCart size={20} />
             Add To Cart
-          </button>
+          </button> */}
 
           {/* Highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
@@ -215,6 +258,45 @@ export default function ProductDesc({ product }: { product: Product  }) {
   );
 }
 
+{
+  /* <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
+            {activeImage && (
+              <Image
+                src={activeImage}
+                alt={product.name}
+                width={600}
+                height={600}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-4 overflow-x-auto sm:overflow-visible">
+            {images.map((img: any, idx: any) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImage(img)}
+                className={`
+                  h-20 w-20 
+                  sm:h-24 sm:w-24 
+                  md:h-28 md:w-28 
+                  lg:h-30 lg:w-80 
+                  rounded-xl overflow-hidden border transition
+                  ${activeImage === img ? "border-orange-500" : "border-transparent"}`}
+              >
+                <Image
+                  src={img}
+                  alt=""
+                  width={320}
+                  height={120}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div> */
+}
 /* 
 
 export default function ProductDesc({ product }: { product: any }) {

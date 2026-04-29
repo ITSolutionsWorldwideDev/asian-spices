@@ -64,7 +64,8 @@ export default function ProductCard({ products }: ProductCardProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
-  const addToCart = useCartStore((state) => state.addToCart);
+  // const addToCart = useCartStore((state) => state.addToCart);
+  const { cart, addToCart, increaseQty, decreaseQty } = useCartStore();
 
   const [showAll, setShowAll] = useState(false);
 
@@ -74,84 +75,143 @@ export default function ProductCard({ products }: ProductCardProps) {
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10 ">
-        {visibleProducts.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
-          >
-            {/* Tags */}
-            {product.tag && (
-              <span className="absolute top-1/11 left-1/11 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                {product.tag}
-              </span>
-            )}
+        {visibleProducts.map((product) => {
+          const cartItem = cart.find((item) => item.id === product.id);
 
-            {product.discount_value && (
-              <span className="absolute top-1/6 left-1/11 bg-red-500 font-bold text-white text-xs px-2 py-1 rounded-full flex items-center">
-                <GoTag className="mr-2" />
-                {product.discount_value} % OFF
-              </span>
-            )}
-
-            {/* Like button */}
-            <button
-              onClick={() => {
-                toggleWishlist(product);
-                isInWishlist(product.id);
-              }}
-              className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
+          return (
+            <div
+              key={product.id}
+              className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
             >
-              <Heart
-                className={`w-5 h-5  transition ${mounted && isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-500 "}`}
-              />
-            </button>
+              {/* Tags */}
+              {product.tag && (
+                <span className="absolute top-1/11 left-1/11 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                  {product.tag}
+                </span>
+              )}
 
-            {/* Product left in stock */}
-            {product.quantity && (
-              <span className="absolute bottom-[45%] right-1/11 bg-white text-black text-xs px-2 py-1 rounded-full flex items-center">
-                Only {product.quantity} Left!
-              </span>
-            )}
+              {product.discount_value && (
+                <span className="absolute top-1/6 left-1/11 bg-red-500 font-bold text-white text-xs px-2 py-1 rounded-full flex items-center">
+                  <GoTag className="mr-2" />
+                  {product.discount_value} % OFF
+                </span>
+              )}
 
-            {/* Image */}
-            <Image
+              {/* Like button */}
+              <button
+                onClick={() => {
+                  toggleWishlist(product);
+                  isInWishlist(product.id);
+                }}
+                className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
+              >
+                <Heart
+                  className={`w-5 h-5  transition ${mounted && isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-500 "}`}
+                />
+              </button>
+
+              {/* Product left in stock */}
+              {product.quantity && (
+                <span className="absolute bottom-[45%] right-1/11 bg-white text-black text-xs px-2 py-1 rounded-full flex items-center">
+                  Only {product.quantity} Left!
+                </span>
+              )}
+
+              {/* Image */}
+              {/* <Image
               src={`/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`}
               alt={"loading"}
               width={120}
               height={100}
               className="h-70 w-full object-cover rounded-xl "
-            />
+            /> */}
 
-            {/* Rating */}
-            {/* <div className="flex items-center text-yellow-500 text-sm mt-3">
+              <Image
+                src={
+                  product.image ||
+                  "/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg"
+                }
+                alt={product.name}
+                width={300}
+                height={250}
+                className="h-70 w-full object-cover rounded-xl"
+              />
+
+              {/* Rating */}
+              {/* <div className="flex items-center text-yellow-500 text-sm mt-3">
               {"★".repeat(product.rating)}
               <span className="text-gray-400 ml-1">({product.reviews})</span>
             </div> */}
 
-            {/* Title */}
-            <Link href={`/${product.category_slug || "spices"}/${product.slug}`}>
-              <h3 className="font-semibold mt-1">
-                {product.name.split(" ").slice(0, 3).join(" ")}
-              </h3>
-              <span className="text-sm text-gray-400">
-                {product.description.split(" ").slice(0, 6).join(" ")}
-              </span>
-            </Link>
-            {/* Price */}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-orange-400 font-bold text-xl">
-                {symbol}
-                {Number(product.price * rate).toFixed(2)}
-              </span>
-              {/* {product.oldPrice && (
+              {/* Title */}
+              {/* <Link href={`/${product.category_slug || "spices"}/${product.slug}`}> */}
+              <Link
+                href={`/${product.category_slug || "spices"}/${product.slug}`.replace(
+                  /\/+/g,
+                  "/",
+                )}
+              >
+                <h3 className="font-semibold mt-1">
+                  {product.name?.split(" ").slice(0, 3).join(" ")}
+                </h3>
+                <span className="text-sm text-gray-400">
+                  {product.description?.split(" ").slice(0, 6).join(" ")}
+                </span>
+              </Link>
+              {/* Price */}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-orange-400 font-bold text-xl">
+                  {symbol}
+                  {Number(product.price * rate).toFixed(2)}
+                </span>
+                {/* {product.oldPrice && (
                 <span className="line-through text-gray-400 text-sm">
                   ${product.oldPrice}
                 </span>
               )} */}
-            </div>
+              </div>
 
-            {/* Button */}
-            <button
+              {/* Button */}
+              {cartItem ? (
+                <div className="mt-4 flex items-center justify-between border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => decreaseQty(product.id, isLoggedIn)}
+                    className="px-4 py-2 text-lg hover:bg-gray-100"
+                  >
+                    −
+                  </button>
+
+                  <span className="px-4">{cartItem.quantity}</span>
+
+                  <button
+                    onClick={() => increaseQty(product.id, isLoggedIn)}
+                    className="px-4 py-2 text-lg hover:bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="cursor-pointer mt-4 w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-amber-600 hover:to-amber-400 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center"
+                  onClick={() => {
+                    addToCart(
+                      {
+                        id: product.id,
+                        title: product.name,
+                        price: product.price,
+                        image: product.image || "/images/placeholder.png",
+                        slug: product.slug,
+                        category_slug: product.category_slug,
+                      },
+                      isLoggedIn,
+                    );
+                  }}
+                >
+                  <BsCartPlus className="w-5 h-5 mr-2" />
+                  Add To Cart
+                </button>
+              )}
+              {/* <button
               className="cursor-pointer mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
               onClick={() => {
                 addToCart(
@@ -178,16 +238,17 @@ export default function ProductCard({ products }: ProductCardProps) {
                     <TiTickOutline className="w-7 h-6 mr-3 bg-green-600" />{" "}
                     Added To cart successfully
                   </div>
-                  {/* {alert(`${product.name} added to cart successfully!`)} */}
+                 
                 </>
               ) : (
                 <>
                   <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
                 </>
               )}
-            </button>
-          </div>
-        ))}
+            </button> */}
+            </div>
+          );
+        })}
       </div>
 
       {/* See More/See Less Button */}
