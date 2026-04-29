@@ -142,6 +142,30 @@ export const getProductBySlug = async (slug: string) => {
 
 export const getRelatedProducts = async (category_id: string) => {
   const query = `
+    SELECT 
+      p.id,
+      p.name,
+      p.slug,
+      p.price,
+      p.category_id,
+      c.slug AS category_slug,
+      md.file_url AS image
+    FROM store_products p
+    LEFT JOIN store_categories c ON c.id = p.category_id
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id AND pi.is_primary = true
+    LEFT JOIN media md ON md.media_id = pi.url::int
+    WHERE p.category_id = $1
+    ORDER BY p.created_at DESC
+    LIMIT 12
+  `;
+
+  const result = await pool.query(query, [category_id]);
+  return result.rows;
+};
+
+/* export const getRelatedProducts = async (category_id: string) => {
+  const query = `
     SELECT *
     FROM store_products
     WHERE category_id = $1
@@ -152,7 +176,7 @@ export const getRelatedProducts = async (category_id: string) => {
   const result = await pool.query(query, [category_id]);
 
   return result.rows;
-};
+}; */
 
 export const getProductReviews = async (productId: string, page = 1) => {
   const limit = 5;

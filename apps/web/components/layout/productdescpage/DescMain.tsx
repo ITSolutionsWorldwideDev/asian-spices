@@ -3,7 +3,8 @@
 import ProductDesc from "@/components/ui/ProductDesc";
 import Footer from "@/components/ui/Footer";
 import Nav from "@/components/ui/Nav";
-import ProductCard from "@/components/ui/ProductCard";
+// import ProductCard from "@/components/ui/ProductCard";
+import RelatedProductsSlider from "./RelatedProductsSlider";
 
 interface Props {
   product: any;
@@ -19,10 +20,11 @@ export default function ProductDescrption({ product, relatedProducts }: Props) {
 
       <ProductDesc product={product} />
 
-      <div className="mt-10 p-5">
+      <div className="container mx-auto mt-10 p-5">
         <h1 className="text-black font-bold mb-5">You May Also Like</h1>
 
-        <ProductCard products={relatedProducts} />
+        {/* <ProductCard products={relatedProducts} /> */}
+        <RelatedProductsSlider products={relatedProducts} />
       </div>
 
       <Footer />

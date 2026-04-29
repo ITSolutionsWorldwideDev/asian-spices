@@ -117,7 +117,8 @@ export default function ProductDesc({ product }: { product: Product }) {
           {/* Stock  inStock*/}
           {product.quantity && (
             <div className="bg-green-100 text-green-700 px-4 py-3 rounded-xl text-sm font-medium">
-              ✔ In Stock – {product.shippingNote}
+              ✔ In Stock{" "}
+              {product.shippingNote ? "-" + product.shippingNote : ""}
             </div>
           )}
 
@@ -143,7 +144,10 @@ export default function ProductDesc({ product }: { product: Product }) {
                 </button>
               </div>
             ) : (
-              <button
+              <></>
+            )}
+
+            {/* <button
                 onClick={() =>
                   addToCart(
                     {
@@ -158,8 +162,7 @@ export default function ProductDesc({ product }: { product: Product }) {
                 className="px-6 py-2 bg-orange-500 text-white rounded-lg"
               >
                 Add to Cart
-              </button>
-            )}
+              </button> */}
 
             <span className="text-sm text-gray-500">{product.unit}</span>
           </div>
@@ -258,8 +261,7 @@ export default function ProductDesc({ product }: { product: Product }) {
   );
 }
 
-{
-  /* <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
+/* <div className="relative w-full h-auto bg-white rounded-2xl overflow-hidden">
             {activeImage && (
               <Image
                 src={activeImage}
@@ -296,7 +298,7 @@ export default function ProductDesc({ product }: { product: Product }) {
               </button>
             ))}
           </div> */
-}
+
 /* 
 
 export default function ProductDesc({ product }: { product: any }) {
