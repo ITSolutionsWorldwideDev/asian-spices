@@ -15,7 +15,10 @@ export async function POST(req: NextRequest) {
     const { latitude, longitude } = shippingAddress;
 
     if (!latitude || !longitude) {
-      throw new Error("Customer location required for store selection");
+      return errorResponse(
+        "Please enter a valid delivery address to continue.",
+        "MISSING_LOCATION",
+      );
     }
 
     const store_id = randomUUID();
@@ -83,7 +86,10 @@ export async function POST(req: NextRequest) {
     const nearestStores = storesResult.rows;
 
     if (!nearestStores.length) {
-      throw new Error("No nearby stores found");
+      return errorResponse(
+        "We don't deliver to your location yet.",
+        "NO_NEARBY_STORES",
+      );
     }
 
     const storeIds = nearestStores.map((s) => s.store_id);
@@ -101,17 +107,20 @@ export async function POST(req: NextRequest) {
     );
     const catalog = catalogResult.rows;
 
-    console.log('nearestStores === ',nearestStores);
-    console.log('cartItems === ',cartItems);
-    console.log('catalog === ',catalog);
+    console.log("nearestStores === ", nearestStores);
+    console.log("cartItems === ", cartItems);
+    console.log("catalog === ", catalog);
 
     // 5️⃣ Select best store (lowest price, available stock)
     const bestStore = selectBestStore(nearestStores, cartItems, catalog);
 
-    console.log('bestStore === ',bestStore);
+    console.log("bestStore === ", bestStore);
 
     if (!bestStore) {
-      throw new Error("No store can fulfill this order");
+      return errorResponse(
+        "Sorry, no nearby store has all items in stock. Please adjust your cart.",
+        "NO_STORE_AVAILABLE",
+      );
     }
 
     const orderResult = await client.query(
@@ -142,7 +151,11 @@ export async function POST(req: NextRequest) {
       );
 
       if (!product || product.quantity < item.quantity) {
-        throw new Error(`Insufficient stock for product ${item.id}`);
+        // throw new Error(`Insufficient stock for product ${item.id}`);
+        return errorResponse(
+          `Product ${item.title} is out of stock`,
+          "OUT_OF_STOCK",
+        );
       }
 
       await client.query(
@@ -159,12 +172,15 @@ export async function POST(req: NextRequest) {
       orderId: order_id,
       storeId: bestStore,
     });
-  } catch (error) {
+  } catch (error: any) {
     await client.query("ROLLBACK");
     console.error("Create order error:", error);
 
     return NextResponse.json(
-      { success: false, error: "Order creation failed" },
+      {
+        success: false,
+        error: error.message || "Order creation failed",
+      },
       { status: 500 },
     );
   } finally {
@@ -208,42 +224,49 @@ const selectBestStore = (stores: any[], cartItems: any[], catalog: any[]) => {
   return bestStore;
 };
 
+const errorResponse = (message: string, code: string, status = 400) => {
+  return NextResponse.json(
+    {
+      success: false,
+      error: message,
+      code,
+    },
+    { status },
+  );
+};
 
+// 6️⃣ Create Order
+// const orderResult = await client.query(
+//   `
+//   INSERT INTO store_orders
+//   (order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
+//   VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+//   RETURNING id
+//   `,
+//   [
+//     `ORD-${Date.now()}`,
+//     customer_id,
+//     "pending",
+//     pricing.subtotal,
+//     pricing.discount,
+//     pricing.shipping,
+//     pricing.total,
+//     "pending",
+//   ],
+// );
 
-
-    // 6️⃣ Create Order
-    // const orderResult = await client.query(
-    //   `
-    //   INSERT INTO store_orders
-    //   (order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-    //   VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-    //   RETURNING id
-    //   `,
-    //   [
-    //     `ORD-${Date.now()}`,
-    //     customer_id,
-    //     "pending",
-    //     pricing.subtotal,
-    //     pricing.discount,
-    //     pricing.shipping,
-    //     pricing.total,
-    //     "pending",
-    //   ],
-    // );
-
-    
-    // for (const item of cartItems) {
-    //   await client.query(
-    //     `
-    //     INSERT INTO store_order_items
-    //     (order_id, product_id, quantity, price)
-    //     VALUES ($1,$2,$3,$4)
-    //     `,
-    //     [
-    //       order_id,
-    //       item.id,
-    //       item.quantity,
-    //       Number(item.price), // 🔥 FIX (string → number)
-    //     ],
-    //   );
-    // }
+// for (const item of cartItems) {
+//   await client.query(
+//     `
+//     INSERT INTO store_order_items
+//     (order_id, product_id, quantity, price)
+//     VALUES ($1,$2,$3,$4)
+//     `,
+//     [
+//       order_id,
+//       item.id,
+//       item.quantity,
+//       Number(item.price), // 🔥 FIX (string → number)
+//     ],
+//   );
+// }

@@ -2,6 +2,8 @@
 
 import type { Metadata } from "next";
 import Providers from "./providers";
+import GlobalLoader from "@/components/ui/GlobalLoader";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Asian Spices - the asian tiger ",
@@ -16,7 +18,6 @@ export const metadata: Metadata = {
     apple: "favicon.ico", // Optional: for Apple devices (place in `public/`)
   },
 };
-import "./globals.css";
 
 export default function RootLayout({
   children,
@@ -29,7 +30,10 @@ export default function RootLayout({
         // className={`${geistSans.variable} ${geistMono.variable}`}
         className=""
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <GlobalLoader />
+          {children}
+        </Providers>
       </body>
     </html>
   );

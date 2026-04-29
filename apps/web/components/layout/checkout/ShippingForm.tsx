@@ -10,6 +10,10 @@ interface Props {
   shippingMethod: "standard" | "express" | "overnight";
   setShippingMethod: (value: any) => void;
   errors: Record<string, string>;
+
+  addresses: any[];
+  selectedAddress: any;
+  setSelectedAddress: (val: any) => void;
 }
 
 type Country = {
@@ -24,8 +28,10 @@ export default function ShippingForm({
   shippingMethod,
   setShippingMethod,
   errors,
+  addresses,
+  selectedAddress,
+  setSelectedAddress,
 }: Props) {
-
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -53,6 +59,53 @@ export default function ShippingForm({
     <div className="  flex justify-center ">
       <div className="w-full  bg-white rounded-xl border border-[#E5E7EB] p-8">
         <h2 className="text-xl font-semibold mb-6">Shipping Address</h2>
+
+        {addresses.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3">Saved Addresses</h3>
+
+            <div className="space-y-3">
+              {addresses.map((addr) => (
+                <div
+                  key={addr.id}
+                  onClick={() => {
+                    setSelectedAddress(addr);
+
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      firstName: addr.first_name || "",
+                      lastName: addr.last_name || "",
+                      address: addr.address_line1 || "",
+                      appartment: addr.address_line2 || "",
+                      city: addr.city || "",
+                      state: addr.state || "",
+                      zip: addr.postal_code || "",
+                      country: addr.country || "NL",
+                    }));
+                  }}
+                  className={`p-4 border rounded-lg cursor-pointer ${
+                    selectedAddress?.id === addr.id
+                      ? "border-orange-500 bg-orange-50"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <p className="font-medium">{addr.label}</p>
+                  <p className="text-sm text-gray-600">
+                    {addr.address_line1}, {addr.city}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setSelectedAddress(null)}
+          className="text-sm text-blue-500 underline mb-4"
+        >
+          Use a new address
+        </button>
 
         <div className="space-y-5">
           <div className="grid md:grid-cols-2 gap-4">
@@ -112,7 +165,7 @@ export default function ShippingForm({
             <input
               type="text"
               className="w-full bg-[#F3F3F5] rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              value={data.apartment}
+              value={data.appartment}
               onChange={(e) => handleChange("appartment", e.target.value)}
             />
           </div>
@@ -135,9 +188,7 @@ export default function ShippingForm({
             </div>
 
             <div>
-              <label className="block text-sm mb-1">
-                State
-              </label>
+              <label className="block text-sm mb-1">State</label>
               <input
                 type="text"
                 name="state"

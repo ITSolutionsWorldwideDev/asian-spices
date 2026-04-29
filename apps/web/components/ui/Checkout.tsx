@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 import { checkoutSchema } from "@/lib/validation/checkout";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export type CheckoutData = {
   email: string;
@@ -57,14 +58,54 @@ export default function Checkout() {
     }
   }, [session]);
 
+  const { show, hide } = useLoaderStore();
+
   const { cart, clearCart } = useCartStore();
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
   const [shippingMethod, setShippingMethod] =
     useState<ShippingMethod>("standard");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadAddresses = async () => {
+      if (!session?.user) return;
+
+      try {
+        const res = await fetch("/api/account/addresses");
+        const data = await res.json();
+
+        setAddresses(data.addresses || []);
+
+        const defaultAddr = data.addresses?.find((a: any) => a.is_default);
+
+        if (defaultAddr) {
+          setSelectedAddress(defaultAddr);
+
+          setFormData((prev) => ({
+            ...prev,
+            firstName: defaultAddr.first_name || "",
+            lastName: defaultAddr.last_name || "",
+            address: defaultAddr.address_line1 || "",
+            appartment: defaultAddr.address_line2 || "",
+            city: defaultAddr.city || "",
+            state: defaultAddr.state || "",
+            zip: defaultAddr.postal_code || "",
+            country: defaultAddr.country || "NL",
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load addresses", err);
+      }
+    };
+
+    loadAddresses();
+  }, [session]);
+
+  /*  useEffect(() => {
     const loadDefaultAddress = async () => {
       if (!session?.user) return;
 
@@ -75,6 +116,10 @@ export default function Checkout() {
         if (!data.address) return;
 
         const a = data.address;
+
+        console.log('loadDefaultAddress ===== ',a)
+
+        setSelectedAddress(a);
 
         setFormData((prev) => ({
           ...prev,
@@ -93,7 +138,7 @@ export default function Checkout() {
     };
 
     loadDefaultAddress();
-  }, [session]);
+  }, [session]); */
 
   const [formData, setFormData] = useState<CheckoutData>({
     email: "",
@@ -156,6 +201,7 @@ export default function Checkout() {
     setErrors({});
 
     try {
+      show("Placing your order..."); // 🔥 START LOADER
       const geocodeAddress = async (address: string) => {
         try {
           const res = await fetch(
@@ -179,6 +225,8 @@ export default function Checkout() {
         } catch (error) {
           console.error("Geocode error:", error);
           throw error;
+        } finally {
+          hide(); // 🔥 STOP LOADER ALWAYS
         }
       };
 
@@ -192,6 +240,12 @@ export default function Checkout() {
 
         formData.latitude = geo.latitude;
         formData.longitude = geo.longitude;
+
+        // setFormData((prev) => ({
+        //   ...prev,
+        //   latitude: geo.latitude,
+        //   longitude: geo.longitude,
+        // }));
       }
       // Create Order
 
@@ -231,8 +285,15 @@ export default function Checkout() {
       });
       const order = await res.json();
 
-      if (!order.success) {
-        throw new Error("Order creation failed");
+      /* if (!res.ok || !order.success) {
+        throw new Error(order.error || "Order creation failed");
+      } */
+
+      if (!res.ok || !order.success) {
+        throw {
+          message: order.error || "Order failed",
+          code: order.code,
+        };
       }
 
       const orderId = order.orderId;
@@ -259,10 +320,45 @@ export default function Checkout() {
         // Redirect user to payment gateway
         window.location.href = data.redirectUrl;
       }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Something went wrong. Please try again.");
+    } catch (err: any) {
+      // console.error("Checkout error:", err);
+
+      setApiError(err.message || "Something went wrong");
+
+      // 🔥 special handling
+      if (err.code === "NO_STORE_AVAILABLE") {
+        setApiError(
+          "Some items are not available together. Try removing a few items.",
+        );
+      }
+
+      if (err.code === "OUT_OF_STOCK") {
+        setApiError(
+          "One or more products are out of stock. Please update your cart.",
+        );
+      }
+
+      if (err.code === "NO_NEARBY_STORES") {
+        setApiError("We currently don’t deliver to your area.");
+      }
+
+      if (err.code === "MISSING_LOCATION") {
+        setApiError("Please enter your full delivery address.");
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      hide(); // 🔥 STOP LOADER ALWAYS
     }
+
+    // catch (err: any) {
+    //   console.error("Checkout error:", err);
+
+    //   setApiError(err.message || "Something went wrong");
+
+    //   // optional scroll to top
+    //   window.scrollTo({ top: 0, behavior: "smooth" });
+    // }
   };
 
   return (
@@ -294,17 +390,26 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-8">
           <div className="space-y-8">
+            {apiError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                {apiError}
+              </div>
+            )}
             <ContactForm
               data={formData}
               setFormData={setFormData}
               errors={errors}
             />
+
             <ShippingForm
               data={formData}
               setFormData={setFormData}
               shippingMethod={shippingMethod}
               setShippingMethod={setShippingMethod}
               errors={errors}
+              addresses={addresses}
+              selectedAddress={selectedAddress}
+              setSelectedAddress={setSelectedAddress}
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
           </div>
