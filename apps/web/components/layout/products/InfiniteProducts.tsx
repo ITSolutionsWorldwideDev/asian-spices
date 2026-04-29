@@ -41,21 +41,33 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
     setLoading(true);
 
-    const query = buildParams(filters, page);
+    try {
+      const query = buildParams(filters, page);
 
-    const res = await fetch(`/api/products?${query}`);
-    const data = await res.json();
+      const res = await fetch(`/api/products?${query}`);
+      const data = await res.json();
 
-    const newProducts = data.data || [];
+      const newProducts = data.data || [];
 
-    setProducts((prev: any) => [...prev, ...newProducts]);
+      // setProducts((prev: any) => [...prev, ...newProducts]);
+      setProducts((prev: any) => {
+        const map = new Map();
 
-    if (newProducts.length < limit) {
-      setHasMore(false);
+        [...prev, ...newProducts].forEach((p) => {
+          map.set(p.id, p); // ensures unique by id
+        });
+
+        return Array.from(map.values());
+      });
+
+      if (newProducts.length < limit) {
+        setHasMore(false);
+      }
+
+      setPage((prev) => prev + 1);
+    } finally {
+      setLoading(false);
     }
-
-    setPage((prev) => prev + 1);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -113,9 +125,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
   );
 }
 
-
-
-  /* const fetchMore = async () => {
+/* const fetchMore = async () => {
     if (loading || !hasMore) return; // 🔥 STOP CONDITIONS
 
     setLoading(true);
@@ -141,7 +151,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     setPage((prev) => prev + 1);
     setLoading(false);
   }; */
-  
+
 /* const observer = new IntersectionObserver(
       (entries) => {
         if (

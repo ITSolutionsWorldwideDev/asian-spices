@@ -233,9 +233,6 @@ export async function POST(req: NextRequest) {
       selectionParam = selection.ids;
     }
 
-    // console.log('setUpdates ==== ',setUpdates);
-    // console.log('updateValues ==== ',updateValues);
-
     const queryValues: any[] = [store_id, ...updateValues];
 
     let whereClause = "WHERE 1=1";
@@ -266,9 +263,6 @@ export async function POST(req: NextRequest) {
             ${setUpdates.map((f, i) => `${f}`).join(", ")},
             updated_at = now()
     `;
-
-    // console.log('query ==== ',query);
-    // console.log('queryValues ==== ',queryValues);
 
     await client.query(query, queryValues);
 

@@ -75,12 +75,13 @@ export default function ProductCard({ products }: ProductCardProps) {
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10 ">
-        {visibleProducts.map((product) => {
+        {visibleProducts.map((product, index) => {
           const cartItem = cart.find((item) => item.id === product.id);
 
           return (
             <div
-              key={product.id}
+              // key={product.id}
+              key={`${product.id}-${index}`}
               className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
             >
               {/* Tags */}
@@ -118,13 +119,6 @@ export default function ProductCard({ products }: ProductCardProps) {
               )}
 
               {/* Image */}
-              {/* <Image
-              src={`/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`}
-              alt={"loading"}
-              width={120}
-              height={100}
-              className="h-70 w-full object-cover rounded-xl "
-            /> */}
 
               <Image
                 src={
@@ -211,41 +205,6 @@ export default function ProductCard({ products }: ProductCardProps) {
                   Add To Cart
                 </button>
               )}
-              {/* <button
-              className="cursor-pointer mt-4 w-full bg-linear-to-r from-orange-400 to-orange-500 hover:bg-linear-to-r hover:from-amber-600  hover:to-amber-200  text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center hover:transition-all hover:duration-1000 "
-              onClick={() => {
-                addToCart(
-                  {
-                    id: product.id,
-                    title: product.name,
-                    price: product.price,
-                    image: `/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`,
-                    // quantity:product.
-                    // oldPrice: product.oldPrice,
-                    // weight: product.weight,
-                  },
-                  isLoggedIn,
-                );
-                setCartBtn(product.id);
-                setTimeout(() => {
-                  setCartBtn(null);
-                }, 3000);
-              }}
-            >
-              {cartBtn === product.id ? (
-                <>
-                  <div className="flex items-center justify-center bg-green-600 p-2 rounded-lg">
-                    <TiTickOutline className="w-7 h-6 mr-3 bg-green-600" />{" "}
-                    Added To cart successfully
-                  </div>
-                 
-                </>
-              ) : (
-                <>
-                  <BsCartPlus className="w-7 h-6 mr-3" /> Add To Cart
-                </>
-              )}
-            </button> */}
             </div>
           );
         })}

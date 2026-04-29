@@ -43,7 +43,7 @@ export default function ProductDesc({ product }: { product: Product }) {
 
   const images =
     product.images && product?.images?.length > 0
-      ? product.images
+      ? product.images.map((img: any) => img.url)
       : [
           "/assets/spices/spices-1.png",
           "/assets/spices/spices-2.png",

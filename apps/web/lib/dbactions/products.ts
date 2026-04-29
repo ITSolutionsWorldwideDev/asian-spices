@@ -19,18 +19,24 @@ export const getProducts = async (filters: any) => {
 
   let query = `
     SELECT 
-      p.*, c.slug as category_slug,
+      p.*, 
+      c.slug as category_slug,
+      md.file_url AS image,
       ${
         search
           ? "ts_rank(p.search_vector, plainto_tsquery($1)) AS rank"
           : "0 as rank"
       }
     FROM store_products p
-    INNER JOIN store_categories c ON p.category_id = c.id
+    LEFT JOIN store_categories c ON c.id = p.category_id
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id AND pi.is_primary = true
+    LEFT JOIN media md ON md.media_id = pi.url::int
     WHERE 1=1
   `;
 
   // ts_rank(p.search_vector, plainto_tsquery($1)) AS rank
+  // INNER JOIN store_categories c ON p.category_id = c.id
 
   if (search) {
     values.push(search);
@@ -78,23 +84,23 @@ export const getProducts = async (filters: any) => {
   // 🔥 Sorting
   switch (sort) {
     case "price_asc":
-      query += ` ORDER BY p.price ASC`;
+      query += ` ORDER BY p.price ASC, p.id DESC`;
       break;
 
     case "price_desc":
-      query += ` ORDER BY p.price DESC`;
+      query += ` ORDER BY p.price DESC, p.id DESC`;
       break;
 
     case "popular":
-      query += ` ORDER BY p.created_at DESC`; // later replace with sales
+      query += ` ORDER BY p.created_at DESC, p.id DESC`; // later replace with sales
       break;
 
     case "relevance":
-      query += ` ORDER BY rank DESC`;
+      query += ` ORDER BY rank DESC, p.id DESC`;
       break;
 
     default:
-      query += ` ORDER BY p.created_at DESC`;
+      query += ` ORDER BY p.created_at DESC, p.id DESC`;
   }
 
   // 🔥 Pagination
@@ -109,9 +115,6 @@ export const getProducts = async (filters: any) => {
   query += ` OFFSET $${index}`;
   values.push(offset);
 
-  // console.log('query ==== ',query);
-  // console.log('values ==== ',values);
-
   const result = await pool.query(query, values);
 
   return result.rows;
@@ -119,25 +122,47 @@ export const getProducts = async (filters: any) => {
 
 export const getProductBySlug = async (slug: string) => {
   const query = `
-    SELECT p.*, c.name as category_name
+    SELECT 
+      p.*,
+      c.name AS category_name,
+
+      COALESCE(
+        json_agg(
+          DISTINCT jsonb_build_object(
+            'id', pi.id,
+            'url', m.file_url,
+            'is_primary', pi.is_primary
+          )
+        ) FILTER (WHERE pi.id IS NOT NULL),
+        '[]'
+      ) AS images
+
     FROM store_products p
-    INNER JOIN store_categories c ON p.category_id = c.id
+    LEFT JOIN store_categories c 
+      ON p.category_id = c.id
+
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id
+
+    LEFT JOIN media m 
+      ON m.media_id = pi.url::int
+
     WHERE p.slug = $1
+    GROUP BY p.id, c.name
     LIMIT 1
   `;
 
-  // console.log("query ==== ", query);
-  // console.log("slug ==== ", slug);
-
   const result = await pool.query(query, [slug]);
 
-  return {
-    ...result.rows[0],
-    images: result.rows[0]?.images || [], // fallback
-    highlights: result.rows[0]?.highlights || [],
-  };
+  const row = result.rows[0];
 
-  // return result.rows[0] || null;
+  if (!row) return null;
+
+  return {
+    ...row,
+    images: row.images || [],
+    highlights: row.highlights || [],
+  };
 };
 
 export const getRelatedProducts = async (category_id: string) => {
@@ -163,20 +188,6 @@ export const getRelatedProducts = async (category_id: string) => {
   const result = await pool.query(query, [category_id]);
   return result.rows;
 };
-
-/* export const getRelatedProducts = async (category_id: string) => {
-  const query = `
-    SELECT *
-    FROM store_products
-    WHERE category_id = $1
-    ORDER BY created_at DESC
-    LIMIT 8
-  `;
-
-  const result = await pool.query(query, [category_id]);
-
-  return result.rows;
-}; */
 
 export const getProductReviews = async (productId: string, page = 1) => {
   const limit = 5;
@@ -317,3 +328,40 @@ const getProducts = async (category: string, categoryParam: string[] = []) => {
 
 export { getProducts };
  */
+
+/* export const getProductBySlug = async (slug: string) => {
+  const query = `
+    SELECT p.*, c.name as category_name
+    FROM store_products p
+    LEFT JOIN store_categories c ON p.category_id = c.id
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id
+    WHERE p.slug = $1
+    Limit 1
+  `;
+
+  console.log("query ==== ", query);
+  console.log("slug ==== ", slug);
+
+  const result = await pool.query(query, [slug]);
+
+  return {
+    ...result.rows[0],
+    images: result.rows[0]?.images || [], // fallback
+    highlights: result.rows[0]?.highlights || [],
+  };
+}; */
+
+/* export const getRelatedProducts = async (category_id: string) => {
+  const query = `
+    SELECT *
+    FROM store_products
+    WHERE category_id = $1
+    ORDER BY created_at DESC
+    LIMIT 8
+  `;
+
+  const result = await pool.query(query, [category_id]);
+
+  return result.rows;
+}; */

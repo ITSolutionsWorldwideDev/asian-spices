@@ -12,7 +12,7 @@ const HeadingDescription = ({
   description,
 }: HeadingDescriptionProps) => {
   return (
-    <div className="text-center max-w-2xl mx-auto mb-14 px-4 ">
+    <div className="text-center max-w-2xl mx-auto my-10 px-4 ">
       {/* Heading */}
       <h3
         className="py-4 font-bold text-2xl sm:text-3xl lg:text-4xl rounded-full 
