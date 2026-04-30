@@ -24,6 +24,18 @@ export default function OrderCard({ order, onView }: any) {
         >
           {order.order_status}
         </span>
+
+        <span
+          className={`px-3 py-1 text-xs rounded-full ${
+            order.payment_status === "paid"
+              ? "bg-green-100 text-green-600"
+              : order.payment_status === "failed"
+                ? "bg-red-100 text-red-600"
+                : "bg-yellow-100 text-yellow-600"
+          }`}
+        >
+          {order.payment_status}
+        </span>
       </div>
 
       <div className="mt-3 flex justify-between items-center">

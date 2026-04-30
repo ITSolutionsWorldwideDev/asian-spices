@@ -3,19 +3,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
+const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
+
 /**
  * Webhook endpoint for Pay.nl to notify payment status
  */
 export async function POST(req: NextRequest) {
+  console.log("🔥 WEBHOOK HIT");
+  const client = await pool.connect();
   try {
     const body = await req.json();
 
-    // console.log("Webhook payload:", body);
+    console.log("Pay.nl webhook:", body);
 
     const transactionId = body.id;
     // const status = body.status?.toLowerCase();
     const status = body.status?.action?.toLowerCase();
-    const reference = body.reference;
+    const reference = body.reference || body.order?.reference;
 
     if (!reference) {
       console.error("Missing reference in webhook:", body);
@@ -28,19 +32,27 @@ export async function POST(req: NextRequest) {
     // 🔐 OPTIONAL SAFETY: verify using statusUrl if available
     const statusUrl = body?.links?.status;
 
-    let verifiedStatus = body?.status?.action?.toLowerCase();
+    // let verifiedStatus = body?.status?.action?.toLowerCase();
+    let verifiedStatus =
+      body?.status?.action?.toLowerCase() || body?.status?.toLowerCase();
 
     if (statusUrl) {
       const verifyRes = await fetch(statusUrl, {
         headers: {
-          Authorization: `Bearer ${process.env.PAYNL_API_TOKEN}`,
+          Authorization: `Bearer ${PAYNL_API_TOKEN}`,
           Accept: "application/json",
         },
       });
 
       const verifyData = await verifyRes.json();
-      verifiedStatus = verifyData?.status?.action?.toLowerCase();
+
+      verifiedStatus =
+        verifyData?.status?.action?.toLowerCase() ||
+        verifyData?.status?.toLowerCase();
     }
+    console.log("Webhook reference:", reference);
+    console.log("Webhook transactionId:", transactionId);
+    console.log("Webhook status:", verifiedStatus);
 
     // =========================
     // STATUS MAPPING
@@ -61,7 +73,7 @@ export async function POST(req: NextRequest) {
     // =========================
     // IDEMPOTENT UPDATE
     // =========================
-    await pool.query(
+    await client.query(
       `
       UPDATE store_orders
       SET payment_status = $1,
@@ -79,8 +91,30 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Webhook error:", err);
     return NextResponse.json({ success: false }, { status: 500 });
+  } finally {
+    client.release();
   }
 }
+
+/* 
+
+
+    const orderId = body?.orderId || body?.order?.id;
+
+    if (!orderId) {
+      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
+    }
+
+    // 🔥 Fetch latest order status from Pay.nl
+    const res = await fetch(
+      `https://connect.pay.nl/v1/orders/${orderId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${PAYNL_API_TOKEN}`,
+        },
+      },
+    );
+*/
 
 // Security: verify signature first
 /* const signature = req.headers.get("x-paynl-signature");

@@ -9,6 +9,7 @@ import OrderSummary from "@/components/layout/checkout/OrderSummary";
 import RetryPaymentButton from "@/components/ui/RetryPaymentButton";
 import OrderTimeline from "@/components/ui/OrderTimeline";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import { useCartStore } from "@/store/useCartStore";
 
 interface Order {
   id: string;
@@ -27,6 +28,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const { show, hide } = useLoaderStore();
+  const { clearCart } = useCartStore();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -61,6 +63,12 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   if (!order) {
     return <p className="text-center text-red-500">Order not found</p>;
   }
+
+  useEffect(() => {
+    if (order?.payment_status === "paid") {
+      clearCart();
+    }
+  }, [order?.payment_status]);
 
   // =========================
   // UI STATES

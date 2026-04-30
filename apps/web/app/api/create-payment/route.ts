@@ -95,17 +95,9 @@ export async function POST(req: NextRequest) {
 
       const paymentData = await paymentResponse.json();
 
-      // console.log("Pay.nl order response:", orderData);
-      // console.log("Pay.nl payment response:", paymentData);
-      // console.log(JSON.stringify(paymentData, null, 2));
-
       if (!paymentResponse.ok) {
         console.error("Pay.nl payment error:", paymentData);
         throw new Error("Payment creation failed");
-        // return NextResponse.json(
-        //   { error: "Pay.nl payment creation failed", details: paymentData },
-        //   { status: 500 },
-        // );
       }
 
       const redirectUrl =
@@ -118,13 +110,6 @@ export async function POST(req: NextRequest) {
         console.error("Missing redirect URL:", paymentData);
         throw new Error("No redirect URL from Pay.nl");
       }
-
-      // Save transactionId
-      // await pool.query(
-      //   `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
-      //   [paynlOrderId, "paynl", order.id],
-      //   // [data.transactionId, "paynl", order.id]
-      // );
 
       await pool.query(
         `
@@ -237,22 +222,17 @@ async function createPayPalOrder(
 // const PAYNL_API_URL = "https://api.pay.nl/v1/payment";
 // const PAYNL_API_URL = "https://rest-api.pay.nl/v1/Transaction/start";
 // Prepare Pay.nl payload
-/* const paymentPayload = {
-        serviceId: PAYNL_SERVICE_ID,
-        apiToken: PAYNL_API_TOKEN,
-        amount: Math.round(amount * 100), // cents
-        paymentOptionId: 1, // card
-        description: `Order ${order.order_number}`,
-        returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?orderId=${order.id}`,
-        exchangeUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/paynl/webhook`,
-        customer: { email: customerEmail },
-      };
+/* 
 
-      const response = await fetch(PAYNL_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(paymentPayload),
-      });
+
+
+      // Save transactionId
+      // await pool.query(
+      //   `UPDATE store_orders SET transaction_id = $1, payment_method = $2 WHERE id = $3`,
+      //   [paynlOrderId, "paynl", order.id],
+      //   // [data.transactionId, "paynl", order.id]
+      // );
+
       */
 /* 
       const params = new URLSearchParams();
