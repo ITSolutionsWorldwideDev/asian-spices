@@ -5,16 +5,22 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import CheckoutStatus from "@/components/ui/CheckoutStatus";
 import PayPalCaptureHandler from "@/components/ui/PayPalCaptureHandler";
+import PaynlReturnHandler from "@/components/ui/PaynlReturnHandler";
+import { useState } from "react";
 
 interface Props {
   searchParams: {
     orderId?: string;
     token?: string;
+    id?: string; // paynl transaction id
+    statusAction?: string;
   };
 }
 
 export default function Page({ searchParams }: Props) {
-  const { orderId, token } = searchParams;
+  const { orderId, token, id, statusAction } = searchParams;
+
+  const [processingDone, setProcessingDone] = useState(false);
 
   return (
     <div>
@@ -40,8 +46,22 @@ export default function Page({ searchParams }: Props) {
             {/* ✅ PayPal only handler */}
             {token && <PayPalCaptureHandler orderId={orderId} token={token} />}
 
+            {/* ✅ Pay.nl return handler */}
+            {statusAction && (
+              <PaynlReturnHandler
+                orderId={orderId}
+                transactionId={id}
+                statusAction={statusAction}
+                onDone={() => setProcessingDone(true)}
+              />
+            )}
+
             {/* ✅ Unified status UI (PayPal + Pay.nl) */}
-            <CheckoutStatus orderId={orderId} />
+            {/* <CheckoutStatus orderId={orderId} /> */}
+
+            {(!statusAction || processingDone) && (
+              <CheckoutStatus orderId={orderId} />
+            )}
           </>
         )}
       </div>
