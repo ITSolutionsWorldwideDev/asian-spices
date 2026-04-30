@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "@/components/ui/ProductCard";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function InfiniteProducts({ initialProducts, filters }: any) {
   const [products, setProducts] = useState(initialProducts || []);
@@ -11,6 +12,8 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  const { show, hide } = useLoaderStore();
 
   const observerRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,6 +45,9 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     setLoading(true);
 
     try {
+
+      show("Loading Products...");
+
       const query = buildParams(filters, page);
 
       const res = await fetch(`/api/products?${query}`);
@@ -67,6 +73,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
       setPage((prev) => prev + 1);
     } finally {
       setLoading(false);
+      hide();
     }
   };
 

@@ -7,6 +7,7 @@ import Modal from "@/components/layout/account/Modal";
 import AddressForm from "@/components/layout/account/AddressForm";
 import AddressList from "@/components/layout/account/address/AddressList";
 import AddressSkeleton from "@/components/layout/account/address/AddressSkeleton";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 type Address = {
   id: string;
@@ -22,12 +23,16 @@ export default function AddressesPage() {
   const [editing, setEditing] = useState<Address | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { show, hide } = useLoaderStore();
+
   const load = async () => {
     setLoading(true);
+    show("Loading Addresses...");
     const res = await fetch("/api/account/addresses");
     const data = await res.json();
     setAddresses(data.addresses);
     setLoading(false);
+    hide();
   };
 
   useEffect(() => {
@@ -36,7 +41,7 @@ export default function AddressesPage() {
 
   const setDefault = async (id: string) => {
     await fetch(`/api/account/addresses/${id}/default`, {
-      method: "POST",
+      method: "PATCH",
     });
     load();
   };

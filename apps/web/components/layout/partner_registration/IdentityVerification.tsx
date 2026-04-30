@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ReadAloudBtn from "./ReadAloudBtn";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 const banks = [
   { name: "ABN AMRO", issuer: "ABNANL2A" },
@@ -22,6 +23,7 @@ export default function IdentityVerification({
   setFormData,
 }: any) {
   const selectedBank = formData.selected_bank;
+  const { show, hide } = useLoaderStore();
 
   // 🔥 NEW STATE MACHINE
   const [verificationState, setVerificationState] = useState<
@@ -31,18 +33,24 @@ export default function IdentityVerification({
   const [loading, setLoading] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   /**
    * STEP 1: START IDIN
    */
   const handleIDIN = async () => {
-    if (!selectedBank) {
-      alert("Please select a bank");
-      return;
-    }
-
     try {
+      if (!selectedBank) {
+        throw {
+          message: "Please select a bank",
+          code: "BANK_SELECTION",
+        };
+        // return;
+      }
+
       setLoading(true);
+      show("iDIN Verification in Process...");
+
       setVerificationState("pending");
 
       localStorage.setItem(
@@ -88,11 +96,16 @@ export default function IdentityVerification({
 
       // start polling
       startPolling(tenant.id);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setVerificationState("failed");
       setLoading(false);
-      alert("Failed to start verification");
+
+      if (err.code === "BANK_SELECTION") {
+        setApiError("Please select a bank");
+      }
+    } finally {
+      hide(); // 🔥 STOP LOADER ALWAYS
     }
   };
 
@@ -104,6 +117,7 @@ export default function IdentityVerification({
 
     intervalRef.current = setInterval(async () => {
       try {
+        show("Checking for iDIN satus...");
         const res = await fetch(
           `/api/partner-registration/idin/status?tenantId=${tenantId}`,
         );
@@ -128,6 +142,8 @@ export default function IdentityVerification({
         }
       } catch (err) {
         console.error("poll error", err);
+      } finally {
+        hide(); // 🔥 STOP LOADER ALWAYS
       }
     }, 3000);
   };
@@ -147,11 +163,15 @@ export default function IdentityVerification({
 
     // ✅ validation
     if (!formData.selected_bank) {
-      alert("Please select a bank to continue");
-      return;
+      throw {
+        message: "Please select a bank",
+        code: "BANK_SELECTION",
+      };
     }
 
     try {
+      show("Setting up for Partner Store Registration...");
+
       const response = await fetch("/api/partner-registration", {
         method: "POST",
         headers: {
@@ -173,11 +193,13 @@ export default function IdentityVerification({
       setActiveStep(activeStep + 1);
 
       localStorage.removeItem("partner_registration");
-
-      // alert("Partner registration submitted successfully!");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong. Please try again.");
+    } catch (err: any) {
+      console.error("Error:", err);
+      if (err.code === "BANK_SELECTION") {
+        setApiError("Please select a bank");
+      }
+    } finally {
+      hide(); // 🔥 STOP LOADER ALWAYS
     }
   };
 
@@ -213,6 +235,11 @@ export default function IdentityVerification({
 
         {/* Bank Selection */}
         <div>
+          {apiError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+              {apiError}
+            </div>
+          )}
           <p className="font-medium text-gray-700 mb-4">
             Select your bank <span className="text-red-500">*</span>
           </p>

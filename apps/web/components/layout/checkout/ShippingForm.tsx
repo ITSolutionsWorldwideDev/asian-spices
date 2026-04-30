@@ -1,6 +1,7 @@
 // apps/web/components/layout/checkout/ShippingForm.tsx
 
 "use client";
+import { useLoaderStore } from "@/store/useLoaderStore";
 import { ChevronRight } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -40,15 +41,19 @@ export default function ShippingForm({
   };
 
   const [countries, setCountries] = useState<Country[]>([]);
+  const { show, hide } = useLoaderStore();
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
+        show("Loading Countries...");
         const res = await fetch("/api/countries");
         const data = await res.json();
         setCountries(data);
       } catch (err) {
         console.error("Failed to load countries", err);
+      } finally {
+        hide(); // 🔥 STOP LOADER ALWAYS
       }
     };
 

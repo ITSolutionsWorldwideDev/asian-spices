@@ -4,6 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import { useCartStore } from "@/store/useCartStore";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function PayPalCaptureHandler({
   orderId,
@@ -14,6 +15,7 @@ export default function PayPalCaptureHandler({
 }) {
   const clearCart = useCartStore((s) => s.clearCart);
   const hasRun = useRef(false);
+  const { show, hide } = useLoaderStore();
 
   useEffect(() => {
     if (!orderId || !token) return;
@@ -22,6 +24,8 @@ export default function PayPalCaptureHandler({
     const capture = async () => {
       try {
         hasRun.current = true;
+
+        show("Setting up for Payment...");
 
         const res = await fetch("/api/paypal/capture", {
           method: "POST",
@@ -41,6 +45,8 @@ export default function PayPalCaptureHandler({
         clearCart();
       } catch (err) {
         console.error("PayPal capture failed", err);
+      } finally {
+        hide(); // 🔥 STOP LOADER ALWAYS
       }
     };
 

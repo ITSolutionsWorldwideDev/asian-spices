@@ -5,6 +5,8 @@
 import { useState, useEffect } from "react";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { ArrowLeft, ArrowRight, Building2, MapPin } from "lucide-react";
+import { useLoaderStore } from "@/store/useLoaderStore";
+
 import ReadAloudBtn from "./ReadAloudBtn";
 import { z } from "zod";
 
@@ -22,6 +24,8 @@ export default function BusinessVerification({
 
   const countries = useGlobalStore((s) => s.countries);
   const selectedCountry = useGlobalStore((s) => s.selectedCountry);
+
+  const { show, hide } = useLoaderStore();
 
   useEffect(() => {
     if (!formData.country && selectedCountry) {
@@ -97,6 +101,7 @@ export default function BusinessVerification({
     setHasSearched(true);
 
     try {
+      show("Checking for KvK...");
       const res = await fetch(`/api/kvk?naam=${query}`);
       const data = await res.json();
 
@@ -115,6 +120,7 @@ export default function BusinessVerification({
       setResult([]);
     } finally {
       setLoading(false);
+      hide();
     }
   };
 

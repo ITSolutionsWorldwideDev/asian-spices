@@ -6,6 +6,12 @@ import { webAuthOptions } from "@acme/auth";
 import { pool } from "@acme/db";
 
 export async function POST(_: Request, { params }: any) {
+  const session = await getServerSession(webAuthOptions);
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const { id } = params;
 
   const client = await pool.connect();

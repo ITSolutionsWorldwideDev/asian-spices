@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import OrderSummary from "@/components/layout/checkout/OrderSummary";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 interface Order {
   id: string;
@@ -31,11 +32,14 @@ export default function CheckoutSuccess({ orderId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { show, hide } = useLoaderStore();
+
   useEffect(() => {
     if (!orderId) return;
 
     const fetchOrder = async () => {
       try {
+        show("Setting up for Payment...");
         const res = await fetch(`/api/get-order?orderId=${orderId}`);
         const data = await res.json();
 
@@ -53,6 +57,7 @@ export default function CheckoutSuccess({ orderId }: Props) {
         setError("Something went wrong fetching your order.");
       } finally {
         setLoading(false);
+        hide();
       }
     };
 

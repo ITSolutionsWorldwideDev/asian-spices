@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 /* ---------------- ZOD SCHEMA ---------------- */
 const signupSchema = z
@@ -31,6 +32,8 @@ export default function SignupForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const { show, hide } = useLoaderStore();
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -64,6 +67,7 @@ export default function SignupForm() {
 
     try {
       setLoading(true);
+      show("signing Up...");
 
       /* ---------------- API CALL ---------------- */
       const res = await fetch("/api/auth/signup", {
@@ -92,6 +96,7 @@ export default function SignupForm() {
       setErrors({ email: "Something went wrong" });
     } finally {
       setLoading(false);
+      hide();
     }
   };
 

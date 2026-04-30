@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useLoaderStore } from "@/store/useLoaderStore";
 import { useState } from "react";
 
 interface WriteReviewFormProps {
@@ -16,6 +17,7 @@ export default function WriteReviewForm({
   const [loading, setLoading] = useState(false);
   const [hover, setHover] = useState(0);
   const [message, setMessage] = useState("");
+  const { show, hide } = useLoaderStore();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +28,7 @@ export default function WriteReviewForm({
 
   // 🔹 handle input change
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setMessage("");
     const { name, value } = e.target;
@@ -47,6 +49,8 @@ export default function WriteReviewForm({
     setMessage("");
 
     try {
+      show("Adding Reviews...");
+
       const res = await fetch("/api/products/reviews", {
         method: "POST",
         headers: {
@@ -79,6 +83,8 @@ export default function WriteReviewForm({
     } catch (err: any) {
       console.error(err);
       setMessage("❌ Failed to submit review");
+    } finally {
+      hide(); // 🔥 STOP LOADER ALWAYS
     }
 
     setLoading(false);
@@ -86,15 +92,11 @@ export default function WriteReviewForm({
 
   return (
     <div className="max-w-xl mx-auto p-6 bg-white shadow-xl rounded-2xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Leave a Review ⭐
-      </h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Leave a Review ⭐</h2>
 
       {/* 🔥 MESSAGE */}
       {message && (
-        <div className="mb-4 text-center text-sm text-gray-600">
-          {message}
-        </div>
+        <div className="mb-4 text-center text-sm text-gray-600">{message}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">

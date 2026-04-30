@@ -10,6 +10,7 @@ import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { getErrorMessage } from "@/lib/form/getErrorMessage";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function ProfileForm() {
   const {
@@ -19,8 +20,11 @@ export default function ProfileForm() {
     formState: { errors, isSubmitting },
   } = useZodForm(profileSchema);
   const [loading, setLoading] = useState(true);
+  const { show, hide } = useLoaderStore();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
+    show("Fetching Profile...");
     fetch("/api/account/profile")
       .then((res) => res.json())
       .then((data) => {
@@ -29,17 +33,24 @@ export default function ProfileForm() {
           email: data.user.email || "",
         });
         setLoading(false);
+        hide();
       });
   }, [reset]);
 
   const onSubmit = async (data: any) => {
-    const res = await fetch("/api/account/profile", {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
+    try {
+      const res = await fetch("/api/account/profile", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
 
-    if (res.ok) {
-      alert("Profile updated ✅");
+      if (res.ok) {
+        setApiError("Profile updated");
+      }
+    } catch (err: any) {
+      setApiError("Error: " + err);
+    } finally {
+      hide();
     }
   };
 
@@ -49,6 +60,11 @@ export default function ProfileForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          {apiError}
+        </div>
+      )}
       <div className="grid md:grid-cols-2 gap-5">
         <FormField label="Full Name" error={getErrorMessage(errors.name)}>
           <Input {...register("name")} placeholder="Your name" />
@@ -64,7 +80,12 @@ export default function ProfileForm() {
       </div>
 
       <div className="pt-4 border-t">
-        <Button loading={isSubmitting} className="bg-orange-500 hover:bg-orange-600">Save Changes</Button>
+        <Button
+          loading={isSubmitting}
+          className="bg-orange-500 hover:bg-orange-600"
+        >
+          Save Changes
+        </Button>
       </div>
     </form>
   );

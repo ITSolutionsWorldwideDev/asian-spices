@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useLoaderStore } from "@/store/useLoaderStore";
 import { useState } from "react";
 
 export default function RetryPaymentButton({
@@ -14,10 +15,13 @@ export default function RetryPaymentButton({
   email: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const { show, hide } = useLoaderStore();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const retryPayment = async () => {
     try {
       setLoading(true);
+      show("Setting up for Payment...");
 
       const res = await fetch("/api/create-payment", {
         method: "POST",
@@ -35,16 +39,22 @@ export default function RetryPaymentButton({
       const data = await res.json();
 
       if (!data.success) {
-        alert("Retry failed. Please try again.");
-        return;
+        throw {
+            message: "Failed to initiate payment. Please try again.",
+            code: "PAYMENT_FAILED",
+          };
       }
 
       window.location.href = data.redirectUrl;
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Something went wrong.");
+
+      if (err.code === "PAYMENT_FAILED") {
+        setApiError("Failed to initiate payment. Please try again.");
+      }
     } finally {
       setLoading(false);
+      hide();
     }
   };
 

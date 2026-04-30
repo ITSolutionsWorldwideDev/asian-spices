@@ -8,6 +8,7 @@ import Link from "next/link";
 import OrderSummary from "@/components/layout/checkout/OrderSummary";
 import RetryPaymentButton from "@/components/ui/RetryPaymentButton";
 import OrderTimeline from "@/components/ui/OrderTimeline";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 interface Order {
   id: string;
@@ -25,10 +26,12 @@ interface Order {
 export default function CheckoutStatus({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const { show, hide } = useLoaderStore();
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
+        show("Checkout Status...");
         const res = await fetch(`/api/get-order?orderId=${orderId}`);
         const data = await res.json();
 
@@ -39,6 +42,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         console.error(err);
       } finally {
         setLoading(false);
+        hide();
       }
     };
 

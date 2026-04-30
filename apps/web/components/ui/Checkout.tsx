@@ -75,6 +75,8 @@ export default function Checkout() {
       if (!session?.user) return;
 
       try {
+        show("Loading Addresses...");
+
         const res = await fetch("/api/account/addresses");
         const data = await res.json();
 
@@ -99,46 +101,13 @@ export default function Checkout() {
         }
       } catch (err) {
         console.error("Failed to load addresses", err);
+      } finally {
+        hide(); // 🔥 STOP LOADER ALWAYS
       }
     };
 
     loadAddresses();
   }, [session]);
-
-  /*  useEffect(() => {
-    const loadDefaultAddress = async () => {
-      if (!session?.user) return;
-
-      try {
-        const res = await fetch("/api/account/addresses/default");
-        const data = await res.json();
-
-        if (!data.address) return;
-
-        const a = data.address;
-
-        console.log('loadDefaultAddress ===== ',a)
-
-        setSelectedAddress(a);
-
-        setFormData((prev) => ({
-          ...prev,
-          firstName: a.first_name || prev.firstName,
-          lastName: a.last_name || prev.lastName,
-          address: a.address_line1 || "",
-          appartment: a.address_line2 || "",
-          city: a.city || "",
-          state: a.state || "",
-          zip: a.postal_code || "",
-          country: a.country || "NL",
-        }));
-      } catch (err) {
-        console.error("Failed to load default address", err);
-      }
-    };
-
-    loadDefaultAddress();
-  }, [session]); */
 
   const [formData, setFormData] = useState<CheckoutData>({
     email: "",
@@ -314,8 +283,10 @@ export default function Checkout() {
         const data = await payment.json();
 
         if (!data.success) {
-          alert("Failed to initiate payment. Please try again.");
-          return;
+          throw {
+            message: "Failed to initiate payment. Please try again.",
+            code: "PAYMENT_FAILED",
+          };
         }
         // Redirect user to payment gateway
         window.location.href = data.redirectUrl;
@@ -344,6 +315,10 @@ export default function Checkout() {
 
       if (err.code === "MISSING_LOCATION") {
         setApiError("Please enter your full delivery address.");
+      }
+
+      if (err.code === "PAYMENT_FAILED") {
+        setApiError("Failed to initiate payment. Please try again.");
       }
 
       window.scrollTo({ top: 0, behavior: "smooth" });

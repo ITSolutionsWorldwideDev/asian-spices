@@ -8,6 +8,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import { z } from "zod";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 /* ---------------- SCHEMA ---------------- */
 const loginSchema = z.object({
@@ -17,6 +18,8 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
   const router = useRouter();
+
+  const { show, hide } = useLoaderStore();
 
   const [form, setForm] = useState({
     email: "",
@@ -61,6 +64,7 @@ export default function LoginForm() {
 
     try {
       setLoading(true);
+      show("Login Process...");
 
       const res = await signIn("credentials", {
         email: form.email,
@@ -87,6 +91,7 @@ export default function LoginForm() {
       setErrors({ email: "Login failed. Try again." });
     } finally {
       setLoading(false);
+      hide();
     }
   };
 
