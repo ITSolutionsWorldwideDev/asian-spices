@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
 
     const action = statusAction.toLowerCase();
 
+    console.log("action === ", action);
+
     let paymentStatus: "pending" | "paid" | "failed" = "pending";
 
     if (action === "paid") paymentStatus = "paid";
@@ -23,8 +25,9 @@ export async function POST(req: NextRequest) {
       paymentStatus = "failed";
     }
 
-    const result: any = await pool.query(
-      `
+    console.log("paymentStatus === ", paymentStatus);
+
+    let query = `
       UPDATE store_orders
       SET payment_status = $1,
           transaction_id = COALESCE($2, transaction_id),
@@ -32,9 +35,15 @@ export async function POST(req: NextRequest) {
       WHERE id = $3
         AND payment_status != 'paid'
       RETURNING payment_status
-      `,
-      [paymentStatus, transactionId, orderId],
-    );
+      `;
+
+    const result: any = await pool.query(query, [
+      paymentStatus,
+      transactionId,
+      orderId,
+    ]);
+
+    console.log("result === ", result);
 
     return NextResponse.json({
       success: true,

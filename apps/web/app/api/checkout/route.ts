@@ -55,36 +55,6 @@ export async function POST(req: NextRequest) {
         customer_id = result.rows[0].id;
       }
 
-      // const existingCustomer: any = await client.query(
-      //   `SELECT id FROM store_customers 
-      //     WHERE user_id = $1 LIMIT 1`,
-      //   [userId],
-      // );
-
-      // if (existingCustomer.rowCount > 0) {
-      //   customer_id = existingCustomer.rows[0].id;
-      // } else {
-      //   // create new linked customer
-      //   const result = await client.query(
-      //     `INSERT INTO store_customers 
-      //     (store_id, user_id, first_name, last_name, email, phone, city, postcode)
-      //     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-      //     RETURNING id`,
-      //     [
-      //       store_id,
-      //       userId,
-      //       customer.firstName,
-      //       customer.lastName,
-      //       email,
-      //       customer.phone,
-      //       shippingAddress.city,
-      //       shippingAddress.zip,
-      //     ],
-      //   );
-
-      //   customer_id = result.rows[0].id;
-      // }
-
       // 🔥 assign CUSTOMER role
       await client.query(
         `INSERT INTO store_users (user_id, store_id, role_id)
@@ -277,3 +247,34 @@ export async function POST(req: NextRequest) {
     client.release();
   }
 }
+
+
+      // const existingCustomer: any = await client.query(
+      //   `SELECT id FROM store_customers 
+      //     WHERE user_id = $1 LIMIT 1`,
+      //   [userId],
+      // );
+
+      // if (existingCustomer.rowCount > 0) {
+      //   customer_id = existingCustomer.rows[0].id;
+      // } else {
+      //   // create new linked customer
+      //   const result = await client.query(
+      //     `INSERT INTO store_customers 
+      //     (store_id, user_id, first_name, last_name, email, phone, city, postcode)
+      //     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      //     RETURNING id`,
+      //     [
+      //       store_id,
+      //       userId,
+      //       customer.firstName,
+      //       customer.lastName,
+      //       email,
+      //       customer.phone,
+      //       shippingAddress.city,
+      //       shippingAddress.zip,
+      //     ],
+      //   );
+
+      //   customer_id = result.rows[0].id;
+      // }

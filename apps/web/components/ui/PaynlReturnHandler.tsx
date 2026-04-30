@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
+import CheckoutStatus from "./CheckoutStatus";
 
 export default function PaynlReturnHandler({
   orderId,
@@ -19,12 +20,19 @@ export default function PaynlReturnHandler({
   const [processing, setProcessing] = useState(true);
   const { clearCart } = useCartStore();
 
-  if (statusAction.toLowerCase() === "paid") {
-    clearCart();
-  }
-
   useEffect(() => {
+    if (statusAction?.toLowerCase() === "paid") {
+      clearCart();
+    }
+  }, [statusAction]);
+
+   useEffect(() => {
+    let called = false; // 🔥 prevent double execution
+
     const confirmPayment = async () => {
+      if (called) return;
+      called = true;
+
       try {
         await fetch("/api/paynl/confirm", {
           method: "POST",
@@ -39,7 +47,6 @@ export default function PaynlReturnHandler({
         console.error("Pay.nl confirm failed:", err);
       } finally {
         setProcessing(false);
-        // onDone?.();
       }
     };
 
@@ -59,5 +66,7 @@ export default function PaynlReturnHandler({
     );
   }
 
-  return null;
+  return <CheckoutStatus orderId={orderId} />;
+
+//   return null;
 }

@@ -4,12 +4,20 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
-import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
+// import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
 
 interface Props {
   items: any[];
   shippingMethod: "standard" | "express" | "overnight";
 }
+
+export const SHIPPING_OPTIONS = {
+  standard: { label: "Standard Shipping", price: 5.99 },
+  express: { label: "Express Shipping", price: 12.99 },
+  overnight: { label: "Overnight Shipping", price: 24.99 },
+} as const;
+
+export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
 export default function OrderSummary({ items, shippingMethod }: Props) {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
@@ -25,7 +33,17 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
     0,
   );
 
-  const shippingPrice = SHIPPING_OPTIONS[shippingMethod].price;
+  // const shippingOption = SHIPPING_OPTIONS[shippingMethod];
+  const isValidShippingMethod = (method: any): method is ShippingMethod => {
+    return method in SHIPPING_OPTIONS;
+  };
+
+  const safeMethod: ShippingMethod = isValidShippingMethod(shippingMethod)
+    ? shippingMethod
+    : "standard";
+
+  const shippingOption = SHIPPING_OPTIONS[safeMethod];
+  const shippingPrice = shippingOption?.price ?? 0;
 
   // const savings = cart.reduce((acc, item) => {
   //   if (!item.oldPrice) return acc;
@@ -92,8 +110,10 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
         {deliverDiffer && (
           <>
             <div className="flex justify-between mt-3">
-              <span>Shipping ({SHIPPING_OPTIONS[shippingMethod].label})</span>
-              <span>${shippingPrice.toFixed(2)}</span>
+              {/* <span>Shipping ({SHIPPING_OPTIONS[shippingMethod].label})</span>
+              <span>${shippingPrice.toFixed(2)}</span> */}
+              <span>Shipping ({shippingOption.label})</span>
+              <span>${shippingOption.price.toFixed(2)}</span>
             </div>
           </>
         )}

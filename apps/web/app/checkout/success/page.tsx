@@ -60,12 +60,18 @@ export default async function Page({ searchParams }: Props) {
               />
             )}
 
-            {/* ✅ Unified status UI (PayPal + Pay.nl) */}
-            <CheckoutStatus orderId={orderId} />
+            
 
-            {/* {(!statusAction || processingDone) && (
+            {/* 👇 Pay.nl handler FIRST */}
+            {statusAction ? (
+              <PaynlReturnHandler
+                orderId={orderId}
+                transactionId={id}
+                statusAction={statusAction}
+              />
+            ) : (
               <CheckoutStatus orderId={orderId} />
-            )} */}
+            )}
           </>
         )}
       </div>

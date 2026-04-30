@@ -31,6 +31,40 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   const { clearCart } = useCartStore();
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const fetchOrder = async () => {
+      try {
+        show("Checking payment status...");
+        const res = await fetch(`/api/get-order?orderId=${orderId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setOrder(data.order);
+
+          // ✅ STOP polling when payment is done
+          if (data.order.payment_status !== "pending") {
+            clearInterval(interval);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        hide();
+      }
+    };
+
+    fetchOrder();
+
+    // ✅ only poll if still pending
+    interval = setInterval(fetchOrder, 5000);
+
+    return () => clearInterval(interval);
+  }, [orderId]);
+
+  /* useEffect(() => {
+    let interval: NodeJS.Timeout;
     const fetchOrder = async () => {
       try {
         show("Checkout Status...");
@@ -51,10 +85,16 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
     fetchOrder();
 
     // 🔥 polling for Pay.nl webhook updates
-    const interval = setInterval(fetchOrder, 5000);
+    interval = setInterval(fetchOrder, 5000);
 
     return () => clearInterval(interval);
-  }, [orderId]);
+  }, [orderId]); */
+
+  useEffect(() => {
+    if (order?.payment_status === "paid") {
+      clearCart();
+    }
+  }, [order]);
 
   if (loading) {
     return <p className="text-center mt-10">Checking payment status...</p>;
@@ -64,11 +104,11 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
     return <p className="text-center text-red-500">Order not found</p>;
   }
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (order?.payment_status === "paid") {
       clearCart();
     }
-  }, [order?.payment_status]);
+  }, [order?.payment_status]); */
 
   // =========================
   // UI STATES
