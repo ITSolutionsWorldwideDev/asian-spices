@@ -9,12 +9,12 @@ export default function PaynlReturnHandler({
   orderId,
   transactionId,
   statusAction,
-  onDone,
+//   onDone,
 }: {
   orderId: string;
   transactionId?: string;
   statusAction: string;
-  onDone?: () => void;
+//   onDone?: () => void;
 }) {
   const [processing, setProcessing] = useState(true);
   const { clearCart } = useCartStore();
@@ -39,7 +39,7 @@ export default function PaynlReturnHandler({
         console.error("Pay.nl confirm failed:", err);
       } finally {
         setProcessing(false);
-        onDone?.();
+        // onDone?.();
       }
     };
 
