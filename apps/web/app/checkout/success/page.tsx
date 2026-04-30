@@ -9,16 +9,20 @@ import PaynlReturnHandler from "@/components/ui/PaynlReturnHandler";
 // import { useState } from "react";
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     orderId?: string;
     token?: string;
     id?: string; // paynl transaction id
     statusAction?: string;
-  };
+  }>;
 }
 
-export default function Page({ searchParams }: Props) {
-  const { orderId, token, id, statusAction } = searchParams;
+export default async function Page({ searchParams }: Props) {
+
+  const params = await searchParams;
+  const { orderId, token, id, statusAction } = params;
+
+  console.log('new params   ====',params);
 
   // const [processingDone, setProcessingDone] = useState(false);
 

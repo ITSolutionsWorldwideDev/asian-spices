@@ -23,22 +23,24 @@ export async function GET(req: NextRequest) {
         o.order_status,
         o.payment_method,
         o.transaction_id,
-        o.shipping_method,
         o.customer_email,
 
         json_agg(
           json_build_object(
             'id', i.product_id,
-            'title', p.title,
+            'title', p.name,
             'price', i.price,
             'quantity', i.quantity,
-            'image', p.image
+            'image', md.file_url
           )
         ) AS cart_items
 
       FROM store_orders o
-      JOIN store_order_items i ON o.id = i.order_id
-      JOIN products p ON i.product_id = p.id
+      LEFT JOIN store_order_items i ON o.id = i.order_id
+      LEFT JOIN store_products p ON i.product_id = p.id
+      LEFT JOIN store_product_images pi 
+        ON pi.product_id = p.id AND pi.is_primary = true
+      LEFT JOIN media md ON md.media_id = pi.url::int
       WHERE o.id = $1
       GROUP BY o.id
       `,

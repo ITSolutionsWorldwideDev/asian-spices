@@ -194,10 +194,12 @@ export default function Checkout() {
         } catch (error) {
           console.error("Geocode error:", error);
           throw error;
-        } finally {
-          hide(); // 🔥 STOP LOADER ALWAYS
         }
       };
+
+      /*  finally {
+          hide(); // 🔥 STOP LOADER ALWAYS
+        } */
 
       // Before calling placeOrder:
       if (!formData.latitude || !formData.longitude) {

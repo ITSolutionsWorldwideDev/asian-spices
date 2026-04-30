@@ -15,16 +15,17 @@ export async function GET() {
   const client = await pool.connect();
 
   try {
-    const { rows } = await client.query(
-      `
+    let query = `
       SELECT o.*
       FROM store_orders o
       JOIN store_customers c ON c.id = o.customer_id
       WHERE c.user_id = $1
       ORDER BY o.created_at DESC
-      `,
-      [session.user.id],
-    );
+      `;
+
+    console.log("query === ", query);
+    console.log("session.user.id === ", session.user.id);
+    const { rows } = await client.query(query, [session.user.id]); // WHERE c.user_id = $1
 
     return NextResponse.json({ orders: rows });
   } finally {
