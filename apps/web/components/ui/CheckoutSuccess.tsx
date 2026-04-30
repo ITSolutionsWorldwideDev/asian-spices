@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import OrderSummary from "@/components/layout/checkout/OrderSummary";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
 
 interface Order {
   id: string;
@@ -106,7 +106,7 @@ export default function CheckoutSuccess({ orderId }: Props) {
 
         <h2 className="text-xl font-semibold mb-4">Items</h2>
 
-        <OrderSummary
+        <OrderSummaryReadOnly
           items={order.cart_items}
           shippingMethod={order.shipping_method || "standard"}
         />

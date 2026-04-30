@@ -11,6 +11,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
 
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const { show, hide } = useLoaderStore();
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function OrdersPage() {
                 console.error("Status check failed:", err);
               }
             }
-          })
+          }),
         );
 
         // 3️⃣ Refetch updated orders (IMPORTANT)
@@ -69,23 +71,32 @@ export default function OrdersPage() {
       ) : (
         <div className="grid gap-4">
           {orders.map((order: any) => (
+            <div key={order.id}>
+              <OrderCard
+                order={order}
+                isOpen={expandedId === order.id}
+                onToggle={() =>
+                  setExpandedId(expandedId === order.id ? null : order.id)
+                }
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <OrderDrawer order={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
+}
+/* <div className="grid gap-4">
+          {orders.map((order: any) => (
             <OrderCard
               key={order.id}
               order={order}
               onView={setSelected}
             />
           ))}
-        </div>
-      )}
-
-      <OrderDrawer
-        order={selected}
-        onClose={() => setSelected(null)}
-      />
-    </div>
-  );
-}
-
+        </div> */
 /* "use client";
 
 import { useEffect, useState } from "react";

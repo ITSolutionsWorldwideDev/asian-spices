@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (!latitude || !longitude) {
       return errorResponse(
         "Please enter a valid delivery address to continue.",
-        "MISSING_LOCATION"
+        "MISSING_LOCATION",
       );
     }
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       // 🔍 find existing store_customer
       const existing = await client.query(
         `SELECT id FROM store_customers WHERE user_id = $1 LIMIT 1`,
-        [userId]
+        [userId],
       );
 
       if (existing.rowCount) {
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
             customer.phone,
             shippingAddress.city,
             shippingAddress.postal_code,
-          ]
+          ],
         );
 
         customer_id = result.rows[0].id;
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
           customer.phone,
           shippingAddress.city,
           shippingAddress.postal_code,
-        ]
+        ],
       );
 
       customer_id = result.rows[0].id;
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       // 🔥 optional: create user account
       const userCheck = await client.query(
         `SELECT id FROM users WHERE email = $1`,
-        [email]
+        [email],
       );
 
       if (userCheck.rowCount === 0) {
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
           `INSERT INTO users (email, password_hash)
            VALUES ($1,$2)
            RETURNING id`,
-          [email, hash]
+          [email, hash],
         );
 
         const newUserId = newUser.rows[0].id;
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           `UPDATE store_customers 
            SET user_id = $1 
            WHERE id = $2`,
-          [newUserId, customer_id]
+          [newUserId, customer_id],
         );
       }
     }
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
         shippingAddress.state,
         shippingAddress.postal_code,
         shippingAddress.country,
-      ]
+      ],
     );
 
     // =========================================
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
       ORDER BY distance ASC
       LIMIT 10
       `,
-      [latitude, longitude]
+      [latitude, longitude],
     );
 
     const nearestStores = storesResult.rows;
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
     if (!nearestStores.length) {
       return errorResponse(
         "We don't deliver to your location yet.",
-        "NO_NEARBY_STORES"
+        "NO_NEARBY_STORES",
       );
     }
 
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
       FROM store_product_catalog
       WHERE product_id = ANY($1) AND store_id = ANY($2)
       `,
-      [productIds, storeIds]
+      [productIds, storeIds],
     );
 
     const catalog = catalogResult.rows;
@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
     if (!bestStore) {
       return errorResponse(
         "Sorry, no nearby store has all items in stock.",
-        "NO_STORE_AVAILABLE"
+        "NO_STORE_AVAILABLE",
       );
     }
 
@@ -192,11 +192,12 @@ export async function POST(req: NextRequest) {
     // =========================================
     const orderResult = await client.query(
       `INSERT INTO store_orders
-        (store_id, order_number, customer_id, customer_email, order_status,
+        (store_id, current_store_id, order_number, customer_id, customer_email, order_status,
          subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING id`,
       [
+        bestStore,
         bestStore,
         `ORD-${Date.now()}`,
         customer_id,
@@ -207,7 +208,7 @@ export async function POST(req: NextRequest) {
         pricing.shipping,
         pricing.total,
         "pending",
-      ]
+      ],
     );
 
     const order_id = orderResult.rows[0].id;
@@ -217,20 +218,17 @@ export async function POST(req: NextRequest) {
     // =========================================
     for (const item of cartItems) {
       const product = catalog.find(
-        (c) => c.store_id === bestStore && c.product_id === item.id
+        (c) => c.store_id === bestStore && c.product_id === item.id,
       );
 
       if (!product || product.quantity < item.quantity) {
-        return errorResponse(
-          `${item.title} is out of stock`,
-          "OUT_OF_STOCK"
-        );
+        return errorResponse(`${item.title} is out of stock`, "OUT_OF_STOCK");
       }
 
       await client.query(
         `INSERT INTO store_order_items (order_id, product_id, quantity, price)
          VALUES ($1,$2,$3,$4)`,
-        [order_id, item.id, item.quantity, Number(product.price)]
+        [order_id, item.id, item.quantity, Number(product.price)],
       );
     }
 
@@ -250,7 +248,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: error.message || "Order creation failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     client.release();

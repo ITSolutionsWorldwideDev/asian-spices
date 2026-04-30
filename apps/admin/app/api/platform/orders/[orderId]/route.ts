@@ -24,7 +24,7 @@ export async function GET(
         a.city,
         a.country
         FROM store_orders o
-        LEFT JOIN stores s ON s.id = o.current_store_id
+        LEFT JOIN stores s ON (s.id = o.current_store_id OR s.id = o.store_id)
         LEFT JOIN store_customers c ON c.id = o.customer_id
         LEFT JOIN store_customer_addresses a 
         ON a.customer_id = c.id

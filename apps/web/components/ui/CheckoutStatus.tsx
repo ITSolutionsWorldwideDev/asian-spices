@@ -5,11 +5,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import OrderSummary from "@/components/layout/checkout/OrderSummary";
 import RetryPaymentButton from "@/components/ui/RetryPaymentButton";
 import OrderTimeline from "@/components/ui/OrderTimeline";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { useCartStore } from "@/store/useCartStore";
+import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
 
 interface Order {
   id: string;
@@ -122,7 +122,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         </h2>
         <p>Order #{order.order_number} has been confirmed.</p>
 
-        <OrderSummary
+        <OrderSummaryReadOnly
           items={order.cart_items}
           shippingMethod={order.shipping_method}
         />
@@ -176,7 +176,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         This page will update automatically.
       </p>
 
-      <OrderSummary
+      <OrderSummaryReadOnly
         items={order.cart_items}
         shippingMethod={order.shipping_method}
       />

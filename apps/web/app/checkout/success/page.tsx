@@ -51,14 +51,14 @@ export default async function Page({ searchParams }: Props) {
             {token && <PayPalCaptureHandler orderId={orderId} token={token} />}
 
             {/* ✅ Pay.nl return handler */}
-            {statusAction && (
+            {/* {statusAction && (
               <PaynlReturnHandler
                 orderId={orderId}
                 transactionId={id}
                 statusAction={statusAction}
                 // onDone={() => setProcessingDone(true)}
               />
-            )}
+            )} */}
 
             
 
