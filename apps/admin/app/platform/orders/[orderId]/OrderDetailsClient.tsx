@@ -81,7 +81,15 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
       <div className="content p-6 mb-6">
         {/* 🔥 HEADER */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Order #{order?.order_number}</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Order #{order?.order_number}</h1>
+            <p className="text-gray-500">
+              Placed on {new Date(order.created_at).toLocaleString()}
+            </p>
+            <p className="text-gray-500">
+              Deadline {new Date(order.deadline).toLocaleString()}
+            </p>
+          </div>
 
           {actionState.reassign.disabled && actionState.reassign.reason && (
             <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">

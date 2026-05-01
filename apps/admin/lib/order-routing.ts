@@ -32,22 +32,51 @@ export const getCandidateStores = async (
 ): Promise<StoreCandidate[]> => {
   const { rows } = await client.query(
     `
-    SELECT 
-      spc.store_id,
-      SUM(spc.price * oi.quantity) AS total_price,
-      sa.latitude,
-      sa.longitude,
-      sa.country
-    FROM store_order_items oi
-    JOIN store_product_catalog spc ON spc.product_id = oi.product_id
-    JOIN store_addresses sa ON sa.store_id = spc.store_id
-    WHERE oi.order_id = $1
-      AND spc.status = 1
-      AND sa.country = $2
-    GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
-  `,
+      SELECT 
+        spc.store_id,
+        COUNT(DISTINCT oi.product_id) as matched_items,
+        SUM(spc.price * oi.quantity) AS total_price,
+        sa.latitude,
+        sa.longitude,
+        sa.country
+      FROM store_order_items oi
+      JOIN store_product_catalog spc 
+        ON spc.product_id = oi.product_id
+      JOIN store_addresses sa 
+        ON sa.store_id = spc.store_id
+      WHERE oi.order_id = $1
+        AND spc.status = 1
+        AND sa.country = $2
+        AND spc.quantity >= oi.quantity
+      GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
+      HAVING COUNT(DISTINCT oi.product_id) = (
+        SELECT COUNT(DISTINCT product_id)
+        FROM store_order_items
+        WHERE order_id = $1
+      )
+    `,
     [orderId, country],
   );
+
+
+  /* const { rows } = await client.query(
+    `
+      SELECT 
+        spc.store_id,
+        SUM(spc.price * oi.quantity) AS total_price,
+        sa.latitude,
+        sa.longitude,
+        sa.country
+      FROM store_order_items oi
+      JOIN store_product_catalog spc ON spc.product_id = oi.product_id
+      JOIN store_addresses sa ON sa.store_id = spc.store_id
+      WHERE oi.order_id = $1
+        AND spc.status = 1
+        AND sa.country = $2
+      GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
+    `,
+    [orderId, country],
+  ); */
 
   return rows;
 };

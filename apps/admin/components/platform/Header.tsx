@@ -159,32 +159,3 @@ export default function PlatformHeader() {
     </header>
   );
 }
-
-/* "use client";
-
-import { signOut, useSession } from "next-auth/react";
-
-export default function PlatformHeader() {
-  const { data: session } = useSession();
-
-  return (
-    <header className="header">
-      <div className="header-left">
-        <h2>Platform Admin</h2>
-      </div>
-
-      <div className="header-right">
-        <span className="me-3">
-          {session?.user?.email}
-        </span>
-
-        <button
-          className="btn btn-outline-danger"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-        >
-          Logout
-        </button>
-      </div>
-    </header>
-  );
-} */

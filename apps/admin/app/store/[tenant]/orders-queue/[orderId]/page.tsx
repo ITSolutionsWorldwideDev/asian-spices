@@ -113,7 +113,11 @@ export default function OrderDetailPage() {
 
       showToast("success", `Order ${action}d successfully`);
 
-      window.location.reload();
+      // window.location.reload();
+      setOrder((prev: any) => ({
+        ...prev,
+        order_status: action === "approve" ? "accepted" : "rejected",
+      }));
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
@@ -261,7 +265,6 @@ export default function OrderDetailPage() {
                           ${(Number(item.price) * item.quantity).toFixed(2)}
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
-
                       </tr>
                     ))}
                   </tbody>
