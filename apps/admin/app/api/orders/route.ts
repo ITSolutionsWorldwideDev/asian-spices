@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       values.push(orderStatus);
       where += ` AND o.order_status = $${values.length}`;
     } else {
-      where += ` AND o.order_status IN ('accepted','processing','completed')`;
+      where += ` AND o.order_status IN ('accepted','processing','completed','confirmed')`;
     }
 
     // 🔎 Global search

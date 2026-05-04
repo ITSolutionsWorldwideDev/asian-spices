@@ -9,7 +9,75 @@ import {
   ORDER_EVENTS,
 } from "@/lib/order-routing";
 
-export async function GET() {
+// import { reassignAllocation } from "@/lib/allocation";
+
+export async function GET(req: Request) {
+
+
+  // const auth = req.headers.get("authorization");
+
+  // if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  //   return new Response("Unauthorized", { status: 401 });
+  // }
+
+  const client = await pool.connect();
+
+  try {
+    // 🔹 get pending allocations
+    const { rows: allocations } = await client.query(`
+      SELECT *
+      FROM order_item_allocations
+      WHERE status = 'pending'
+        AND created_at < NOW() - INTERVAL '10 minutes'
+    `);
+
+    for (const allocation of allocations) {
+      try {
+        await client.query("BEGIN");
+
+        // ❌ mark as rejected (timeout)
+        await client.query(
+          `
+        UPDATE order_item_allocations
+        SET status = 'rejected',
+            responded_at = NOW()
+        WHERE id = $1
+      `,
+          [allocation.id],
+        );
+
+        // 🔁 reassign remaining qty
+        // await reassignAllocation(client, allocation.id);
+        await assignNextStore(client, allocation.order_id);
+
+        // 📝 log
+        await logOrderEvent(client, {
+          orderId: allocation.order_id,
+          eventType: ORDER_EVENTS.REJECTED,
+          storeId: allocation.store_id,
+          message: "Auto rejected (timeout)",
+        });
+
+        await client.query("COMMIT");
+      } catch (err) {
+        await client.query("ROLLBACK");
+        console.error("Allocation timeout processing failed:", {
+          allocationId: allocation.id,
+          error: err,
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return NextResponse.json({ error: "Cron failed" }, { status: 500 });
+  } finally {
+    client.release();
+  }
+}
+
+/* export async function GET() {
   const client = await pool.connect();
 
   try {
@@ -75,4 +143,4 @@ export async function GET() {
   } finally {
     client.release();
   }
-}
+} */
