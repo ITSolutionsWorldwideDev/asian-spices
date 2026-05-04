@@ -83,6 +83,8 @@ export async function POST(req: NextRequest) {
 
     const method = methodRes.rows[0];
 
+    console.log('method ==== ',method);
+
     if (!method) {
       throw new Error("Shipping method not found");
     }
@@ -104,6 +106,8 @@ export async function POST(req: NextRequest) {
     // 🧠 Resolve provider + credentials
     // -----------------------------
     const provider = await getShippingProvider(method.slug, storeId);
+
+    console.log('provider ==== ',provider);
 
     if (!provider?.createShipment) {
       throw new Error("Shipping provider not implemented");
@@ -138,7 +142,11 @@ export async function POST(req: NextRequest) {
       throw new Error("Shipment already exists for this order");
     }
 
+    console.log('shipmentInput ==== ',shipmentInput);
+
     const shipmentResult = await provider.createShipment(shipmentInput);
+
+    console.log('shipmentResult ==== ',shipmentResult);
 
     if (!shipmentResult?.externalId) {
       throw new Error("Shipment failed: missing externalId");
