@@ -30,14 +30,15 @@ type OrderDetail = {
   id: string;
   order_number: string;
   order_date: string;
+  order_status: string;
   payment_status: string;
   fulfillment_status: string;
   total_amount: string | number;
   subtotal: string | number;
   tax_amount: string | number;
   shipping_amount: string | number;
-  customer_name: string;
-  customer_email: string;
+  // customer_name: string;
+  // customer_email: string;
   customer_city: string;
   customer_postcode: string;
   tracking_number: string;
@@ -57,32 +58,13 @@ const SHIPPING_STATUSES = [
 
 export default function OrderDetailPage() {
   const { orderId } = useParams();
+  const { showToast } = useToast();
+
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [shippingStatus, setShippingStatus] = useState("");
-  const [provider, setProvider] = useState("cheapcargo");
-
-  const [methods, setMethods] = useState([]);
   const [shippingMethodId, setShippingMethodId] = useState("");
-
-  useEffect(() => {
-    if (order?.fulfillment_status) {
-      setShippingStatus(order.fulfillment_status);
-    }
-  }, [order]);
-
-  useEffect(() => {
-    const fetchMethods = async () => {
-      const res = await fetch(`/api/store/shipping-methods`);
-
-      const data = await res.json();
-      setMethods(data.methods);
-    };
-
-    if (order) fetchMethods();
-  }, [order]);
-
-  const [updating, setUpdating] = useState(false);
+  const [methods, setMethods] = useState<any[]>([]);
 
   const [shipping, setShipping] = useState({
     weight: "",
@@ -94,8 +76,131 @@ export default function OrderDetailPage() {
 
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  const [loading, setLoading] = useState(true);
-  const { showToast } = useToast();
+  // ================= FETCH =================
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`);
+        const data = await res.json();
+        setOrder(data.order);
+      } catch {
+        showToast("error", "Failed to load order");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [orderId]);
+
+  useEffect(() => {
+    if (!order || order.order_status !== "accepted") return;
+
+    fetch(`/api/store/shipping-methods`)
+      .then((r) => r.json())
+      .then((d) => setMethods(d.methods));
+  }, [order]);
+
+  const [shippingStatus, setShippingStatus] = useState("");
+  const [provider, setProvider] = useState("cheapcargo");
+
+  useEffect(() => {
+    if (order?.fulfillment_status) {
+      setShippingStatus(order.fulfillment_status);
+    }
+  }, [order]);
+
+  // ================= HELPERS =================
+  const updateQty = (itemId: string, value: string) => {
+    if (!order) return;
+
+    const qty = parseInt(value || "0", 10);
+
+    setOrder((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        items: prev.items.map((item) =>
+          item.order_item_id === itemId
+            ? {
+                ...item,
+                fulfilled_quantity: Math.max(0, Math.min(qty, item.quantity)),
+              }
+            : item,
+        ),
+      };
+    });
+  };
+
+  const isFullPossible =
+    order?.items.every((i) => (i.available_stock ?? 0) >= i.quantity) ?? false;
+
+  // ================= DECISION =================
+  const handleDecision = async (action: "full" | "partial" | "reject") => {
+    try {
+      setLoading(true);
+
+      const payload: any = { action };
+
+      if (action === "partial") {
+        payload.items = order?.items.map((item) => ({
+          item_id: item.order_item_id,
+          fulfilled_quantity: item.fulfilled_quantity || item.quantity,
+        }));
+      }
+
+      const res = await fetch(`/api/orders/${orderId}/allocate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast("success", "Order updated");
+
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= SHIPPING =================
+  const handleShip = async () => {
+    try {
+      setShippingLoading(true);
+
+      const res = await fetch("/api/shipping/create-shipment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          shippingMethodId,
+          parcel: shipping,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      if (data.label?.url) window.open(data.label.url);
+
+      showToast("success", "Shipment created");
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -120,36 +225,6 @@ export default function OrderDetailPage() {
     return <div className="p-10 text-center text-red-500">Order not found</div>;
 
   const total = Number(order.total_amount);
-
-  const updateQty = (itemId: string, value: string) => {
-    if (!order) return;
-
-    const qty = parseInt(value || "0", 10);
-
-    setOrder((prev) => {
-      if (!prev) return prev;
-
-      const updatedItems = prev.items.map((item) => {
-        if (item.order_item_id !== itemId) return item;
-
-        const safeQty = Math.max(0, Math.min(qty, item.quantity));
-
-        return {
-          ...item,
-          fulfilled_quantity: safeQty,
-        };
-      });
-
-      return {
-        ...prev,
-        items: updatedItems,
-      };
-    });
-  };
-
-  const isFullPossible = order.items.every(
-    (i) => (i.available_stock ?? 0) >= i.quantity,
-  );
 
   const handleAction = async (action: "full" | "partial" | "reject") => {
     try {
@@ -186,7 +261,7 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleShipOrder = async () => {
+  /* const handleShipOrder = async () => {
     try {
       setShippingLoading(true);
 
@@ -237,7 +312,7 @@ export default function OrderDetailPage() {
     } finally {
       setShippingLoading(false);
     }
-  };
+  }; */
 
   return (
     <div className="page-wrapper ">
@@ -310,12 +385,60 @@ export default function OrderDetailPage() {
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
 
-            <button
+            {/* <button
               onClick={() => handleAction("reject")}
               className="btn btn-danger mt-4 w-full"
             >
               Cancel Order
-            </button>
+            </button> */}
+
+            {/* ================= DECISION STATE ================= */}
+            {order.order_status === "pending" && (
+              <div className="flex gap-2">
+                <button
+                  disabled={!isFullPossible}
+                  onClick={() => handleDecision("full")}
+                  className="btn btn-success"
+                >
+                  Accept Full
+                </button>
+
+                <button
+                  onClick={() => handleDecision("partial")}
+                  className="btn btn-warning"
+                >
+                  Partial
+                </button>
+
+                <button
+                  onClick={() => handleDecision("reject")}
+                  className="btn btn-danger"
+                >
+                  Reject All
+                </button>
+              </div>
+            )}
+
+            {order.order_status === "rejected" && (
+              <div className="text-red-500 font-semibold">Order Rejected</div>
+            )}
+
+            {/* {order.fulfillment_status !== "fulfilled" && (
+              <div className="flex gap-2">
+                <button
+                  disabled={!isFullPossible}
+                  onClick={() => handleAction("full")}
+                >
+                  Accept Full
+                </button>
+
+                <button onClick={() => handleAction("partial")}>Partial</button>
+
+                <button onClick={() => handleAction("reject")}>
+                  Reject All
+                </button>
+              </div>
+            )} */}
           </div>
         </div>
 
@@ -336,7 +459,10 @@ export default function OrderDetailPage() {
                       <th className="p-4 text-center">Qty</th>
                       <th className="p-4 text-right">Total</th>
                       <th className="p-4 text-center">Ordered</th>
-                      <th className="p-4 text-center">Fulfilled</th>
+                      {/* <th className="p-4 text-center">Fulfilled</th> */}
+                      {order.order_status === "accepted" && (
+                        <th className="p-4 text-center">Fulfill</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -362,9 +488,9 @@ export default function OrderDetailPage() {
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
 
-                        <td className="p-4 text-center">
+                        {/* <td className="p-4 text-center">
                           <div className="flex flex-col items-center gap-1">
-                            {/* Quantity Input */}
+   
                             <input
                               type="number"
                               min={0}
@@ -381,7 +507,7 @@ export default function OrderDetailPage() {
                               }`}
                             />
 
-                            {/* Max Button */}
+  
                             <button
                               type="button"
                               onClick={() =>
@@ -400,7 +526,7 @@ export default function OrderDetailPage() {
                               Max
                             </button>
 
-                            {/* Stock Info */}
+
                             {item.available_stock !== undefined && (
                               <span
                                 className={`text-xs ${
@@ -413,7 +539,19 @@ export default function OrderDetailPage() {
                               </span>
                             )}
                           </div>
-                        </td>
+                        </td> */}
+
+                        {order.order_status === "accepted" && (
+                          <td>
+                            <input
+                              type="number"
+                              value={item.fulfilled_quantity}
+                              onChange={(e) =>
+                                updateQty(item.order_item_id, e.target.value)
+                              }
+                            />
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -556,7 +694,8 @@ export default function OrderDetailPage() {
             </select>
 
             <button
-              onClick={handleShipOrder}
+              // onClick={handleShipOrder}
+              onClick={handleShip}
               disabled={shippingLoading}
               className="mt-4 w-full py-2 bg-primary text-white rounded"
             >

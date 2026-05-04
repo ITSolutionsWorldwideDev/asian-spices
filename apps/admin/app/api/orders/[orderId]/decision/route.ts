@@ -2,11 +2,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+// import {
+//   assignNextStore,
+//   logOrderEvent,
+//   ORDER_EVENTS,
+// } from "@/lib/order-routing";
 import {
   assignNextStore,
   logOrderEvent,
   ORDER_EVENTS,
-} from "@/lib/order-routing";
+} from "@acme/order-routing";
 import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 const DEFAULT_STORE_ID = "afef3fd5-c31a-440a-ae56-99eca0b24359";
@@ -28,11 +33,46 @@ export async function POST(
 
     const { rows } = await client.query(
       `SELECT current_store_id FROM store_orders WHERE id = $1`,
-      [orderId]
+      [orderId],
     );
 
-    if (rows[0].current_store_id !== storeId) {
+    const order = rows[0];
+    if (!order) throw new Error("Order not found");
+
+    if (order.current_store_id !== storeId) {
       throw new Error("Unauthorized store action");
+    }
+
+    // if (rows[0].current_store_id !== storeId) {
+    //   throw new Error("Unauthorized store action");
+    // }
+
+    // =====================
+    // ✅ ACCEPT
+    // =====================
+    if (action === "accept") {
+      await client.query(
+        `UPDATE store_orders
+         SET routing_status = 'accepted',
+             updated_at = NOW()
+         WHERE id = $1`,
+        [orderId],
+      );
+
+      await client.query(
+        `UPDATE order_routing_attempts
+         SET status = 'accepted',
+             responded_at = NOW()
+         WHERE order_id = $1 AND store_id = $2 AND status = 'pending'`,
+        [orderId, storeId],
+      );
+
+      await logOrderEvent(client, {
+        orderId,
+        eventType: ORDER_EVENTS.ACCEPTED,
+        storeId,
+        message: "Store accepted order",
+      });
     }
 
     if (action === "reassign") {
@@ -90,9 +130,10 @@ export async function POST(
         SET status = 'rejected',
             responded_at = NOW()
         WHERE order_id = $1
+          AND store_id = $2
           AND status = 'pending'
         `,
-        [orderId],
+        [orderId,storeId],
       );
 
       // increment rejection count
@@ -108,8 +149,15 @@ export async function POST(
       await logOrderEvent(client, {
         orderId,
         eventType: ORDER_EVENTS.REJECTED,
-        message: "Store rejected the order",
+        storeId,
+        message: "Store rejected order",
       });
+
+      // await logOrderEvent(client, {
+      //   orderId,
+      //   eventType: ORDER_EVENTS.REJECTED,
+      //   message: "Store rejected the order",
+      // });
 
       // 🔥 assign next store
       await assignNextStore(client, orderId);

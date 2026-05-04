@@ -2,12 +2,20 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+// import {
+//   assignNextStore,
+//   logOrderEvent,
+//   ORDER_EVENTS,
+// } from "@/lib/order-routing";
+import { AppError } from "@/lib/errors";
+
 import {
   assignNextStore,
   logOrderEvent,
   ORDER_EVENTS,
-} from "@/lib/order-routing";
-import { AppError } from "@/lib/errors";
+} from "@acme/order-routing";
+
+const DEFAULT_STORE_ID = "afef3fd5-c31a-440a-ae56-99eca0b24359";
 
 export async function POST(req: NextRequest, { params }: any) {
   const client = await pool.connect();
@@ -18,7 +26,29 @@ export async function POST(req: NextRequest, { params }: any) {
 
     await client.query("BEGIN");
 
+
+    // lock order
+    const { rows } = await client.query(
+      `SELECT * FROM store_orders WHERE id = $1 FOR UPDATE`,
+      [orderId]
+    );
+
+    const order = rows[0];
+    if (!order) throw new Error("Order not found");
+
+    // =====================
+    // 🔁 REASSIGN
+    // =====================
+
     if (action === "reassign") {
+
+      await client.query(
+        `UPDATE order_routing_attempts
+         SET status = 'expired'
+         WHERE order_id = $1 AND status = 'pending'`,
+        [orderId]
+      );
+
       await assignNextStore(client, orderId);
 
       await logOrderEvent(client, {
@@ -29,14 +59,27 @@ export async function POST(req: NextRequest, { params }: any) {
       });
     }
 
+    // =====================
+    // FORCE ASSIGN
+    // =====================
+
     if (action === "force_assign") {
       await client.query(
         `
         UPDATE store_orders
-        SET current_store_id = $1
-        WHERE id = $2
+        SET current_store_id = $1,
+             routing_status = 'assigned'
+        WHERE id = $2 AND 
+        order_status NOT IN ('cancelled','fulfilled')
       `,
         [storeId, orderId],
+      );
+
+      await client.query(
+        `INSERT INTO order_routing_attempts
+         (order_id, store_id, attempt_number, status)
+         VALUES ($1,$2,1,'forced')`,
+        [orderId, storeId]
       );
 
       await logOrderEvent(client, {

@@ -25,6 +25,9 @@ export const ORDER_EVENTS = {
   CANCELLED: "cancelled",
 };
 
+// const DEFAULT_STORE_ID = "YOUR_DEFAULT_STORE_ID";
+const DEFAULT_STORE_ID = "afef3fd5-c31a-440a-ae56-99eca0b24359";
+
 export const getCandidateStores = async (
   client: any,
   orderId: string,
@@ -57,26 +60,6 @@ export const getCandidateStores = async (
     `,
     [orderId, country],
   );
-
-
-  /* const { rows } = await client.query(
-    `
-      SELECT 
-        spc.store_id,
-        SUM(spc.price * oi.quantity) AS total_price,
-        sa.latitude,
-        sa.longitude,
-        sa.country
-      FROM store_order_items oi
-      JOIN store_product_catalog spc ON spc.product_id = oi.product_id
-      JOIN store_addresses sa ON sa.store_id = spc.store_id
-      WHERE oi.order_id = $1
-        AND spc.status = 1
-        AND sa.country = $2
-      GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
-    `,
-    [orderId, country],
-  ); */
 
   return rows;
 };
@@ -121,8 +104,6 @@ export const sortStores = (
     });
 };
 
-// const DEFAULT_STORE_ID = "YOUR_DEFAULT_STORE_ID";
-const DEFAULT_STORE_ID = "afef3fd5-c31a-440a-ae56-99eca0b24359";
 
 export const assignDefaultStore = async (client: any, orderId: string) => {
   if (!DEFAULT_STORE_ID) {
@@ -150,118 +131,6 @@ export const assignDefaultStore = async (client: any, orderId: string) => {
     storeId: DEFAULT_STORE_ID,
     message: "Assigned to default store after retries",
   });
-};
-
-export const assignNextStore = async (client: any, orderId: string) => {
-  try {
-    const { rows: orderRows } = await client.query(
-      `SELECT o.*, ss.country_code as country
-       FROM store_orders AS o
-       LEFT JOIN store_settings ss ON ss.store_id = o.current_store_id
-       WHERE o.id = $1`,
-      [orderId],
-    );
-
-    const order = orderRows[0];
-
-    if (!order) {
-      throw new AppError("Order not found", "ORDER_NOT_FOUND", 404);
-    }
-
-    if (order.rejection_count >= 3) {
-      await assignDefaultStore(client, orderId);
-      return;
-    }
-
-    const stores = await getCandidateStores(client, orderId, order.country);
-
-    if (!stores.length) {
-      throw new AppError(
-        "No stores available for this order",
-        "NO_STORES",
-        400,
-      );
-    }
-
-    const availableStores = [];
-
-    for (const store of stores) {
-      const isOpen = await isStoreOpenNow(client, store.store_id);
-
-      // console.log("assignNextStore isOpen ==== ", isOpen);
-
-      if (isOpen) {
-        availableStores.push(store);
-      }
-    }
-
-    // console.log("assignNextStore availableStores ==== ", availableStores);
-
-    if (availableStores.length === 0) {
-      await logOrderEvent(client, {
-        orderId,
-        eventType: ORDER_EVENTS.DEFAULT_ASSIGNED,
-        message: "All stores closed — assigned to default",
-      });
-
-      return assignDefaultStore(client, orderId);
-    }
-
-    // const sorted = sortStores(stores, order.latitude, order.longitude);
-    const sorted = sortStores(availableStores, order.latitude, order.longitude);
-
-    const { rows: attempts } = await client.query(
-      `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
-      [orderId],
-    );
-
-    const tried = attempts.map((a: { store_id: string }) => a.store_id);
-
-    const nextStore = sorted.find((s) => !tried.includes(s.store_id));
-
-    if (!nextStore) {
-      await assignDefaultStore(client, orderId);
-      return;
-    }
-
-    await client.query(
-      `
-        UPDATE store_orders
-        SET current_store_id = $1,
-            routing_status = 'assigned'
-        WHERE id = $2
-      `,
-      [nextStore.store_id, orderId],
-    );
-
-    // Scenrio 3: Partial allocation
-
-    await createAllocations(client, orderId, nextStore.store_id);
-
-    await client.query(
-      `
-        INSERT INTO order_routing_attempts
-        (order_id, store_id, attempt_number)
-        VALUES ($1,$2,$3)
-      `,
-      [orderId, nextStore.store_id, attempts.length + 1],
-    );
-
-    await logOrderEvent(client, {
-      orderId,
-      // eventType: "assigned",
-      eventType: ORDER_EVENTS.ASSIGNED,
-      storeId: nextStore.store_id,
-      message: "Order assigned to store",
-      metadata: {
-        price: nextStore.total_price,
-        distance: nextStore.distance,
-      },
-    });
-  } catch (err) {
-    console.error("assignNextStore err ==== ", err);
-    throw err;
-  }
 };
 
 const createAllocations = async (
@@ -430,3 +299,337 @@ export const isStoreOpenNow = async (client: any, storeId: string) => {
 
   return currentTime >= wh.open_time && currentTime <= wh.close_time;
 };
+
+
+export const getStoresThatCanFulfillAllItems = async (
+  client: any,
+  orderId: string,
+  country: string
+) => {
+  const { rows } = await client.query(
+    `
+    SELECT 
+      spc.store_id,
+      SUM(spc.price * oi.quantity) AS total_price,
+      sa.latitude,
+      sa.longitude,
+      sa.country
+    FROM store_order_items oi
+    JOIN store_product_catalog spc 
+      ON spc.product_id = oi.product_id
+    JOIN store_addresses sa 
+      ON sa.store_id = spc.store_id
+    WHERE oi.order_id = $1
+      AND spc.status = 1
+      AND sa.country = $2
+      AND spc.quantity >= oi.quantity
+    GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
+    HAVING COUNT(DISTINCT oi.product_id) = (
+      SELECT COUNT(DISTINCT product_id)
+      FROM store_order_items
+      WHERE order_id = $1
+    )
+    `,
+    [orderId, country]
+  );
+
+  return rows;
+};
+
+export const getStoresWithPartialItems = async (
+  client: any,
+  orderId: string,
+  country: string
+) => {
+  const { rows } = await client.query(
+    `
+    SELECT 
+      spc.store_id,
+      oi.product_id,
+      oi.quantity,
+      spc.price,
+      sa.latitude,
+      sa.longitude
+    FROM store_order_items oi
+    JOIN store_product_catalog spc 
+      ON spc.product_id = oi.product_id
+    JOIN store_addresses sa 
+      ON sa.store_id = spc.store_id
+    WHERE oi.order_id = $1
+      AND spc.status = 1
+      AND sa.country = $2
+      AND spc.quantity > 0
+    `,
+    [orderId, country]
+  );
+
+  return rows;
+};
+
+
+
+export const assignNextStore = async (client: any, orderId: string) => {
+  const { rows } = await client.query(
+    `SELECT * FROM store_orders WHERE id = $1`,
+    [orderId]
+  );
+
+  const order = rows[0];
+
+  if (!order) throw new Error("Order not found");
+
+  // ✅ 4️⃣ fallback rule
+  if (order.rejection_count >= 3) {
+    return assignDefaultStore(client, orderId);
+  }
+
+  // ✅ only FULL stores
+  const stores = await getStoresThatCanFulfillAllItems(
+    client,
+    orderId,
+    order.country
+  );
+
+  if (!stores.length) {
+    // ❗ fallback to multi-store
+    return assignMultiStore(client, orderId);
+  }
+
+  const sorted = sortStores(stores, order.latitude, order.longitude);
+
+  const { rows: attempts } = await client.query(
+    `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
+    [orderId]
+  );
+
+  const tried = attempts.map((a: any) => a.store_id);
+
+  const nextStore = sorted.find((s) => !tried.includes(s.store_id));
+
+  if (!nextStore) {
+    return assignDefaultStore(client, orderId);
+  }
+
+  await client.query(
+    `UPDATE store_orders
+     SET current_store_id = $1,
+         routing_status = 'assigned'
+     WHERE id = $2`,
+    [nextStore.store_id, orderId]
+  );
+
+  await createAllocations(client, orderId, nextStore.store_id);
+
+  await client.query(
+    `INSERT INTO order_routing_attempts (order_id, store_id, attempt_number)
+     VALUES ($1,$2,$3)`,
+    [orderId, nextStore.store_id, attempts.length + 1]
+  );
+
+  await logOrderEvent(client, {
+    orderId,
+    eventType: ORDER_EVENTS.ASSIGNED,
+    storeId: nextStore.store_id,
+  });
+};
+
+export const assignMultiStore = async (client: any, orderId: string) => {
+  const { rows: orderItems } = await client.query(
+    `SELECT * FROM store_order_items WHERE order_id = $1`,
+    [orderId]
+  );
+
+  for (const item of orderItems) {
+    const { rows: stores } = await client.query(
+      `
+      SELECT spc.store_id, spc.quantity
+      FROM store_product_catalog spc
+      WHERE spc.product_id = $1
+        AND spc.quantity > 0
+      ORDER BY spc.price ASC
+      `,
+      [item.product_id]
+    );
+
+    let remaining = item.quantity;
+
+    for (const store of stores) {
+      if (remaining <= 0) break;
+
+      const allocateQty = Math.min(remaining, store.quantity);
+
+      await client.query(
+        `
+        INSERT INTO order_item_allocations
+        (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        VALUES ($1,$2,$3,0,'pending')
+        `,
+        [item.id, store.store_id, allocateQty]
+      );
+
+      remaining -= allocateQty;
+    }
+
+    // ❗ fallback rule #1
+    if (remaining > 0) {
+      await client.query(
+        `
+        INSERT INTO order_item_allocations
+        (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        VALUES ($1,$2,$3,0,'pending')
+        `,
+        [item.id, DEFAULT_STORE_ID, remaining]
+      );
+    }
+  }
+
+  await client.query(
+    `UPDATE store_orders
+     SET routing_status = 'split'
+     WHERE id = $1`,
+    [orderId]
+  );
+
+  await logOrderEvent(client, {
+    orderId,
+    eventType: ORDER_EVENTS.PARTIAL,
+    message: "Order split across multiple stores",
+  });
+};
+
+
+
+
+
+/* export const assignNextStore = async (client: any, orderId: string) => {
+  try {
+    const { rows: orderRows } = await client.query(
+      `SELECT o.*, ss.country_code as country
+       FROM store_orders AS o
+       LEFT JOIN store_settings ss ON ss.store_id = o.current_store_id
+       WHERE o.id = $1`,
+      [orderId],
+    );
+
+    const order = orderRows[0];
+
+    if (!order) {
+      throw new AppError("Order not found", "ORDER_NOT_FOUND", 404);
+    }
+
+    if (order.rejection_count >= 3) {
+      await assignDefaultStore(client, orderId);
+      return;
+    }
+
+    const stores = await getCandidateStores(client, orderId, order.country);
+
+    if (!stores.length) {
+      throw new AppError(
+        "No stores available for this order",
+        "NO_STORES",
+        400,
+      );
+    }
+
+    const availableStores = [];
+
+    for (const store of stores) {
+      const isOpen = await isStoreOpenNow(client, store.store_id);
+
+      // console.log("assignNextStore isOpen ==== ", isOpen);
+
+      if (isOpen) {
+        availableStores.push(store);
+      }
+    }
+
+    // console.log("assignNextStore availableStores ==== ", availableStores);
+
+    if (availableStores.length === 0) {
+      await logOrderEvent(client, {
+        orderId,
+        eventType: ORDER_EVENTS.DEFAULT_ASSIGNED,
+        message: "All stores closed — assigned to default",
+      });
+
+      return assignDefaultStore(client, orderId);
+    }
+
+    // const sorted = sortStores(stores, order.latitude, order.longitude);
+    const sorted = sortStores(availableStores, order.latitude, order.longitude);
+
+    const { rows: attempts } = await client.query(
+      `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
+      [orderId],
+    );
+
+    const tried = attempts.map((a: { store_id: string }) => a.store_id);
+
+    const nextStore = sorted.find((s) => !tried.includes(s.store_id));
+
+    if (!nextStore) {
+      await assignDefaultStore(client, orderId);
+      return;
+    }
+
+    await client.query(
+      `
+        UPDATE store_orders
+        SET current_store_id = $1,
+            routing_status = 'assigned'
+        WHERE id = $2
+      `,
+      [nextStore.store_id, orderId],
+    );
+
+    // Scenrio 3: Partial allocation
+
+    await createAllocations(client, orderId, nextStore.store_id);
+
+    await client.query(
+      `
+        INSERT INTO order_routing_attempts
+        (order_id, store_id, attempt_number)
+        VALUES ($1,$2,$3)
+      `,
+      [orderId, nextStore.store_id, attempts.length + 1],
+    );
+
+    await logOrderEvent(client, {
+      orderId,
+      // eventType: "assigned",
+      eventType: ORDER_EVENTS.ASSIGNED,
+      storeId: nextStore.store_id,
+      message: "Order assigned to store",
+      metadata: {
+        price: nextStore.total_price,
+        distance: nextStore.distance,
+      },
+    });
+  } catch (err) {
+    console.error("assignNextStore err ==== ", err);
+    throw err;
+  }
+}; */
+
+
+
+  /* const { rows } = await client.query(
+    `
+      SELECT 
+        spc.store_id,
+        SUM(spc.price * oi.quantity) AS total_price,
+        sa.latitude,
+        sa.longitude,
+        sa.country
+      FROM store_order_items oi
+      JOIN store_product_catalog spc ON spc.product_id = oi.product_id
+      JOIN store_addresses sa ON sa.store_id = spc.store_id
+      WHERE oi.order_id = $1
+        AND spc.status = 1
+        AND sa.country = $2
+      GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
+    `,
+    [orderId, country],
+  ); */
