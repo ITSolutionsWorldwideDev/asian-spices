@@ -184,7 +184,11 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const data = await res.json();
 
+    console.log('shipment data === ',data);
+
     const shipment = data?.shipments?.shipment?.[0];
+
+    console.log('shipment === ',shipment);
 
     if (!shipment) {
       throw new Error("Invalid CheapCargo response");

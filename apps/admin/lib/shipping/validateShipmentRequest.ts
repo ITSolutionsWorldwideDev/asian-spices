@@ -35,6 +35,8 @@ export function validateShipmentRequest({
     throw new Error("Shipping method is not API-enabled");
   }
 
+  console.log('parcel ==== ',parcel);
+
   // --------------------
   // Parcel validation
   // --------------------
@@ -56,6 +58,8 @@ export function validateShipmentRequest({
       throw new Error(`Invalid ${name}`);
     }
   };
+
+    console.log('validateDim ==== ',validateDim);
 
   validateDim(parcel?.length, "length");
   validateDim(parcel?.width, "width");
