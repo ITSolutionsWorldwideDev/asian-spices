@@ -82,23 +82,6 @@ export default function CreateShippingMethodForm({
       }
     });
   };
-  /* const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
-    startTransition(async () => {
-      await onSubmit({
-        id: method?.id,
-        name,
-        code,
-        provider_id: providerId,
-        type,
-        is_active: isActive,
-      });
-    });
-  };
- */
   return (
     <div className="mx-auto">
       <form

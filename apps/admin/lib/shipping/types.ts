@@ -34,8 +34,18 @@ export interface LabelResult {
   url: string;
 }
 
+// export interface ShippingAdapter {
+//   createShipment(input: ShipmentInput): Promise<ShipmentResult>;
+//   getRates(input: ShipmentInput): Promise<any>;
+//   generateLabel(externalId: string): Promise<LabelResult>;
+// }
+
 export interface ShippingAdapter {
   createShipment(input: ShipmentInput): Promise<ShipmentResult>;
   getRates(input: ShipmentInput): Promise<any>;
   generateLabel(externalId: string): Promise<LabelResult>;
+
+  // 🔥 NEW
+  trackShipment(orderNumber: string): Promise<any>;
+  cancelShipment(orderId: string, orderNumber: string): Promise<any>;
 }

@@ -5,6 +5,7 @@ import { pool } from "@acme/db";
 import { createShipmentForOrder } from "@/lib/shipping/shippingService";
 import { getCurrentStoreAPI } from "@/lib/auth/guards";
 import { getShippingProvider } from "@/lib/shipping/providerFactory";
+import { validateShipmentRequest } from "@/lib/shipping/validateShipmentRequest";
 
 export async function POST(req: NextRequest) {
   const client = await pool.connect();
@@ -29,9 +30,13 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     const orderRes = await client.query(
       `
-      SELECT * 
-      FROM store_orders 
-      WHERE id = $1 AND store_id = $2
+      SELECT 
+        o.*,
+        COALESCE(json_agg(oi.*) FILTER (WHERE oi.id IS NOT NULL), '[]') AS items
+      FROM store_orders o
+      LEFT JOIN store_order_items oi ON oi.order_id = o.id
+      WHERE o.id = $1 AND o.store_id = $2
+      GROUP BY o.id
       `,
       [orderId, storeId],
     );
@@ -39,13 +44,16 @@ export async function POST(req: NextRequest) {
     const order = orderRes.rows[0];
 
     if (!order) {
-      throw new Error("Order not found");
+      return NextResponse.json(
+        { success: false, error: "Order not found" },
+        { status: 404 },
+      );
     }
 
     // -----------------------------
     // 🚚 Get shipping method + provider
     // -----------------------------
-    const methodRes = await client.query(
+    /* const methodRes = await client.query(
       `
       SELECT 
         sm.*,
@@ -55,6 +63,20 @@ export async function POST(req: NextRequest) {
       LEFT JOIN shipping_providers sp
         ON sm.provider_id = sp.id
       WHERE sm.id = $1 AND sm.store_id = $2
+      `,
+      [shippingMethodId, storeId],
+    ); */
+
+    const methodRes = await client.query(
+      `
+      SELECT 
+        sm.*,
+        sp.slug,
+        sp.id as provider_id
+      FROM store_shipping_providers as shp
+	    LEFT JOIN shipping_methods sm ON sm.provider_id = sm.provider_id
+      LEFT JOIN shipping_providers sp ON sm.provider_id = sp.id
+      WHERE sm.id = $1 AND shp.store_id = $2 AND sm.is_active = true
       `,
       [shippingMethodId, storeId],
     );
@@ -70,9 +92,22 @@ export async function POST(req: NextRequest) {
     }
 
     // -----------------------------
+    // Validate request (NEW)
+    // -----------------------------
+    validateShipmentRequest({
+      order,
+      method,
+      parcel,
+    });
+
+    // -----------------------------
     // 🧠 Resolve provider + credentials
     // -----------------------------
     const provider = await getShippingProvider(method.slug, storeId);
+
+    if (!provider?.createShipment) {
+      throw new Error("Shipping provider not implemented");
+    }
 
     // -----------------------------
     // 📦 Build shipment input
@@ -93,6 +128,16 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 🚀 Create shipment
     // -----------------------------
+
+    const existing = await client.query(
+      `SELECT id FROM shipments WHERE order_id = $1`,
+      [orderId],
+    );
+
+    if (existing.rows.length > 0) {
+      throw new Error("Shipment already exists for this order");
+    }
+
     const shipmentResult = await provider.createShipment(shipmentInput);
 
     if (!shipmentResult?.externalId) {
@@ -103,9 +148,12 @@ export async function POST(req: NextRequest) {
     // 🏷 Generate label (optional)
     // -----------------------------
     let label = null;
+    let labelUrl: string | null = null;
 
     try {
       label = await provider.generateLabel(shipmentResult.externalId);
+      labelUrl =
+        label?.url || (label as any)?.labelUrl || (label as any)?.file || null;
     } catch (err) {
       console.warn("Label generation failed");
     }
@@ -128,7 +176,7 @@ export async function POST(req: NextRequest) {
         shippingMethodId,
         shipmentResult.externalId,
         shipmentResult.trackingNumber || null,
-        label?.url || null,
+        labelUrl,
         shipmentResult.raw || null,
       ],
     );
@@ -136,18 +184,21 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 🔄 Update order
     // -----------------------------
-    await client.query(
-      `
-      UPDATE store_orders
-      SET 
-        tracking_number = $1,
-        shipping_label = $2,
-        fulfillment_status = 'shipped',
-        updated_at = NOW()
-      WHERE id = $3
-      `,
-      [shipmentResult.trackingNumber || null, label?.url || null, orderId],
-    );
+
+    if (order.fulfillment_status !== "shipped") {
+      await client.query(
+        `
+        UPDATE store_orders
+        SET 
+          tracking_number = $1,
+          shipping_label = $2,
+          fulfillment_status = 'shipped',
+          updated_at = NOW()
+        WHERE id = $3
+        `,
+        [shipmentResult.trackingNumber || null, labelUrl, orderId],
+      );
+    }
 
     await client.query("COMMIT");
 

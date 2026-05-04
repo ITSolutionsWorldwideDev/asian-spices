@@ -28,7 +28,8 @@ export async function getProviderCredentials(slug: string) {
 
   const credentials: Record<string, string> = {};
 
-  if (row.metadata) {
+  // if (row.metadata) {
+  if (row.metadata && typeof row.metadata === "object") {
     for (const key of Object.keys(row.metadata)) {
       credentials[key] = decrypt(row.metadata[key]);
     }

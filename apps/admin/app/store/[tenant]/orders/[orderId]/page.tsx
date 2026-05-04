@@ -31,6 +31,7 @@ type OrderDetail = {
   order_number: string;
   order_date: string;
   order_status: string;
+  status?: string;
   payment_status: string;
   fulfillment_status: string;
   total_amount: string | number;
@@ -93,12 +94,46 @@ export default function OrderDetailPage() {
     fetchOrder();
   }, [orderId]);
 
-  useEffect(() => {
-    if (!order || order.order_status !== "accepted") return;
+  // useEffect(() => {
+  //   if (!order || order.order_status !== "accepted") return;
 
-    fetch(`/api/store/shipping-methods`)
-      .then((r) => r.json())
-      .then((d) => setMethods(d.methods));
+  //   fetch(`/api/store/shipping-methods`)
+  //     .then((r) => r.json())
+  //     .then((d) => setMethods(d.methods));
+  // }, [order]);
+
+  useEffect(() => {
+    const fetchMethods = async () => {
+      console.log("ORDER:", order);
+      console.log("ORDER status :", order?.status);
+      console.log("ORDER order_status :", order?.order_status);
+      // if (!order || order.order_status !== "accepted") return;
+      if (!order || order?.status !== "paid") return;
+
+      // const ALLOWED_STATUSES = ["accepted", "confirmed", "paid"];
+
+      // if (!order || !ALLOWED_STATUSES.includes(order.order_status)) return;
+
+      try {
+        const res = await fetch(`/api/store/shipping-methods`, {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Failed to load methods");
+        }
+
+        const data = await res.json();
+        setMethods(data.methods || []);
+        console.log("METHODS:", methods);
+      } catch (err) {
+        console.error("Shipping methods error:", err);
+        setMethods([]);
+      }
+    };
+
+    fetchMethods();
   }, [order]);
 
   const [shippingStatus, setShippingStatus] = useState("");
@@ -170,20 +205,39 @@ export default function OrderDetailPage() {
   };
 
   // ================= SHIPPING =================
+
+  const normalizeNumber = (val: any) => {
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  };
+
   const handleShip = async () => {
+    if (!shippingMethodId) {
+      showToast("error", "Please select a shipping method");
+      return;
+    }
+
     try {
       setShippingLoading(true);
+
+      const payload = {
+        orderId,
+        shippingMethodId,
+        parcel: {
+          weight: normalizeNumber(shipping.weight),
+          length: normalizeNumber(shipping.length) || 10,
+          width: normalizeNumber(shipping.width) || 10,
+          height: normalizeNumber(shipping.height) || 10,
+          boxes: normalizeNumber(shipping.boxes) || 1,
+        },
+      };
 
       const res = await fetch("/api/shipping/create-shipment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          orderId,
-          shippingMethodId,
-          parcel: shipping,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -199,6 +253,9 @@ export default function OrderDetailPage() {
       setShippingLoading(false);
     }
   };
+
+  // const isValid = shipping.weight && shipping.boxes && shippingMethodId;
+  const isValid = shipping.weight && shipping.boxes;
 
   const [updating, setUpdating] = useState(false);
 
@@ -668,35 +725,39 @@ export default function OrderDetailPage() {
                   setShipping({ ...shipping, height: e.target.value })
                 }
               />
+
+              <label className="form-label">Select Provider</label>
+
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
+                className="input w-full mb-3 form-control"
+              >
+                <option value="cheapcargo">CheapCargo</option>
+                <option value="dhl">DHL</option>
+              </select>
+
+              <label className="form-label">Select Shipping Method</label>
+
+              <select
+                value={shippingMethodId}
+                onChange={(e) => setShippingMethodId(e.target.value)}
+                className="input w-full mb-3 form-control"
+              >
+                <option value="">Select Shipping Method</option>
+
+                {methods.map((m: any) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
             </div>
-
-            <select
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              className="input w-full mb-3"
-            >
-              <option value="cheapcargo">CheapCargo</option>
-              <option value="dhl">DHL</option>
-            </select>
-
-            <select
-              value={shippingMethodId}
-              onChange={(e) => setShippingMethodId(e.target.value)}
-              className="input w-full"
-            >
-              <option value="">Select Shipping Method</option>
-
-              {methods.map((m: any) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
 
             <button
               // onClick={handleShipOrder}
               onClick={handleShip}
-              disabled={shippingLoading}
+              disabled={shippingLoading || !isValid}
               className="mt-4 w-full py-2 bg-primary text-white rounded"
             >
               {shippingLoading ? "Processing..." : "Generate Shipping Label"}

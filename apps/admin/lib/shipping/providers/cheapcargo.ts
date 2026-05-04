@@ -2,7 +2,9 @@
 
 import crypto from "crypto";
 import { withRetry } from "@/lib/utils/retry";
+import md5 from "md5";
 
+// const BASE_URL = "https://www.cheapcargo-demo.nl/api/rateRequest";
 const BASE_URL = "https://www.cheapcargo.com/api/rateRequest";
 
 type Credentials = {
@@ -14,45 +16,70 @@ type Credentials = {
 // -----------------------------
 // Helpers
 // -----------------------------
-function generateTimestamp() {
+
+
+function getAuthenticationToken(apiKey: any) {
   const now = new Date();
 
-  const yyyy = now.getUTCFullYear();
-  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(now.getUTCDate()).padStart(2, "0");
+  // ⏱ Round hour to nearest 2-hour block
+  const hour = now.getHours();
+  const roundedHour = Math.floor(hour / 2) * 2;
 
-  const hourUTC = now.getUTCHours();
-  const hh = String(Math.floor(hourUTC / 2) * 2).padStart(2, "0");
+  const YYYY = now.getFullYear();
+  const MM = String(now.getMonth() + 1).padStart(2, "0");
+  const DD = String(now.getDate()).padStart(2, "0");
+  const HH = String(roundedHour).padStart(2, "0");
 
-  return `${yyyy}${mm}${dd}${hh}`;
+  const timestamp = `${YYYY}${MM}${DD}${HH}`;
+
+  return md5(apiKey + timestamp);
 }
 
-function md5(value: string) {
+function getPasswordHash(value: string) {
   return crypto.createHash("md5").update(value).digest("hex");
 }
+
+/* function getPasswordHash(pwd: any) {
+
+  const now = new Date();
+
+  const hour = now.getUTCHours();
+  const roundedHour = Math.floor(hour / 2) * 2;
+
+  const YYYY = now.getUTCFullYear();
+  const MM = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const DD = String(now.getUTCDate()).padStart(2, "0");
+  const HH = String(roundedHour).padStart(2, "0");
+
+  const timestamp = `${YYYY}${MM}${DD}${HH}`;
+
+  return md5(pwd);
+} */
 
 // -----------------------------
 // TEST CONNECTION (ONLY FUNCTION YOU NEED HERE)
 // -----------------------------
-export async function testCheapCargoConnection(
-  creds: Credentials
-) {
+export async function testCheapCargoConnection(creds: Credentials) {
   try {
-    const timestamp = generateTimestamp();
+    // const timestamp = generateTimestamp();
 
-    console.log('creds.apiKey === ',creds.apiKey);
-    console.log('timestamp === ',timestamp);
-    console.log('creds.password === ',creds.password);
+    // console.log("creds.apiKey === ", creds.apiKey);
+    // // console.log("timestamp === ", timestamp);
+    console.log("creds.password === ", creds.password);
 
-    const authentication = md5(creds.apiKey + timestamp);
-    const passwordHash = md5(creds.password);
+    // const authentication = md5(creds.apiKey + timestamp);
+    // const passwordHash = md5(creds.password);
 
-    console.log('authentication === ',authentication);
-    console.log('passwordHash === ',passwordHash);
+    const authentication = getAuthenticationToken(creds.apiKey);
+    const passwordHash = "34dbe7e451f2d0b166a292ce0021599d";//getPasswordHash(creds.apiKey);
+
+    console.log("authentication === ", authentication);
+    console.log("creds.email === ", creds.email);
+    console.log("passwordHash === ", passwordHash);
 
     const payload = {
       shipments: {
-        authentication,
+        "authentication": authentication,
         version: "2.1",
         user: {
           email: creds.email,
@@ -104,7 +131,7 @@ export async function testCheapCargoConnection(
     const data = await res.json();
 
     console.log("CheapCargo test:", {
-      timestamp,
+      // timestamp,
       authentication,
       response: data,
     });
@@ -268,7 +295,6 @@ export async function testCheapCargoConnection(
 }
  */
 
-
 // const BASE_URL = "https://api.cheapcargo.dev"; // adjust if needed
 
 // type Credentials = {
@@ -375,4 +401,20 @@ export async function testCheapCargoConnection(
       error: "Unable to reach provider API",
     };
   }
+} */
+/* function generateTimestamp() {
+  const now = new Date();
+
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(now.getUTCDate()).padStart(2, "0");
+
+  const hourUTC = now.getUTCHours();
+  const hh = String(Math.floor(hourUTC / 2) * 2).padStart(2, "0");
+
+  return `${yyyy}${mm}${dd}${hh}`;
+}
+
+function md5(value: string) {
+  return crypto.createHash("md5").update(value).digest("hex");
 } */
