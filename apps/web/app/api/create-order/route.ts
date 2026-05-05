@@ -118,7 +118,26 @@ export async function POST(req: NextRequest) {
     // =========================================
     // 2️⃣ ADDRESS
     // =========================================
-    await client.query(
+
+    const addressRes = await client.query(
+      `INSERT INTO store_customer_addresses
+      (customer_id, label, address_line1, address_line2, city, state, postal_code, country)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT (customer_id, address_line1, address_line2, city, state, postal_code, country)
+      DO NOTHING
+      RETURNING id`,
+      [
+        customer_id,
+        "Home",
+        shippingAddress.address_line1,
+        shippingAddress.address_line2,
+        shippingAddress.city,
+        shippingAddress.state,
+        shippingAddress.postal_code,
+        shippingAddress.country,
+      ],
+    );
+    /* await client.query(
       `INSERT INTO store_customer_addresses
        (customer_id, label, address_line1, address_line2, city, state, postal_code, country)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
@@ -132,7 +151,7 @@ export async function POST(req: NextRequest) {
         shippingAddress.postal_code,
         shippingAddress.country,
       ],
-    );
+    ); */
 
     // =========================================
     // 3️⃣ FIND STORES
@@ -193,8 +212,17 @@ export async function POST(req: NextRequest) {
     const orderResult = await client.query(
       `INSERT INTO store_orders
         (store_id, current_store_id, order_number, customer_id, customer_email, order_status,
-         subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+         subtotal, discount_amount, shipping_amount, total_amount, payment_status,
+      shipping_address_line1,
+      shipping_address_line2,
+      shipping_city,
+      shipping_state,
+      shipping_postal_code,
+      shipping_country,
+      shipping_latitude,
+      shipping_longitude)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+      $12,$13,$14,$15,$16,$17,$18,$19)
        RETURNING id`,
       [
         bestStore,
@@ -208,6 +236,14 @@ export async function POST(req: NextRequest) {
         pricing.shipping,
         pricing.total,
         "pending",
+        shippingAddress.address_line1,
+        shippingAddress.address_line2,
+        shippingAddress.city,
+        shippingAddress.state,
+        shippingAddress.postal_code,
+        shippingAddress.country,
+        shippingAddress.latitude,
+        shippingAddress.longitude,
       ],
     );
 

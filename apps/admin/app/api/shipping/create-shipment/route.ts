@@ -113,6 +113,9 @@ export async function POST(req: NextRequest) {
       throw new Error("Shipping provider not implemented");
     }
 
+
+    console.log('Build shipment input order ==== ',order);
+
     // -----------------------------
     // 📦 Build shipment input
     // -----------------------------

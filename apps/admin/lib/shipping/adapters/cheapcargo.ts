@@ -114,6 +114,9 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 CREATE SHIPMENT
   // ======================================================
   async createShipment(input: ShipmentInput): Promise<ShipmentResult> {
+
+    console.log('createShipment API input === ',input);
+    
     const payload = {
       shipments: {
         authentication: this.getAuthenticationToken(),
@@ -175,6 +178,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
         ],
       },
     };
+
+    console.log('createShipment API payload === ',payload);
 
     const res = await fetch(`${BASE_URL}/createShipment`, {
       method: "POST",
