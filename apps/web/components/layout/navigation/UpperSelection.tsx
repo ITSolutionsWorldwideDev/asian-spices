@@ -2,16 +2,29 @@
 
 "use client";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
+import { useEffect } from "react";
 
 export default function UpperSelection() {
   const {
     countries,
-    currencies,
+    // currencies,
     selectedCountry,
-    selectedCurrency,
+    // selectedCurrency,
     setSelectedCountry,
-    setSelectedCurrency,
+    // setSelectedCurrency,
   } = useGlobalStore();
+
+  const {
+    currencies,
+    selectedCurrency,
+    setSelectedCurrency,
+    fetchCurrencies,
+  } = useCurrencyStore();
+
+  useEffect(() => {
+    fetchCurrencies();
+  }, []);
 
   return (
     <nav className="flex items-center justify-between px-6 container mx-auto">

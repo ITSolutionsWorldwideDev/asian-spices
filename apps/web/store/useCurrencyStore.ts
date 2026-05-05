@@ -35,17 +35,26 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
       const res = await fetch("/api/currencies");
       const currencies = await res.json();
 
+      const saved = localStorage.getItem("currency");
+
       const baseCurrency = currencies.find((c: Currency) => c.is_base);
+
+      console.log("baseCurrency ==== ", baseCurrency);
+
+      const selected =
+        currencies.find((c: any) => c.code === saved)?.code ||
+        baseCurrency?.code ||
+        "";
+
+      const currencyObj = currencies.find((c: any) => c.code === selected);
 
       set({
         currencies,
-        selectedCurrency: baseCurrency ? baseCurrency.code : "",
+        selectedCurrency: selected,
+        symbol: currencyObj?.symbol || "",
       });
 
-      // fetch rate for base currency
-      if (baseCurrency) {
-        await get().fetchRate(baseCurrency.code);
-      }
+      await get().fetchRate(selected);
     } catch (err) {
       console.error("Error fetching currencies", err);
     }
@@ -53,7 +62,19 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
 
   // 🔹 Set currency + fetch rate
   setSelectedCurrency: async (code) => {
+    const { currencies } = get();
+
+    const exists = currencies.some((c) => c.code === code);
+
+    if (!exists) {
+      console.warn("Invalid currency selected:", code);
+      return;
+    }
+
+    localStorage.setItem("currency", code);
+
     set({ selectedCurrency: code });
+
     await get().fetchRate(code);
   },
 
@@ -63,11 +84,46 @@ export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
       const res = await fetch(`/api/currency-rate?code=${code}`);
       const data = await res.json();
 
-      if (data?.rate) {
-        set({ rate: data.rate, symbol: data.symbol });
-      }
+      const currency = get().currencies.find((c) => c.code === code);
+
+      set({
+        rate: data?.rate || 1,
+        symbol: currency?.symbol || "",
+      });
     } catch (err) {
       console.error("Error fetching rate", err);
     }
   },
 }));
+
+
+
+
+      /* set({
+        currencies,
+        selectedCurrency: baseCurrency ? baseCurrency.code : "",
+        symbol: baseCurrency ? baseCurrency.symbol : "",
+      });
+
+      // fetch rate for base currency
+      if (baseCurrency) {
+        await get().fetchRate(baseCurrency.code);
+      } */
+
+// setSelectedCurrency: async (code) => {
+//   set({ selectedCurrency: code });
+//   await get().fetchRate(code);
+// },
+/* setSelectedCurrency: async (code) => {
+    localStorage.setItem("currency", code);
+    set({ selectedCurrency: code });
+    await get().fetchRate(code);
+  }, */
+
+// if (data?.rate) {
+//   set((state) => ({
+//     rate: data.rate,
+//     symbol: data.symbol || state.symbol,
+//   }));
+//   // set({ rate: data.rate, symbol: data.symbol });
+// }

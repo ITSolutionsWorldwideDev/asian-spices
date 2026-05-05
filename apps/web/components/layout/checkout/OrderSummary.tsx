@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 // import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
 
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 interface Props {
   items: any[];
   shippingMethod: "standard" | "express" | "overnight";
@@ -22,11 +23,9 @@ export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 export default function OrderSummary({ items, shippingMethod }: Props) {
   const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
     useCartStore();
+  const { symbol, rate } = useCurrencyStore();
 
-  /* const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  ); */
+  console.log("symbol ==== ", symbol);
 
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -45,17 +44,14 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
   const shippingOption = SHIPPING_OPTIONS[safeMethod];
   const shippingPrice = shippingOption?.price ?? 0;
 
-  // const savings = cart.reduce((acc, item) => {
-  //   if (!item.oldPrice) return acc;
-  //   return acc + (item.oldPrice - item.price) * item.quantity;
-  // }, 0);
-
   const TAX_RATE = 0.08;
 
   const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax + shippingPrice;
+  let total = subtotal + tax + shippingPrice;
   const itemInCart = cart.length;
   let deliverDiffer = total < 50 ? 50 - total : undefined;
+
+  if (!deliverDiffer) total = total - shippingPrice;
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
@@ -71,14 +67,17 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
                 fill
                 className="object-cover"
               />
-              <span className="absolute top-0 -right-1 bg-orange-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
+              {/* <span className="absolute top-0 -right-1 bg-orange-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
                 {item.quantity}
-              </span>
+              </span> */}
             </div>
 
             <div className="flex-1">
-              <p className="text-sm font-medium">{item.title}</p>
-              <p className="text-xs text-gray-500">{item.weight}</p>
+              <p className="text-sm font-medium">
+                {item.title} x {item.quantity}
+              </p>
+              {/* <p className="text-xs text-gray-500">{item.weight}</p> */}
+              {/* <p className="text-xs text-gray-500">Qty: </p> */}
             </div>
 
             {/* <p className="text-sm font-medium">${item.price.toFixed(2)}</p> */}
@@ -89,15 +88,12 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
       <div className="space-y-2 text-sm py-5">
         <div className="flex justify-between mt-3">
           <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>
+            {symbol}
+            {subtotal.toFixed(2)}
+          </span>
         </div>
 
-        {/* {savings > 0 && (
-              <div className="flex justify-between text-[#00A63E] mt-3">
-                <span>You Save</span>
-                <span>- ${savings.toFixed(2)}</span>
-              </div>
-            )} */}
         {!deliverDiffer && (
           <>
             <div className="flex justify-between mt-3">
@@ -113,14 +109,20 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
               {/* <span>Shipping ({SHIPPING_OPTIONS[shippingMethod].label})</span>
               <span>${shippingPrice.toFixed(2)}</span> */}
               <span>Shipping ({shippingOption.label})</span>
-              <span>${shippingOption.price.toFixed(2)}</span>
+              <span>
+                {symbol}
+                {shippingOption.price.toFixed(2)}
+              </span>
             </div>
           </>
         )}
 
         <div className="flex justify-between mt-3">
           <span>Tax (8%)</span>
-          <span>${tax.toFixed(2)}</span>
+          <span>
+            {symbol}
+            {tax.toFixed(2)}
+          </span>
         </div>
       </div>
 
@@ -128,20 +130,11 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
 
       <div className="flex justify-between font-semibold text-lg">
         <span>Total</span>
-        <span>${total.toFixed(2)}</span>
+        <span>
+          {symbol}
+          {total.toFixed(2)}
+        </span>
       </div>
-
-      {/* 
-      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
-        <div className="flex justify-between text-gray-600">
-          <span>{items.label}</span>
-          <span>${items.value}</span>      
-        </div>
-      </div>
-      <div className="flex justify-between text-lg font-semibold mt-6">
-        <span>Total</span>
-        <span>${total.toFixed(2)}</span>
-      </div> */}
 
       <p className="text-xs text-gray-500">
         {shippingMethod === "standard" && "Delivery in 5-7 days"}
@@ -175,11 +168,11 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
 
       {deliverDiffer && (
         <>
-          <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
-            <button className="text-white flex items-center justify-center w-full">
-              <ShoppingCart className="mr-3" /> Add {deliverDiffer.toFixed()} $
-              more for free shipping
-            </button>
+          <div className=" px-5 py-4 rounded-xl mt-5">
+            <div className="text-[#F83600] flex items-center justify-center w-full">
+              <ShoppingCart className="mr-3" /> Add {symbol}
+              {deliverDiffer.toFixed()}&nbsp;more for free shipping
+            </div>
           </div>
 
           <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
@@ -193,4 +186,26 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
       )}
     </div>
   );
+}
+
+{
+  /* {savings > 0 && (
+              <div className="flex justify-between text-[#00A63E] mt-3">
+                <span>You Save</span>
+                <span>- ${savings.toFixed(2)}</span>
+              </div>
+            )} */
+}
+{
+  /* 
+      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
+        <div className="flex justify-between text-gray-600">
+          <span>{items.label}</span>
+          <span>${items.value}</span>      
+        </div>
+      </div>
+      <div className="flex justify-between text-lg font-semibold mt-6">
+        <span>Total</span>
+        <span>${total.toFixed(2)}</span>
+      </div> */
 }

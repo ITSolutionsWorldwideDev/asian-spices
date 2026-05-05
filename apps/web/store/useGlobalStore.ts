@@ -16,13 +16,13 @@ interface Currency {
 
 interface GlobalState {
   countries: Country[];
-  currencies: Currency[];
+  // currencies: Currency[];
   selectedCountry: string;
-  selectedCurrency: string;
+  // selectedCurrency: string;
 
   fetchInitialData: () => Promise<void>;
   setSelectedCountry: (code: string) => void;
-  setSelectedCurrency: (code: string) => void;
+  // setSelectedCurrency: (code: string) => void;
 }
 
 const DEFAULT_COUNTRY = "NL";
@@ -30,36 +30,42 @@ const DEFAULT_CURRENCY = "EUR";
 
 export const useGlobalStore = create<GlobalState>((set, get) => ({
   countries: [],
-  currencies: [],
+  // currencies: [],
   selectedCountry: "",
-  selectedCurrency: "",
+  // selectedCurrency: "",
 
   fetchInitialData: async () => {
-    const { countries, currencies } = get();
+    const { countries } = get();
+    // const { countries, currencies } = get();
 
     // ✅ prevent refetch
-    if (countries.length > 0 && currencies.length > 0) return;
+    if (countries.length > 0) return;
+    // if (countries.length > 0 && currencies.length > 0) return;
 
-    const [countryRes, currencyRes] = await Promise.all([
+    const [countryRes] = await Promise.all([
       fetch("/api/countries"),
-      fetch("/api/currencies"),
     ]);
+
+    // const [countryRes, currencyRes] = await Promise.all([
+    //   fetch("/api/countries"),
+    //   fetch("/api/currencies"),
+    // ]);
 
     // ✅ check response BEFORE parsing
     if (!countryRes.ok) throw new Error("Countries fetch failed");
-    if (!currencyRes.ok) throw new Error("Currencies fetch failed");
+    // if (!currencyRes.ok) throw new Error("Currencies fetch failed");
 
     const countriesData = await countryRes.json();
-    const currenciesData = await currencyRes.json();
+    // const currenciesData = await currencyRes.json();
 
     set({
       countries: countriesData,
-      currencies: currenciesData,
+      // currencies: currenciesData,
       selectedCountry: DEFAULT_COUNTRY,
-      selectedCurrency: DEFAULT_CURRENCY,
+      // selectedCurrency: DEFAULT_CURRENCY,
     });
   },
 
   setSelectedCountry: (code) => set({ selectedCountry: code }),
-  setSelectedCurrency: (code) => set({ selectedCurrency: code }),
+  // setSelectedCurrency: (code) => set({ selectedCurrency: code }),
 }));

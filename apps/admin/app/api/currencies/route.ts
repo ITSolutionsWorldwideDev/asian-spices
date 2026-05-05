@@ -9,7 +9,7 @@ export async function GET() {
 
   try {
     const { rows } = await client.query(`
-      SELECT id, code, name, symbol, decimal_places
+      SELECT id, code, name, symbol, decimal_places,is_base
       FROM currencies
       WHERE is_active = true
       ORDER BY code ASC
