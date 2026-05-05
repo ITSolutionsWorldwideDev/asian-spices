@@ -35,13 +35,13 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const timestamp = `${YYYY}${MM}${DD}${HH}`;
 
-    console.log("this.creds.apiKey ==== ", this.creds.apiKey);
-    console.log("timestamp ==== ", timestamp);
+    // console.log("this.creds.apiKey ==== ", this.creds.apiKey);
+    // console.log("timestamp ==== ", timestamp);
     // md5(apiKey + timestamp);
 
     // const returnKey = md5(this.creds.apiKey) + timestamp;
     const returnKey = md5(this.creds.apiKey + timestamp);
-    console.log("returnKey ==== ", returnKey);
+    // console.log("returnKey ==== ", returnKey);
 
     return returnKey;
   }
@@ -292,7 +292,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
     const payload = {
       labels: {
         authentication: this.getAuthenticationToken(),
-        version: "1.6",
+        version: "2.1",
         user: {
           email: this.creds.email,
           password: this.getPasswordHash(),
@@ -354,18 +354,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     return res.json();
   }
-
-  /* async getRates(input: ShipmentInput): Promise<any> {
-    throw new Error("Use rateRequest flow (not implemented yet)");
-  }
-
-  async createShipment(input: ShipmentInput): Promise<ShipmentResult> {
-    throw new Error("CheapCargo shipment not implemented");
-  }
-
-  async generateLabel(externalId: string): Promise<LabelResult> {
-    throw new Error("CheapCargo label not supported");
-  } */
 }
 
 // import { withRetry } from "@/lib/utils/retry";

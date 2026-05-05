@@ -77,33 +77,6 @@ export default function OrderDetailPage() {
 
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  // ================= FETCH =================
-  // useEffect(() => {
-  //   const fetchOrder = async () => {
-  //     try {
-  //       const res = await fetch(`/api/orders/${orderId}`);
-  //       const data = await res.json();
-
-  //       console.log('fetchOrder === ',data.order);
-  //       setOrder(data.order);
-  //     } catch {
-  //       showToast("error", "Failed to load order");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchOrder();
-  // }, [orderId]);
-
-  // useEffect(() => {
-  //   if (!order || order.order_status !== "accepted") return;
-
-  //   fetch(`/api/store/shipping-methods`)
-  //     .then((r) => r.json())
-  //     .then((d) => setMethods(d.methods));
-  // }, [order]);
-
   useEffect(() => {
     const fetchMethods = async () => {
       // if (!order || order.order_status !== "accepted") return;
@@ -241,7 +214,7 @@ export default function OrderDetailPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      if (data.label?.url) window.open(data.label.url);
+      // if (data.label?.url) window.open(data.label.url);
 
       showToast("success", "Shipment created");
       window.location.reload();
@@ -313,6 +286,34 @@ export default function OrderDetailPage() {
       showToast("error", err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateLabel = async () => {
+    try {
+      setShippingLoading(true);
+
+      const res = await fetch("/api/shipping/generate-label", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      if (data.url) {
+        window.open(data.url);
+      }
+
+      showToast("success", "Label generated");
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setShippingLoading(false);
     }
   };
 
@@ -478,23 +479,6 @@ export default function OrderDetailPage() {
             {order.order_status === "rejected" && (
               <div className="text-red-500 font-semibold">Order Rejected</div>
             )}
-
-            {/* {order.fulfillment_status !== "fulfilled" && (
-              <div className="flex gap-2">
-                <button
-                  disabled={!isFullPossible}
-                  onClick={() => handleAction("full")}
-                >
-                  Accept Full
-                </button>
-
-                <button onClick={() => handleAction("partial")}>Partial</button>
-
-                <button onClick={() => handleAction("reject")}>
-                  Reject All
-                </button>
-              </div>
-            )} */}
           </div>
         </div>
 
@@ -753,14 +737,43 @@ export default function OrderDetailPage() {
               </select>
             </div>
 
-            <button
+            {/* <button
               // onClick={handleShipOrder}
               onClick={handleShip}
               disabled={shippingLoading || !isValid}
               className="mt-4 w-full py-2 bg-primary text-white rounded"
             >
               {shippingLoading ? "Processing..." : "Generate Shipping Label"}
-            </button>
+            </button> */}
+
+            {!order.tracking_number && (
+              <button
+                onClick={handleShip}
+                disabled={shippingLoading || !isValid}
+                className="mt-4 w-full py-2 bg-primary text-white rounded"
+              >
+                {shippingLoading ? "Processing..." : "Create Shipment"}
+              </button>
+            )}
+
+            {order.tracking_number && !order.shipping_label && (
+              <button
+                onClick={handleGenerateLabel}
+                className="mt-4 w-full py-2 bg-green-600 text-white rounded"
+              >
+                Generate Label
+              </button>
+            )}
+
+            {order.shipping_label && (
+              <a
+                href={order.shipping_label}
+                target="_blank"
+                className="mt-4 block text-center text-blue-600 underline"
+              >
+                View Label
+              </a>
+            )}
           </div>
 
           <div className="border rounded-lg">
@@ -782,4 +795,50 @@ export default function OrderDetailPage() {
       </div>
     </div>
   );
+}
+
+// ================= FETCH =================
+// useEffect(() => {
+//   const fetchOrder = async () => {
+//     try {
+//       const res = await fetch(`/api/orders/${orderId}`);
+//       const data = await res.json();
+
+//       console.log('fetchOrder === ',data.order);
+//       setOrder(data.order);
+//     } catch {
+//       showToast("error", "Failed to load order");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchOrder();
+// }, [orderId]);
+
+// useEffect(() => {
+//   if (!order || order.order_status !== "accepted") return;
+
+//   fetch(`/api/store/shipping-methods`)
+//     .then((r) => r.json())
+//     .then((d) => setMethods(d.methods));
+// }, [order]);
+
+{
+  /* {order.fulfillment_status !== "fulfilled" && (
+              <div className="flex gap-2">
+                <button
+                  disabled={!isFullPossible}
+                  onClick={() => handleAction("full")}
+                >
+                  Accept Full
+                </button>
+
+                <button onClick={() => handleAction("partial")}>Partial</button>
+
+                <button onClick={() => handleAction("reject")}>
+                  Reject All
+                </button>
+              </div>
+            )} */
 }
