@@ -25,8 +25,6 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
     useCartStore();
   const { symbol, rate } = useCurrencyStore();
 
-  console.log("symbol ==== ", symbol);
-
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,

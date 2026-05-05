@@ -137,6 +137,10 @@ export default function Checkout() {
 
   const total = subtotal;
 
+  const TAX_RATE = 0.08;
+
+  const tax_amount = subtotal * TAX_RATE;
+
   const placeOrder = async (method: "paynl" | "paypal") => {
     // Validate form
     const result = checkoutSchema.safeParse(formData);
@@ -246,6 +250,7 @@ export default function Checkout() {
           pricing: {
             subtotal,
             discount: 0,
+            tax_amount: tax_amount,
             shipping: SHIPPING_OPTIONS[shippingMethod].price,
             total: subtotal + SHIPPING_OPTIONS[shippingMethod].price,
           },

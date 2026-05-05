@@ -39,8 +39,8 @@ export async function resolveProviderCredentials(
     return result;
   };
 
-  console.log("platform metadata:", platformRes.rows[0]);
-  console.log("store credentials:", storeRes.rows[0]);
+  // console.log("platform metadata:", platformRes.rows[0]);
+  // console.log("store credentials:", storeRes.rows[0]);
 
   return {
     ...decryptObject(platformRes.rows[0]?.metadata),

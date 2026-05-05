@@ -26,6 +26,7 @@ export interface ShipmentInput {
 export interface ShipmentResult {
   externalId: string;
   trackingNumber?: string;
+  trackingUrl?: string;
   labelUrl?: string;
   raw: any;
 }

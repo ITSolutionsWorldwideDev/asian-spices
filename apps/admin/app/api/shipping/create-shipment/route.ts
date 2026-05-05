@@ -53,19 +53,6 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 🚚 Get shipping method + provider
     // -----------------------------
-    /* const methodRes = await client.query(
-      `
-      SELECT 
-        sm.*,
-        sp.slug,
-        sp.id as provider_id
-      FROM shipping_methods sm
-      LEFT JOIN shipping_providers sp
-        ON sm.provider_id = sp.id
-      WHERE sm.id = $1 AND sm.store_id = $2
-      `,
-      [shippingMethodId, storeId],
-    ); */
 
     const methodRes = await client.query(
       `
@@ -83,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     const method = methodRes.rows[0];
 
-    console.log('method ==== ',method);
+    // console.log('method ==== ',method);
 
     if (!method) {
       throw new Error("Shipping method not found");
@@ -113,8 +100,32 @@ export async function POST(req: NextRequest) {
       throw new Error("Shipping provider not implemented");
     }
 
+    // -----------------------------
+    // 🧠 Resolve Store Address
+    // -----------------------------
 
-    console.log('Build shipment input order ==== ',order);
+    // email
+
+    const store_address = await client.query(
+      `
+      SELECT s.name,
+             sa.address_line1, sa.address_line2,sa.city,sa.state, sa.postal_code, 
+             sa.country, sa.latitude, sa.longitude,
+             setg.store_email,setg.store_phone,setg.currency_code
+      FROM stores as s
+      LEFT JOIN store_addresses as sa on sa.store_id = s.id
+      LEFT JOIN store_settings as setg on setg.store_id = s.id
+      WHERE s.id = $1 
+      limit 1
+      `,
+      [storeId],
+    );
+
+    const store_addressRes = store_address.rows[0];
+
+    if (!store_addressRes) {
+      throw new Error("Store Address is missing");
+    }
 
     // -----------------------------
     // 📦 Build shipment input
@@ -122,15 +133,28 @@ export async function POST(req: NextRequest) {
     const shipmentInput = {
       orderId: order.id,
       to: {
-        city: order.customer_city,
-        postal_code: order.customer_postcode,
-        country: order.customer_country,
+        email: order.customer_email,
+        street: order.shipping_address_line1,
+        number: order.shipping_address_line2,
+        city: order.shipping_city,
+        postal_code: order.shipping_postal_code,
+        country: order.shipping_country,
       },
       from: {
-        city: "Warehouse City", // TODO
+        name: order.name,
+        street: store_addressRes.address_line1,
+        number: store_addressRes.address_line2,
+        city: store_addressRes.city,
+        postal_code: store_addressRes.postal_code,
+        country: store_addressRes.country,
+        email: store_addressRes.store_email,
+        phone: store_addressRes.store_phone,
+        currency_code: store_addressRes.currency_code,
       },
       parcel,
     };
+
+    // console.log('shipmentInput ==== ',shipmentInput);
 
     // -----------------------------
     // 🚀 Create shipment
@@ -145,11 +169,9 @@ export async function POST(req: NextRequest) {
       throw new Error("Shipment already exists for this order");
     }
 
-    console.log('shipmentInput ==== ',shipmentInput);
-
     const shipmentResult = await provider.createShipment(shipmentInput);
 
-    console.log('shipmentResult ==== ',shipmentResult);
+    // console.log('shipmentResult ==== ',shipmentResult);
 
     if (!shipmentResult?.externalId) {
       throw new Error("Shipment failed: missing externalId");
@@ -230,6 +252,24 @@ export async function POST(req: NextRequest) {
     client.release();
   }
 }
+
+
+
+
+    /* const methodRes = await client.query(
+      `
+      SELECT 
+        sm.*,
+        sp.slug,
+        sp.id as provider_id
+      FROM shipping_methods sm
+      LEFT JOIN shipping_providers sp
+        ON sm.provider_id = sp.id
+      WHERE sm.id = $1 AND sm.store_id = $2
+      `,
+      [shippingMethodId, storeId],
+    ); */
+
 
 /* import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";

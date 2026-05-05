@@ -35,7 +35,15 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const timestamp = `${YYYY}${MM}${DD}${HH}`;
 
-    return md5(this.creds.apiKey + timestamp);
+    console.log("this.creds.apiKey ==== ", this.creds.apiKey);
+    console.log("timestamp ==== ", timestamp);
+    // md5(apiKey + timestamp);
+
+    // const returnKey = md5(this.creds.apiKey) + timestamp;
+    const returnKey = md5(this.creds.apiKey + timestamp);
+    console.log("returnKey ==== ", returnKey);
+
+    return returnKey;
   }
 
   private getPasswordHash() {
@@ -63,13 +71,13 @@ export class CheapCargoAdapter implements ShippingAdapter {
         version: "2.0",
         user: {
           email: this.creds.email,
-          password: "34dbe7e451f2d0b166a292ce0021599d",//this.getPasswordHash(),
+          password: "34dbe7e451f2d0b166a292ce0021599d", //this.getPasswordHash(),
         },
         shipment: [
           {
             "@orderBy": "price",
             sender: {
-              zipcode: input.from.zipcode,
+              zipcode: input.from.postal_code,
               city: input.from.city,
               country: input.from.country || "NL",
               type: "business",
@@ -114,12 +122,11 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 CREATE SHIPMENT
   // ======================================================
   async createShipment(input: ShipmentInput): Promise<ShipmentResult> {
+    console.log("createShipment API input === ", input);
 
-    console.log('createShipment API input === ',input);
-    
     const payload = {
       shipments: {
-        authentication: this.getAuthenticationToken(),
+        authentication: "5b154bba6f6c5dc819606ce3fcbc14bd", //this.getAuthenticationToken(),
         version: "2.1",
         user: {
           email: this.creds.email,
@@ -128,58 +135,62 @@ export class CheapCargoAdapter implements ShippingAdapter {
         shipment: [
           {
             "@pay": false,
-            "@waitForLabel": true,
+            "@waitForLabel": false,
             "@id": input.orderId,
             "@orderBy": "price",
-
             sender: {
-              companyName: "Warehouse",
-              contactPerson: "Admin",
-              street: input.from.street || "Warehouse Street",
-              number: input.from.number || "1",
-              zipcode: input.from.zipcode,
-              city: input.from.city,
+              companyName: input.from.name || "My Company",
+              contactPerson: "Store Owner",
+              street: input.from.street || "Hoofdstraat",
+              number: input.from.number || "123",
+              zipcode: input.from.postal_code || "1000AA",
+              city: input.from.city || "Amsterdam",
               country: input.from.country || "NL",
-              phone: "",
-              email: this.creds.email,
+              phone: input.from.phone ||"+31612345678",
+              email: input.from.email ||"sender@example.com",
               type: "business",
             },
-
             receiver: {
-              companyName: input.to.companyName || "Customer",
-              contactPerson: input.to.contactPerson || "Customer",
-              street: input.to.street || "",
-              number: input.to.number || "",
-              zipcode: input.to.postal_code,
-              city: input.to.city,
+              companyName: input.to.companyName || "Customer Corp",
+              contactPerson: input.to.contactPerson || "Jane Receiver",
+              street: input.to.street || "Kerkstraat",
+              number: input.to.number || "456",
+              zipcode: input.to.postal_code || "2000BB",
+              city: input.to.city || "Rotterdam",
               country: input.to.country || "NL",
-              phone: input.to.phone || "",
-              email: input.to.email || "",
+              phone: input.to.phone || "+31687654321",
+              email: input.to.email || "receiver@example.com",
               type: "business",
             },
-
             content: {
               colli: [
                 {
-                  description: "Order Package",
-                  weight: Number(input.parcel.weight),
+                  description: "Order package",
+                  weight: Number(input.parcel.weight) || 2.5,
                   length: Number(input.parcel.length || 0),
                   width: Number(input.parcel.width || 0),
                   height: Number(input.parcel.height || 0),
-                  value: 100,
+                  value: 150,
                   package: "PACKAGE",
                   quantity: Number(input.parcel.boxes || 1),
                 },
               ],
             },
-
             reference: input.orderId,
           },
         ],
       },
     };
 
-    console.log('createShipment API payload === ',payload);
+    /* 
+    
+        email: store_addressRes.store_email,
+        phone: store_addressRes.store_phone,
+        currency_code: store_addressRes.currency_code,
+    */
+
+    console.log("createShipment API payload === ", payload);
+    console.log("createShipment API URL === ", `${BASE_URL}/createShipment`);
 
     const res = await fetch(`${BASE_URL}/createShipment`, {
       method: "POST",
@@ -189,22 +200,60 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const data = await res.json();
 
-    console.log('shipment data === ',data);
+    console.log("shipment data === ", data);
+    console.log("shipment data.shipment === ", data.shipment);
+    console.log("shipment data.shipment?.order === ", data.shipment?.order);
 
-    const shipment = data?.shipments?.shipment?.[0];
+    if (data?.shipment?.status !== "ok") {
+      console.error("CheapCargo error:", data);
+      throw new Error("CheapCargo shipment failed");
+    }
 
-    console.log('shipment === ',shipment);
+    const order = data?.shipment?.order?.[0];
 
-    if (!shipment) {
+    if (!order) {
+      console.error("Invalid CheapCargo response:", data);
       throw new Error("Invalid CheapCargo response");
     }
 
+    const externalId = order.number;
+    const trackingNumber = order.details?.awb || undefined;
+    const trackingUrl = order.details?.trackAndTrace || undefined;
+
+    console.log("externalId === ", externalId);
+    console.log("trackingNumber === ", trackingNumber);
+    console.log("trackingUrl === ", trackingUrl);
+
+    // return {
+    //   externalId,
+    //   trackingNumber,
+    //   trackingUrl,
+    //   labelUrl: undefined, // label comes from separate API
+    //   raw: data,
+    // };
+
     return {
-      externalId: shipment.orderNumber,
-      trackingNumber: shipment.trackingNumber || null,
+      externalId: externalId,
+      trackingNumber: trackingNumber,
+      trackingUrl: trackingUrl,
       labelUrl: undefined,
       raw: data,
     };
+    // const shipment = data?.shipments?.order[0];
+
+    // console.log("shipment === ", shipment);
+    // console.log("shipment details === ", shipment?.details);
+
+    // if (!shipment) {
+    //   throw new Error("Invalid CheapCargo response");
+    // }
+
+    // return {
+    //   externalId: shipment.orderNumber,
+    //   trackingNumber: shipment.trackingNumber || null,
+    //   labelUrl: undefined,
+    //   raw: data,
+    // };
   }
 
   // ======================================================
@@ -264,6 +313,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
     });
 
     const data = await res.json();
+
+    console.log("data?.labels?.label === ", data);
 
     const url = data?.labels?.label?.[0]?.file || data?.labels?.label?.[0]?.url;
 

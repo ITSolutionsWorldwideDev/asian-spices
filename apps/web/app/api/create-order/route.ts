@@ -220,9 +220,10 @@ export async function POST(req: NextRequest) {
       shipping_postal_code,
       shipping_country,
       shipping_latitude,
-      shipping_longitude)
+      shipping_longitude,
+      tax_amount)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-      $12,$13,$14,$15,$16,$17,$18,$19)
+      $12,$13,$14,$15,$16,$17,$18,$19,$20)
        RETURNING id`,
       [
         bestStore,
@@ -244,6 +245,7 @@ export async function POST(req: NextRequest) {
         shippingAddress.country,
         shippingAddress.latitude,
         shippingAddress.longitude,
+        pricing.tax_amount,
       ],
     );
 

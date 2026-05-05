@@ -75,6 +75,13 @@ export async function GET(req: NextRequest) {
       SELECT
         o.id AS order_id,
         o.order_number,
+        o.fulfillment_status,
+        o.payment_status,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.payment_method,
+        o.transaction_id,
         o.created_at AS order_date,
         o.payment_status,
         o.order_status,

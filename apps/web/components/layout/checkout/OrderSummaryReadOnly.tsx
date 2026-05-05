@@ -1,6 +1,7 @@
 // apps/web/components/layout/checkout/OrderSummaryReadOnly.tsx
 
 import Image from "next/image";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 
 interface Props {
   items: any[];
@@ -27,6 +28,7 @@ export default function OrderSummaryReadOnly({
 
   const tax = subtotal * 0.08;
   const total = subtotal + tax + shipping;
+  const { symbol, rate } = useCurrencyStore();
 
   return (
     <div className="bg-white rounded-xl border p-6">
@@ -58,17 +60,17 @@ export default function OrderSummaryReadOnly({
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>{symbol}{subtotal.toFixed(2)}</span>
         </div>
 
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span>${shipping.toFixed(2)}</span>
+          <span>{symbol}{shipping.toFixed(2)}</span>
         </div>
 
         <div className="flex justify-between">
           <span>Tax</span>
-          <span>${tax.toFixed(2)}</span>
+          <span> {symbol}{tax.toFixed(2)} </span>
         </div>
       </div>
 
@@ -76,7 +78,7 @@ export default function OrderSummaryReadOnly({
 
       <div className="flex justify-between font-semibold text-lg">
         <span>Total</span>
-        <span>${total.toFixed(2)}</span>
+        <span>{symbol}{total.toFixed(2)}</span>
       </div>
     </div>
   );

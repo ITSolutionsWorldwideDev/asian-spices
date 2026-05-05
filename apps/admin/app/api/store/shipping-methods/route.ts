@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
       [storeId],
     );
 
-    console.log("STORE:", store);
-    console.log("METHODS COUNT:", rows.length);
+    // console.log("STORE:", store);
+    // console.log("METHODS COUNT:", rows.length);
 
     return NextResponse.json({ methods: rows || [] });
   } catch (err: any) {

@@ -78,21 +78,23 @@ export default function OrderDetailPage() {
   const [shippingLoading, setShippingLoading] = useState(false);
 
   // ================= FETCH =================
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const res = await fetch(`/api/orders/${orderId}`);
-        const data = await res.json();
-        setOrder(data.order);
-      } catch {
-        showToast("error", "Failed to load order");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchOrder = async () => {
+  //     try {
+  //       const res = await fetch(`/api/orders/${orderId}`);
+  //       const data = await res.json();
 
-    fetchOrder();
-  }, [orderId]);
+  //       console.log('fetchOrder === ',data.order);
+  //       setOrder(data.order);
+  //     } catch {
+  //       showToast("error", "Failed to load order");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchOrder();
+  // }, [orderId]);
 
   // useEffect(() => {
   //   if (!order || order.order_status !== "accepted") return;
@@ -104,9 +106,6 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     const fetchMethods = async () => {
-      console.log("ORDER:", order);
-      console.log("ORDER status :", order?.status);
-      console.log("ORDER order_status :", order?.order_status);
       // if (!order || order.order_status !== "accepted") return;
       if (!order || order?.status !== "paid") return;
 
@@ -126,7 +125,6 @@ export default function OrderDetailPage() {
 
         const data = await res.json();
         setMethods(data.methods || []);
-        console.log("METHODS:", methods);
       } catch (err) {
         console.error("Shipping methods error:", err);
         setMethods([]);
@@ -439,6 +437,7 @@ export default function OrderDetailPage() {
             </div>
 
             <p className="text-sm capitalize mb-2">
+              {order.order_status}
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
 
