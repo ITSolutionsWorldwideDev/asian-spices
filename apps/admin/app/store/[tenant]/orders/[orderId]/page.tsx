@@ -388,6 +388,10 @@ export default function OrderDetailPage() {
   const isBooked = order.fulfillment_status === "booked";
   const hasLabel = !!order.shipping_label;
 
+  const isLocked = ["confirmed", "partially_confirmed", "rejected"].includes(
+    order.order_status,
+  );
+
   return (
     <div className="page-wrapper ">
       <div className="content space-y-6">
@@ -456,7 +460,7 @@ export default function OrderDetailPage() {
             </div>
 
             <p className="text-sm capitalize mb-2">
-              {order.order_status}
+              {/* {order.order_status} */}
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
             <span
@@ -590,7 +594,7 @@ export default function OrderDetailPage() {
 
             <div className="card bg-none  rounded-lg space-x-2 shadow-sm p-6 ml-auto max-w-sm">
               <button
-                disabled={!isFullPossible}
+                disabled={isLocked || !isFullPossible}
                 onClick={() => handleAction("full")}
                 className="btn btn-success disabled:opacity-50"
               >
@@ -598,15 +602,17 @@ export default function OrderDetailPage() {
               </button>
 
               <button
+                disabled={isLocked}
                 onClick={() => handleAction("partial")}
-                className="btn btn-warning"
+                className="btn btn-warning disabled:opacity-50"
               >
                 Partial
               </button>
 
               <button
+                disabled={isLocked}
                 onClick={() => handleAction("reject")}
-                className="btn btn-danger"
+                className="btn btn-danger disabled:opacity-50"
               >
                 Reject
               </button>

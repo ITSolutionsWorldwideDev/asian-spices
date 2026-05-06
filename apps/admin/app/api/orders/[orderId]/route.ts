@@ -47,6 +47,7 @@ export async function GET(
         o.height,
         o.boxes,
         o.fulfillment_status,
+        o.order_status,
         o.payment_status,
         o.payment_method,
         o.transaction_id,

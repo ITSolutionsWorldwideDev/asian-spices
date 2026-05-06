@@ -124,7 +124,7 @@ export default function Cart() {
                       Weight: {item.weight}
                     </p> */}
                     <span className="inline-block mt-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-600">
-                      In Stock
+                      In Stock {item.price}
                     </span>
                   </div>
 

@@ -141,18 +141,19 @@ const createAllocations = async (
   await client.query(
     `
     INSERT INTO order_item_allocations
-    (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+    (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
     SELECT 
-      oi.id,
       $1,
+      oi.id,
+      $2,
       (oi.quantity - COALESCE(oi.fulfilled_quantity,0)) as remaining,
       0,
       'pending'
     FROM store_order_items oi
-    WHERE oi.order_id = $2
+    WHERE oi.order_id = $1
       AND (oi.quantity - COALESCE(oi.fulfilled_quantity,0)) > 0
     `,
-    [storeId, orderId],
+    [orderId,storeId],
   );
 };
 
@@ -461,10 +462,11 @@ export const assignMultiStore = async (client: any, orderId: string) => {
       await client.query(
         `
         INSERT INTO order_item_allocations
-        (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
-        VALUES ($1,$2,$3,0,'pending')
+        (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        VALUES ($1,$2,$3,$4,0,'pending')
+        ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
         `,
-        [item.id, store.store_id, allocateQty]
+        [orderId, item.id, store.store_id, allocateQty]
       );
 
       remaining -= allocateQty;
@@ -475,10 +477,11 @@ export const assignMultiStore = async (client: any, orderId: string) => {
       await client.query(
         `
         INSERT INTO order_item_allocations
-        (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
-        VALUES ($1,$2,$3,0,'pending')
+        (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        VALUES ($1,$2,$3,$4,0,'pending')
+        ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
         `,
-        [item.id, DEFAULT_STORE_ID, remaining]
+        [orderId, item.id, DEFAULT_STORE_ID, remaining]
       );
     }
   }

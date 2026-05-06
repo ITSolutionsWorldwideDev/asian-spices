@@ -549,6 +549,7 @@ export const assignMultiStore = async (client: any, orderId: string) => {
         INSERT INTO order_item_allocations
         (order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
         VALUES ($1,$2,$3,0,'pending')
+        ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
         `,
         [item.id, DEFAULT_STORE_ID, remaining]
       );

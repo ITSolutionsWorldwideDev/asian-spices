@@ -126,7 +126,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const payload = {
       shipments: {
-        authentication: "5b154bba6f6c5dc819606ce3fcbc14bd", //this.getAuthenticationToken(),
+        authentication: this.getAuthenticationToken(), //"5b154bba6f6c5dc819606ce3fcbc14bd", //
         version: "2.1",
         user: {
           email: this.creds.email,
@@ -202,12 +202,13 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     console.log("shipment data === ", data);
     console.log("shipment data.shipment === ", data.shipment);
-    console.log("shipment data.shipment?.order === ", data.shipment?.order);
 
     if (data?.shipment?.status !== "ok") {
+      console.log("shipment data.shipment?.error === ", data.shipment?.error);
       console.error("CheapCargo error:", data);
       throw new Error("CheapCargo shipment failed");
     }
+    console.log("shipment data.shipment?.order === ", data.shipment?.order);
 
     const order = data?.shipment?.order?.[0];
 

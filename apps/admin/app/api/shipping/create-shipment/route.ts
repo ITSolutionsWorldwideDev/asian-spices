@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
       `
       INSERT INTO shipments
         (order_id, store_id, provider_id, shipping_method_id,
-         external_shipment_id, tracking_number, label_url, trackingUrl,raw_response)
+         external_shipment_id, tracking_number, label_url, tracking_url,raw_response)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       RETURNING *
       `,

@@ -111,7 +111,7 @@ export async function POST(
           INSERT INTO order_item_allocations
           (order_id, order_item_id, store_id, allocated_quantity)
           VALUES ($1,$2,$3,$4)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
           `,
           [orderId, item.id, storeId, item.quantity],
         );
@@ -157,17 +157,35 @@ export async function POST(
         // update allocation (🔥 NEW)
         await client.query(
           `
-          UPDATE order_item_allocations
-          SET fulfilled_quantity = $1,
-              status = CASE
-                WHEN $1 = 0 THEN 'rejected'
-                WHEN $1 < allocated_quantity THEN 'partial'
+            INSERT INTO order_item_allocations
+            (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+            VALUES ($1,$2,$3,$4,$5,
+              CASE
+                WHEN $5 = 0 THEN 'rejected'
+                WHEN $5 < $4 THEN 'partial'
                 ELSE 'fulfilled'
               END
-          WHERE order_item_id = $2 AND store_id = $3
-          `,
-          [fulfillQty, item.id, storeId],
+            )
+            ON CONFLICT (order_id, order_item_id, store_id)
+            DO UPDATE SET
+              fulfilled_quantity = EXCLUDED.fulfilled_quantity,
+              status = EXCLUDED.status
+            `,
+          [orderId, item.id, storeId, item.quantity, fulfillQty],
         );
+        // await client.query(
+        //   `
+        //   UPDATE order_item_allocations
+        //   SET fulfilled_quantity = $1,
+        //       status = CASE
+        //         WHEN $1 = 0 THEN 'rejected'
+        //         WHEN $1 < allocated_quantity THEN 'partial'
+        //         ELSE 'fulfilled'
+        //       END
+        //   WHERE order_item_id = $2 AND store_id = $3
+        //   `,
+        //   [fulfillQty, item.id, storeId],
+        // );
 
         // update order item
         await client.query(
@@ -198,7 +216,7 @@ export async function POST(
           INSERT INTO order_item_allocations
           (order_id, order_item_id, store_id, allocated_quantity)
           VALUES ($1,$2,$3,$4)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
           `,
           [orderId, item.id, storeId, item.quantity],
         );
