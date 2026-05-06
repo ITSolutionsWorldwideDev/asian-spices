@@ -258,9 +258,9 @@ export default function Checkout() {
           pricing: {
             subtotal,
             discount: 0,
-            tax_amount: tax_amount,
-            shipping: SHIPPING_OPTIONS[shippingMethod].price,
-            total: subtotal + SHIPPING_OPTIONS[shippingMethod].price,
+            tax_amount: tax,
+            shipping: shipping,// SHIPPING_OPTIONS[shippingMethod].price,
+            total: total,// subtotal + SHIPPING_OPTIONS[shippingMethod].price,
           },
           shippingMethod,
           payment_status: "pending",
