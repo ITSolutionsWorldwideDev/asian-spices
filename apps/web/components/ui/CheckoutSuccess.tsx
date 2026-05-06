@@ -8,6 +8,10 @@ import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
 interface Order {
   id: string;
   order_number: string;
+
+  subtotal_amount: number;
+  tax_amount: number;
+  shipping_amount: number;
   total_amount: number;
   payment_status: string;
   order_status: string;
@@ -106,10 +110,19 @@ export default function CheckoutSuccess({ orderId }: Props) {
 
         <h2 className="text-xl font-semibold mb-4">Items</h2>
 
-        <OrderSummaryReadOnly
+        {/* <OrderSummaryReadOnly
           items={order.cart_items}
           shippingMethod={order.shipping_method || "standard"}
-        />
+        /> */}
+
+        <OrderSummaryReadOnly
+                  items={order.cart_items}
+                  shippingMethod={order.shipping_method}
+                  subtotal={order.subtotal_amount}
+                  tax={order.tax_amount}
+                  shipping={order.shipping_amount}
+                  total={order.total_amount}
+                />
 
         <p>
           <span className="font-medium">Shipping Method:</span>{" "}

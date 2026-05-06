@@ -64,9 +64,18 @@ export default function OrderCard({ order, isOpen, onToggle }: any) {
           <OrderTimeline status={order.payment_status} />
 
           <OrderSummaryReadOnly
+                    items={order.cart_items}
+                    shippingMethod={order.shipping_method}
+                    subtotal={order.subtotal_amount}
+                    tax={order.tax_amount}
+                    shipping={order.shipping_amount}
+                    total={order.total_amount}
+                  />
+
+          {/* <OrderSummaryReadOnly
             items={order.cart_items || []}
             shippingMethod={order.shipping_method || "standard"}
-          />
+          /> */}
         </div>
       )}
     </div>
