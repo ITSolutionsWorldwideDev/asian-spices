@@ -14,11 +14,17 @@ import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
 interface Order {
   id: string;
   order_number: string;
+
+  subtotal_amount: number;
+  tax_amount: number;
+  shipping_amount: number;
   total_amount: number;
+
   payment_status: "pending" | "paid" | "failed";
   order_status: string;
   payment_method: string;
   transaction_id: string;
+
   shipping_method: "standard" | "express" | "overnight";
   cart_items: any[];
   customer_email: string;
@@ -63,33 +69,6 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
     return () => clearInterval(interval);
   }, [orderId]);
 
-  /* useEffect(() => {
-    let interval: NodeJS.Timeout;
-    const fetchOrder = async () => {
-      try {
-        show("Checkout Status...");
-        const res = await fetch(`/api/get-order?orderId=${orderId}`);
-        const data = await res.json();
-
-        if (data.success) {
-          setOrder(data.order);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-        hide();
-      }
-    };
-
-    fetchOrder();
-
-    // 🔥 polling for Pay.nl webhook updates
-    interval = setInterval(fetchOrder, 5000);
-
-    return () => clearInterval(interval);
-  }, [orderId]); */
-
   useEffect(() => {
     if (order?.payment_status === "paid") {
       clearCart();
@@ -103,12 +82,6 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   if (!order) {
     return <p className="text-center text-red-500">Order not found</p>;
   }
-
-  /* useEffect(() => {
-    if (order?.payment_status === "paid") {
-      clearCart();
-    }
-  }, [order?.payment_status]); */
 
   // =========================
   // UI STATES
@@ -125,7 +98,16 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         <OrderSummaryReadOnly
           items={order.cart_items}
           shippingMethod={order.shipping_method}
+          subtotal={order.subtotal_amount}
+          tax={order.tax_amount}
+          shipping={order.shipping_amount}
+          total={order.total_amount}
         />
+
+        {/* <OrderSummaryReadOnly
+          items={order.cart_items}
+          shippingMethod={order.shipping_method}
+        /> */}
       </div>
     );
   }
@@ -176,12 +158,54 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         This page will update automatically.
       </p>
 
+      {/* <OrderSummaryReadOnly
+        items={order.cart_items}
+        shippingMethod={order.shipping_method}
+      /> */}
+
       <OrderSummaryReadOnly
         items={order.cart_items}
         shippingMethod={order.shipping_method}
+        subtotal={order.subtotal_amount}
+        tax={order.tax_amount}
+        shipping={order.shipping_amount}
+        total={order.total_amount}
       />
 
       <OrderTimeline status={order.payment_status} />
     </div>
   );
 }
+
+/* useEffect(() => {
+    if (order?.payment_status === "paid") {
+      clearCart();
+    }
+  }, [order?.payment_status]); */
+
+/* useEffect(() => {
+    let interval: NodeJS.Timeout;
+    const fetchOrder = async () => {
+      try {
+        show("Checkout Status...");
+        const res = await fetch(`/api/get-order?orderId=${orderId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setOrder(data.order);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        hide();
+      }
+    };
+
+    fetchOrder();
+
+    // 🔥 polling for Pay.nl webhook updates
+    interval = setInterval(fetchOrder, 5000);
+
+    return () => clearInterval(interval);
+  }, [orderId]); */

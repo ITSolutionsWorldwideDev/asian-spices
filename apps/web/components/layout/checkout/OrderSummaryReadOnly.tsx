@@ -2,33 +2,47 @@
 
 import Image from "next/image";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
+import { CartItem } from "@/store/useCartStore";
+import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
 
 interface Props {
   items: any[];
   shippingMethod: "standard" | "express" | "overnight";
+
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
 }
 
-export const SHIPPING_OPTIONS = {
+/* export const SHIPPING_OPTIONS = {
   standard: { label: "Standard Shipping", price: 5.99 },
   express: { label: "Express Shipping", price: 12.99 },
   overnight: { label: "Overnight Shipping", price: 24.99 },
-} as const;
+} as const; */
 
 export default function OrderSummaryReadOnly({
   items,
   shippingMethod,
+  subtotal,
+  tax,
+  shipping,
+  total,
 }: Props) {
-  const subtotal = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  // const subtotal = items.reduce(
+  //   (acc, item) => acc + item.price * item.quantity,
+  //   0
+  // );
 
-  const shipping =
-    SHIPPING_OPTIONS[shippingMethod]?.price ?? SHIPPING_OPTIONS.standard.price;
+  // const shipping =
+  //   SHIPPING_OPTIONS[shippingMethod]?.price ?? SHIPPING_OPTIONS.standard.price;
 
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax + shipping;
+  // const tax = subtotal * 0.08;
+  // const total = subtotal + tax + shipping;
   const { symbol, rate } = useCurrencyStore();
+
+  const shippingOption = SHIPPING_OPTIONS[shippingMethod];
+  const isFreeShipping = shipping === 0;
 
   return (
     <div className="bg-white rounded-xl border p-6">
@@ -51,7 +65,7 @@ export default function OrderSummaryReadOnly({
 
             <div className="flex-1">
               <p className="text-sm font-medium">{item.title}</p>
-              <p className="text-xs text-gray-500">{item.weight}</p>
+              {/* <p className="text-xs text-gray-500">{item.weight}</p> */}
             </div>
           </div>
         ))}
@@ -60,17 +74,31 @@ export default function OrderSummaryReadOnly({
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span>{symbol}{subtotal.toFixed(2)}</span>
+          <span>
+            {symbol}
+            {(rate * subtotal).toFixed(2)}
+            {/* {subtotal.toFixed(2)} */}
+          </span>
         </div>
 
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span>{symbol}{shipping.toFixed(2)}</span>
+          <span className={isFreeShipping ? "text-green-600" : ""}>
+            {isFreeShipping
+              ? "FREE"
+              : `${symbol}${(rate * shipping).toFixed(2)}`}
+          </span>
+          {/* <span>{symbol}{shipping.toFixed(2)}</span> */}
         </div>
 
         <div className="flex justify-between">
           <span>Tax</span>
-          <span> {symbol}{tax.toFixed(2)} </span>
+          <span>
+            {" "}
+            {symbol}
+            {(rate * tax).toFixed(2)}
+            {/* {tax.toFixed(2)}  */}
+          </span>
         </div>
       </div>
 
@@ -78,7 +106,11 @@ export default function OrderSummaryReadOnly({
 
       <div className="flex justify-between font-semibold text-lg">
         <span>Total</span>
-        <span>{symbol}{total.toFixed(2)}</span>
+        <span>
+          {symbol}
+          {(rate * total).toFixed(2)}
+        </span>
+        {/* <span>{symbol}{total.toFixed(2)}</span> */}
       </div>
     </div>
   );
