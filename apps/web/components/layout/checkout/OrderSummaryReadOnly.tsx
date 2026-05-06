@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
-import { CartItem } from "@/store/useCartStore";
+// import { CartItem } from "@/store/useCartStore";
 import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
 
 interface Props {
@@ -20,6 +20,26 @@ interface Props {
   express: { label: "Express Shipping", price: 12.99 },
   overnight: { label: "Overnight Shipping", price: 24.99 },
 } as const; */
+
+export const BASE_CURRENCY = "EUR";
+
+export function convertPrice(
+  amount: number,
+  rate: number,
+  currency: string,
+  baseCurrency: string = "EUR",
+) {
+  if (currency === baseCurrency) {
+    return amount; // ✅ no conversion
+  }
+
+  return amount * rate;
+}
+
+const safeNumber = (value: any) => {
+  const n = Number(value);
+  return isNaN(n) ? 0 : n;
+};
 
 export default function OrderSummaryReadOnly({
   items,
@@ -39,7 +59,18 @@ export default function OrderSummaryReadOnly({
 
   // const tax = subtotal * 0.08;
   // const total = subtotal + tax + shipping;
-  const { symbol, rate } = useCurrencyStore();
+  // const { symbol, rate, currency } = useCurrencyStore();
+  const { symbol, rate, selectedCurrency } = useCurrencyStore();
+
+  const safeSubtotal = safeNumber(subtotal);
+  const safeTax = safeNumber(tax);
+  const safeShipping = safeNumber(shipping);
+  const safeTotal = safeNumber(total);
+
+  const subtotalConverted = convertPrice(safeSubtotal, rate, selectedCurrency);
+  const taxConverted = convertPrice(safeTax, rate, selectedCurrency);
+  const shippingConverted = convertPrice(safeShipping, rate, selectedCurrency);
+  const totalConverted = convertPrice(safeTotal, rate, selectedCurrency);
 
   const shippingOption = SHIPPING_OPTIONS[shippingMethod];
   const isFreeShipping = shipping === 0;
@@ -76,7 +107,7 @@ export default function OrderSummaryReadOnly({
           <span>Subtotal</span>
           <span>
             {symbol}
-            {(rate * subtotal).toFixed(2)}
+            {subtotalConverted.toFixed(2)}
             {/* {subtotal.toFixed(2)} */}
           </span>
         </div>
@@ -86,7 +117,7 @@ export default function OrderSummaryReadOnly({
           <span className={isFreeShipping ? "text-green-600" : ""}>
             {isFreeShipping
               ? "FREE"
-              : `${symbol}${(rate * shipping).toFixed(2)}`}
+              : `${symbol}${shippingConverted.toFixed(2)}`}
           </span>
           {/* <span>{symbol}{shipping.toFixed(2)}</span> */}
         </div>
@@ -96,7 +127,7 @@ export default function OrderSummaryReadOnly({
           <span>
             {" "}
             {symbol}
-            {(rate * tax).toFixed(2)}
+            {taxConverted.toFixed(2)}
             {/* {tax.toFixed(2)}  */}
           </span>
         </div>
@@ -108,7 +139,7 @@ export default function OrderSummaryReadOnly({
         <span>Total</span>
         <span>
           {symbol}
-          {(rate * total).toFixed(2)}
+          {totalConverted.toFixed(2)}
         </span>
         {/* <span>{symbol}{total.toFixed(2)}</span> */}
       </div>

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       orderId,
     ]);
 
-    console.log("result === ", result);
+    // console.log("result === ", result);
 
     return NextResponse.json({
       success: true,

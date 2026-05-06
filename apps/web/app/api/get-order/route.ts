@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
       `
       SELECT 
         o.id,
-        o.order_number,
+        o.order_number,        
+        o.subtotal AS subtotal_amount,
+        o.tax_amount,
+        o.shipping_amount,
         o.total_amount,
         o.payment_status,
         o.order_status,
