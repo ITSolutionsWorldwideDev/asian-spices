@@ -5,6 +5,82 @@ import { pool } from "@acme/db";
 import { getShippingProvider } from "@/lib/shipping/providerFactory";
 
 export async function POST(req: NextRequest) {
+  try {
+    const { orderId } = await req.json();
+
+    const shipmentRes = await pool.query(
+      `SELECT * FROM shipments WHERE order_id = $1`,
+      [orderId],
+    );
+
+    const shipment = shipmentRes.rows[0];
+
+    if (!shipment) throw new Error("Shipment not found");
+
+    // ✅ get provider slug
+    const providerRes = await pool.query(
+      `SELECT slug FROM shipping_providers WHERE id = $1`,
+      [shipment.provider_id],
+    );
+
+    const providerSlug = providerRes.rows[0]?.slug;
+
+    if (!providerSlug) throw new Error("Provider not found");
+
+    const provider = await getShippingProvider(providerSlug);
+
+    // ❗ OPTIONAL: check if paid
+    const orderRes = await pool.query(
+      `SELECT shipping_paid FROM store_orders WHERE id = $1`,
+      [orderId],
+    );
+
+    if (!orderRes.rows[0]?.shipping_paid) {
+      throw new Error("Shipment not booked/paid yet");
+    }
+
+    const label = await provider.generateLabel(
+      shipment.external_shipment_id,
+    );
+
+    if (!label?.url) {
+      throw new Error("Label not ready yet");
+    }
+
+    // ✅ update shipment
+    await pool.query(
+      `UPDATE shipments SET label_url = $1 WHERE id = $2`,
+      [label.url, shipment.id],
+    );
+
+    // ✅ update order
+    await pool.query(
+      `
+      UPDATE store_orders
+      SET 
+        shipping_label = $1,
+        fulfillment_status = 'shipped',
+        updated_at = NOW()
+      WHERE id = $2
+      `,
+      [label.url, orderId],
+    );
+
+    return NextResponse.json({
+      success: true,
+      labelUrl: label.url,
+    });
+  } catch (err: any) {
+    console.error("generate-label error:", err);
+
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
+  }
+}
+
+/* export async function POST(req: NextRequest) {
   const { shipmentId } = await req.json();
 
   const shipmentRes = await pool.query(
@@ -15,11 +91,6 @@ export async function POST(req: NextRequest) {
   const shipment = shipmentRes.rows[0];
 
   if (!shipment) throw new Error("Shipment not found");
-
-  //   const provider = await getShippingProvider(
-  //     shipment.provider_slug,
-  //     shipment.store_id
-  //   );
 
   const provider = await getShippingProvider(shipment.provider_slug);
 
@@ -48,4 +119,11 @@ export async function POST(req: NextRequest) {
   ]);
 
   return NextResponse.json({ success: true, label });
-}
+} */
+
+
+
+  //   const provider = await getShippingProvider(
+  //     shipment.provider_slug,
+  //     shipment.store_id
+  //   );

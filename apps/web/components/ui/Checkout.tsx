@@ -16,6 +16,8 @@ import { useSession } from "next-auth/react";
 
 import { checkoutSchema } from "@/lib/validation/checkout";
 import { useLoaderStore } from "@/store/useLoaderStore";
+import { calculateTotals } from "@/lib/pricing";
+import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
 
 export type CheckoutData = {
   email: string;
@@ -37,13 +39,13 @@ export type CheckoutData = {
   expiry: string;
 };
 
-export const SHIPPING_OPTIONS = {
-  standard: { label: "Standard Shipping", price: 5.99 },
-  express: { label: "Express Shipping", price: 12.99 },
-  overnight: { label: "Overnight Shipping", price: 24.99 },
-} as const;
+// export const SHIPPING_OPTIONS = {
+//   standard: { label: "Standard Shipping", price: 5.99 },
+//   express: { label: "Express Shipping", price: 12.99 },
+//   overnight: { label: "Overnight Shipping", price: 24.99 },
+// } as const;
 
-export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
+// export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
 export default function Checkout() {
   const { data: session } = useSession();
@@ -130,16 +132,22 @@ export default function Checkout() {
   });
   const isFormValid = checkoutSchema.safeParse(formData).success;
 
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
+  const { subtotal, tax, shipping, total } = calculateTotals(
+    cart,
+    shippingMethod,
   );
 
-  const total = subtotal;
+  // const subtotal = cart.reduce(
+  //   (acc, item) => acc + item.price * item.quantity,
+  //   0,
+  // );
 
-  const TAX_RATE = 0.08;
+  // const total = subtotal;
 
-  const tax_amount = subtotal * TAX_RATE;
+  // const TAX_RATE = 0.08;
+
+  // const tax_amount = subtotal * TAX_RATE;
+  const tax_amount = tax;
 
   const placeOrder = async (method: "paynl" | "paypal") => {
     // Validate form
@@ -396,7 +404,16 @@ export default function Checkout() {
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
           </div>
 
-          <OrderSummary items={cart} shippingMethod={shippingMethod} />
+          {/* <OrderSummary items={cart} shippingMethod={shippingMethod} /> */}
+
+          <OrderSummary
+            items={cart}
+            shippingMethod={shippingMethod}
+            subtotal={subtotal}
+            tax={tax}
+            shipping={shipping}
+            total={total}
+          />
         </div>
       </div>
     </div>

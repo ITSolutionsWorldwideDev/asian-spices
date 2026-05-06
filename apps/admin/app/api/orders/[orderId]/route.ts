@@ -53,7 +53,12 @@ export async function GET(
         o.tracking_number,
         o.shipping_label,
         o.shipping_provider,
-        o.shipped_at
+        o.shipped_at,
+        
+        o.shipping_status,
+        o.shipping_paid,
+        o.payment_url
+
       FROM store_orders o
       LEFT JOIN store_customers c ON c.id = o.customer_id
       WHERE o.id = $1 AND o.store_id = $2

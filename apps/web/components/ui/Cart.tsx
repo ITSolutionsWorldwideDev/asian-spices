@@ -13,6 +13,9 @@ import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useSession } from "next-auth/react";
 
 import { useRouter } from "next/navigation";
+import { calculateTotals } from "@/lib/pricing";
+import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
+import { useState } from "react";
 
 const FALLBACK_IMAGE = "/images/placeholder.png";
 
@@ -23,21 +26,29 @@ export default function Cart() {
   const { addToWishlist } = useWishlistStore();
   const { symbol, rate } = useCurrencyStore();
 
+  const [shippingMethod, setShippingMethod] =
+    useState<ShippingMethod>("standard");
+
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
   // const { data: session } = useSession();
   const router = useRouter();
 
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
+  const { subtotal, tax, shipping, total } = calculateTotals(
+    cart,
+    shippingMethod,
   );
 
-  const TAX_RATE = 0.08;
+  // const subtotal = cart.reduce(
+  //   (acc, item) => acc + item.price * item.quantity,
+  //   0,
+  // );
 
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax; // shipping free, tax ignored for now
+  // const TAX_RATE = 0.08;
+
+  // const tax = subtotal * TAX_RATE;
+  // const total = subtotal + tax; // shipping free, tax ignored for now
   const itemInCart = cart.length;
 
   const handleCheckout = () => {

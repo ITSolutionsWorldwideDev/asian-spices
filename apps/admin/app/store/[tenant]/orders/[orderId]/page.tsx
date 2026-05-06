@@ -38,6 +38,9 @@ type OrderDetail = {
   subtotal: string | number;
   tax_amount: string | number;
   shipping_amount: string | number;
+  shipping_status: string;
+  shipping_paid: string;
+  payment_url: string;
   // customer_name: string;
   // customer_email: string;
   customer_city: string;
@@ -305,70 +308,22 @@ export default function OrderDetailPage() {
 
       if (!res.ok) throw new Error(data.error);
 
-      if (data.url) {
-        window.open(data.url);
+      // if (data.url) {
+      //   window.open(data.url);
+      // }
+
+      if (data.labelUrl) {
+        window.open(data.labelUrl);
       }
 
       showToast("success", "Label generated");
-    } catch (err: any) {
-      showToast("error", err.message);
-    } finally {
-      setShippingLoading(false);
-    }
-  };
-
-  /* const handleShipOrder = async () => {
-    try {
-      setShippingLoading(true);
-
-      // const res = await fetch("/api/shipping/create-shipment", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     orderId,
-      //     providerSlug: "cheapcargo", // 🔥 make dynamic later
-      //     // storeId: "CURRENT_STORE_ID", // 🔥 pass real tenant/store
-      //     shipmentInput: {
-      //       weight: shipping.weight,
-      //       length: shipping.length,
-      //       width: shipping.width,
-      //       height: shipping.height,
-      //       boxes: shipping.boxes,
-      //     },
-      //   }),
-      // });
-
-      const res = await fetch("/api/shipping/create-shipment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId,
-          shippingMethodId, // ✅ IMPORTANT
-          parcel: shipping,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error);
-
-      if (data.label?.url) {
-        window.open(data.label.url);
-      }
-
-      showToast("success", "Shipment created");
-
       window.location.reload();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
       setShippingLoading(false);
     }
-  }; */
+  };
 
   return (
     <div className="page-wrapper ">
@@ -441,13 +396,15 @@ export default function OrderDetailPage() {
               {order.order_status}
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
-
-            {/* <button
-              onClick={() => handleAction("reject")}
-              className="btn btn-danger mt-4 w-full"
+            <span
+              className={`badge ${
+                order.shipping_paid
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
             >
-              Cancel Order
-            </button> */}
+              {order.shipping_paid ? "Booked" : "Pending Booking"}
+            </span>
 
             {/* ================= DECISION STATE ================= */}
             {order.order_status === "pending" && (
@@ -528,59 +485,6 @@ export default function OrderDetailPage() {
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
 
-                        {/* <td className="p-4 text-center">
-                          <div className="flex flex-col items-center gap-1">
-   
-                            <input
-                              type="number"
-                              min={0}
-                              max={item.quantity}
-                              value={item.fulfilled_quantity}
-                              onChange={(e) =>
-                                updateQty(item.order_item_id, e.target.value)
-                              }
-                              className={`w-20 text-center border rounded px-2 py-1 ${
-                                item.available_stock !== undefined &&
-                                item.fulfilled_quantity > item.available_stock
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            />
-
-  
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateQty(
-                                  item.order_item_id,
-                                  String(
-                                    Math.min(
-                                      item.quantity,
-                                      item.available_stock ?? item.quantity,
-                                    ),
-                                  ),
-                                )
-                              }
-                              className="text-xs text-blue-500 hover:underline"
-                            >
-                              Max
-                            </button>
-
-
-                            {item.available_stock !== undefined && (
-                              <span
-                                className={`text-xs ${
-                                  item.available_stock === 0
-                                    ? "text-red-500"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                Available: {item.available_stock}
-                              </span>
-                            )}
-                          </div>
-                        </td> */}
-
                         {order.order_status === "accepted" && (
                           <td>
                             <input
@@ -653,7 +557,6 @@ export default function OrderDetailPage() {
               <Printer size={18} />
               <h4 className="font-bold  pt-2">Shipping Detail</h4>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <label className="form-label">
                 Weight (kg)<span className="text-danger ms-1">*</span>
@@ -736,16 +639,8 @@ export default function OrderDetailPage() {
                 ))}
               </select>
             </div>
-
-            {/* <button
-              // onClick={handleShipOrder}
-              onClick={handleShip}
-              disabled={shippingLoading || !isValid}
-              className="mt-4 w-full py-2 bg-primary text-white rounded"
-            >
-              {shippingLoading ? "Processing..." : "Generate Shipping Label"}
-            </button> */}
-
+            {/* ================= SHIPPING ACTIONS ================= */}
+            {/* 1. NO SHIPMENT */}
             {!order.tracking_number && (
               <button
                 onClick={handleShip}
@@ -755,8 +650,24 @@ export default function OrderDetailPage() {
                 {shippingLoading ? "Processing..." : "Create Shipment"}
               </button>
             )}
+            {/* 2. SHIPMENT CREATED BUT NOT PAID */}
+            {order.tracking_number && !order.shipping_paid && (
+              <>
+                <div className="mt-4 p-3 bg-yellow-50 border rounded text-sm text-yellow-700">
+                  Shipment created but not booked. Complete payment to generate
+                  label.
+                </div>
 
-            {order.tracking_number && !order.shipping_label && (
+                <button
+                  onClick={() => window.open(order.payment_url, "_blank")}
+                  className="mt-3 w-full py-2 bg-orange-500 text-white rounded"
+                >
+                  Complete Booking / Payment
+                </button>
+              </>
+            )}
+            {/*  3. BOOKED BUT NO LABEL */}
+            {order.shipping_paid && !order.shipping_label && (
               <button
                 onClick={handleGenerateLabel}
                 className="mt-4 w-full py-2 bg-green-600 text-white rounded"
@@ -764,7 +675,15 @@ export default function OrderDetailPage() {
                 Generate Label
               </button>
             )}
-
+            {/* {order.tracking_number && !order.shipping_label && (
+              <button
+                onClick={handleGenerateLabel}
+                className="mt-4 w-full py-2 bg-green-600 text-white rounded"
+              >
+                Generate Label
+              </button>
+            )} */}
+            {/* 4. LABEL READY */}
             {order.shipping_label && (
               <a
                 href={order.shipping_label}
@@ -824,8 +743,120 @@ export default function OrderDetailPage() {
 //     .then((d) => setMethods(d.methods));
 // }, [order]);
 
-{
-  /* {order.fulfillment_status !== "fulfilled" && (
+/* <button
+              // onClick={handleShipOrder}
+              onClick={handleShip}
+              disabled={shippingLoading || !isValid}
+              className="mt-4 w-full py-2 bg-primary text-white rounded"
+            >
+              {shippingLoading ? "Processing..." : "Generate Shipping Label"}
+            </button> */
+
+/* const handleShipOrder = async () => {
+    try {
+      setShippingLoading(true);
+
+      // const res = await fetch("/api/shipping/create-shipment", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     orderId,
+      //     providerSlug: "cheapcargo", // 🔥 make dynamic later
+      //     // storeId: "CURRENT_STORE_ID", // 🔥 pass real tenant/store
+      //     shipmentInput: {
+      //       weight: shipping.weight,
+      //       length: shipping.length,
+      //       width: shipping.width,
+      //       height: shipping.height,
+      //       boxes: shipping.boxes,
+      //     },
+      //   }),
+      // });
+
+      const res = await fetch("/api/shipping/create-shipment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          shippingMethodId, // ✅ IMPORTANT
+          parcel: shipping,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      if (data.label?.url) {
+        window.open(data.label.url);
+      }
+
+      showToast("success", "Shipment created");
+
+      window.location.reload();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setShippingLoading(false);
+    }
+  }; */
+/* <td className="p-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+   
+                            <input
+                              type="number"
+                              min={0}
+                              max={item.quantity}
+                              value={item.fulfilled_quantity}
+                              onChange={(e) =>
+                                updateQty(item.order_item_id, e.target.value)
+                              }
+                              className={`w-20 text-center border rounded px-2 py-1 ${
+                                item.available_stock !== undefined &&
+                                item.fulfilled_quantity > item.available_stock
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
+                            />
+
+  
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateQty(
+                                  item.order_item_id,
+                                  String(
+                                    Math.min(
+                                      item.quantity,
+                                      item.available_stock ?? item.quantity,
+                                    ),
+                                  ),
+                                )
+                              }
+                              className="text-xs text-blue-500 hover:underline"
+                            >
+                              Max
+                            </button>
+
+
+                            {item.available_stock !== undefined && (
+                              <span
+                                className={`text-xs ${
+                                  item.available_stock === 0
+                                    ? "text-red-500"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                Available: {item.available_stock}
+                              </span>
+                            )}
+                          </div>
+                        </td> */
+/* {order.fulfillment_status !== "fulfilled" && (
               <div className="flex gap-2">
                 <button
                   disabled={!isFullPossible}
@@ -841,4 +872,3 @@ export default function OrderDetailPage() {
                 </button>
               </div>
             )} */
-}

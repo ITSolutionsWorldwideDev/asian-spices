@@ -180,17 +180,6 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 🏷 Generate label (optional)
     // -----------------------------
-    /* let label = null;
-    let labelUrl: string | null = null;
-
-    try {
-      label = await provider.generateLabel(shipmentResult.externalId);
-      labelUrl =
-        label?.url || (label as any)?.labelUrl || (label as any)?.file || null;
-    } catch (err) {
-      console.warn("Label generation failed");
-    }
- */
     let labelUrl: string | null = null;
 
     // -----------------------------
@@ -221,11 +210,37 @@ export async function POST(req: NextRequest) {
     // 🔄 Update order
     // -----------------------------
 
+    const orderData = shipmentResult.raw?.shipment?.order?.[0];
+    const details = orderData?.details;
+
+    const shippingStatus = details?.status || "new";
+    const shippingPaid = orderData?.paid || false;
+    const paymentUrl = shipmentResult.raw?.shipment?.url || null;
+
     const isBooked =
       shipmentResult.raw?.shipment?.order?.[0]?.details?.status === "booked";
 
     if (isBooked) {
       await client.query(
+        `
+          UPDATE store_orders
+          SET 
+            tracking_number = $1,
+            shipping_status = $2,
+            shipping_paid = $3,
+            payment_url = $4,
+            updated_at = NOW()
+          WHERE id = $5
+        `,
+        [
+          shipmentResult.trackingNumber || null,
+          shippingStatus,
+          shippingPaid,
+          paymentUrl,
+          orderId,
+        ],
+      );
+      /* await client.query(
         `
         UPDATE store_orders
         SET 
@@ -240,23 +255,8 @@ export async function POST(req: NextRequest) {
           null, // no label yet
           orderId,
         ],
-      );
+      ); */
     }
-
-    /* if (order.fulfillment_status !== "shipped") {
-      await client.query(
-        `
-        UPDATE store_orders
-        SET 
-          tracking_number = $1,
-          shipping_label = $2,
-          fulfillment_status = 'shipped',
-          updated_at = NOW()
-        WHERE id = $3
-        `,
-        [shipmentResult.trackingNumber || null, labelUrl, orderId],
-      );
-    } */
 
     await client.query("COMMIT");
 
@@ -278,6 +278,32 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/* let label = null;
+    let labelUrl: string | null = null;
+
+    try {
+      label = await provider.generateLabel(shipmentResult.externalId);
+      labelUrl =
+        label?.url || (label as any)?.labelUrl || (label as any)?.file || null;
+    } catch (err) {
+      console.warn("Label generation failed");
+    }
+ */
+
+/* if (order.fulfillment_status !== "shipped") {
+      await client.query(
+        `
+        UPDATE store_orders
+        SET 
+          tracking_number = $1,
+          shipping_label = $2,
+          fulfillment_status = 'shipped',
+          updated_at = NOW()
+        WHERE id = $3
+        `,
+        [shipmentResult.trackingNumber || null, labelUrl, orderId],
+      );
+    } */
 /* const methodRes = await client.query(
       `
       SELECT 

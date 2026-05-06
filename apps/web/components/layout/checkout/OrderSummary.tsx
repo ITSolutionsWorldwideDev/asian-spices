@@ -3,32 +3,44 @@
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { useCartStore } from "@/store/useCartStore";
+import { CartItem, useCartStore } from "@/store/useCartStore";
 // import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
 
 import { useCurrencyStore } from "@/store/useCurrencyStore";
+import { SHIPPING_OPTIONS, ShippingMethod, FREE_SHIPPING_THRESHOLD } from "@/lib/pricing";
+// interface Props {
+//   items: any[];
+//   shippingMethod: "standard" | "express" | "overnight";
+// }
+
 interface Props {
-  items: any[];
-  shippingMethod: "standard" | "express" | "overnight";
+  items: CartItem[];
+  shippingMethod: ShippingMethod;
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
 }
 
-export const SHIPPING_OPTIONS = {
-  standard: { label: "Standard Shipping", price: 5.99 },
-  express: { label: "Express Shipping", price: 12.99 },
-  overnight: { label: "Overnight Shipping", price: 24.99 },
-} as const;
+// export const SHIPPING_OPTIONS = {
+//   standard: { label: "Standard Shipping", price: 5.99 },
+//   express: { label: "Express Shipping", price: 12.99 },
+//   overnight: { label: "Overnight Shipping", price: 24.99 },
+// } as const;
 
-export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
+// export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
-export default function OrderSummary({ items, shippingMethod }: Props) {
-  const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
-    useCartStore();
+export default function OrderSummary({
+  items,
+  shippingMethod,
+  subtotal,
+  tax,
+  shipping,
+  total,
+}: Props) {
+  // const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
+  //   useCartStore();
   const { symbol, rate } = useCurrencyStore();
-
-  const subtotal = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
 
   // const shippingOption = SHIPPING_OPTIONS[shippingMethod];
   const isValidShippingMethod = (method: any): method is ShippingMethod => {
@@ -40,23 +52,36 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
     : "standard";
 
   const shippingOption = SHIPPING_OPTIONS[safeMethod];
+  const amountForFreeShipping =
+    subtotal < FREE_SHIPPING_THRESHOLD
+      ? FREE_SHIPPING_THRESHOLD - subtotal
+      : 0;
+
+  const hasFreeShipping = shipping === 0;
+
+
   const shippingPrice = shippingOption?.price ?? 0;
 
-  const TAX_RATE = 0.08;
+  // const subtotal = items.reduce(
+  //   (acc, item) => acc + item.price * item.quantity,
+  //   0,
+  // );
 
-  const tax = subtotal * TAX_RATE;
-  let total = subtotal + tax + shippingPrice;
-  const itemInCart = cart.length;
-  let deliverDiffer = total < 50 ? 50 - total : undefined;
+  // const TAX_RATE = 0.08;
 
-  if (!deliverDiffer) total = total - shippingPrice;
+  // const tax = subtotal * TAX_RATE;
+  // let total = subtotal + tax + shippingPrice;
+  // const itemInCart = cart.length;
+  // let deliverDiffer = total < 50 ? 50 - total : undefined;
+
+  // if (!deliverDiffer) total = total - shippingPrice;
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
       <h2 className="font-semibold mb-4">Order Summary</h2>
 
       <div className="space-y-4 mb-6">
-        {items.map((item: any) => (
+        {items.map((item) => (
           <div key={item.id} className="flex gap-4">
             <div className="relative h-14 w-14 rounded-lg overflow-hidden">
               <Image
@@ -88,11 +113,22 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
           <span>Subtotal</span>
           <span>
             {symbol}
-            {subtotal.toFixed(2)}
+            {(rate * subtotal).toFixed(2)}
+            {/* {subtotal.toFixed(2)} */}
           </span>
         </div>
 
-        {!deliverDiffer && (
+        {/* SHIPPING */}
+        <div className="flex justify-between mt-3">
+          <span>Shipping ({shippingOption.label})</span>
+          <span className={hasFreeShipping ? "text-[#00A63E]" : ""}>
+            {hasFreeShipping
+              ? "FREE"
+              : `${symbol}${(rate * shipping).toFixed(2)}`}
+          </span>
+        </div>
+
+        {/* {!deliverDiffer && (
           <>
             <div className="flex justify-between mt-3">
               <span>Shipping</span>
@@ -104,8 +140,6 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
         {deliverDiffer && (
           <>
             <div className="flex justify-between mt-3">
-              {/* <span>Shipping ({SHIPPING_OPTIONS[shippingMethod].label})</span>
-              <span>${shippingPrice.toFixed(2)}</span> */}
               <span>Shipping ({shippingOption.label})</span>
               <span>
                 {symbol}
@@ -113,13 +147,14 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
               </span>
             </div>
           </>
-        )}
+        )} */}
 
         <div className="flex justify-between mt-3">
           <span>Tax (8%)</span>
           <span>
             {symbol}
-            {tax.toFixed(2)}
+            {(rate * tax).toFixed(2)}
+            {/* {tax.toFixed(2)} */}
           </span>
         </div>
       </div>
@@ -130,7 +165,8 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
         <span>Total</span>
         <span>
           {symbol}
-          {total.toFixed(2)}
+          {(rate * total).toFixed(2)}
+          {/* {total.toFixed(2)} */}
         </span>
       </div>
 
@@ -164,7 +200,28 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
         <p className="mt-2 text-xs text-gray-500">Try: SPICE20 or WELCOME10</p>
       </div>
 
-      {deliverDiffer && (
+      {/* FREE SHIPPING CTA */}
+      {!hasFreeShipping && amountForFreeShipping > 0 && (
+        <>
+          <div className="px-5 py-4 rounded-xl mt-5">
+            <div className="text-[#F83600] flex items-center justify-center w-full">
+              <ShoppingCart className="mr-3" />
+              Add {symbol}
+              {(rate * amountForFreeShipping).toFixed(2)} more for free shipping
+            </div>
+          </div>
+
+          <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
+            <Link href="/">
+              <button className="cursor-pointer text-white flex items-center justify-center w-full">
+                Continue Shopping
+              </button>
+            </Link>
+          </div>
+        </>
+      )}
+
+      {/* {deliverDiffer && (
         <>
           <div className=" px-5 py-4 rounded-xl mt-5">
             <div className="text-[#F83600] flex items-center justify-center w-full">
@@ -181,7 +238,7 @@ export default function OrderSummary({ items, shippingMethod }: Props) {
             </Link>
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }
