@@ -234,6 +234,7 @@ export default function OrderDetailPage() {
             </div>
 
             <p className="text-sm capitalize mb-2">
+              {/* {order.order_status} */}
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
 

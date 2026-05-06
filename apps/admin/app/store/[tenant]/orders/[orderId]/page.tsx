@@ -158,7 +158,7 @@ export default function OrderDetailPage() {
       if (action === "partial") {
         payload.items = order?.items.map((item) => ({
           item_id: item.order_item_id,
-          fulfilled_quantity: item.fulfilled_quantity || item.quantity,
+          fulfilled_quantity: item.fulfilled_quantity ?? 0, // item.fulfilled_quantity || item.quantity,
         }));
       }
 
@@ -169,6 +169,13 @@ export default function OrderDetailPage() {
       });
 
       const data = await res.json();
+      setOrder({
+        ...data.order,
+        items: data.order.items.map((item: any) => ({
+          ...item,
+          fulfilled_quantity: item.fulfilled_quantity ?? 0,
+        })),
+      });
       if (!res.ok) throw new Error(data.error);
 
       showToast("success", "Order updated");
@@ -323,7 +330,7 @@ export default function OrderDetailPage() {
       if (action === "partial") {
         payload.items = order?.items.map((item) => ({
           item_id: item.order_item_id,
-          fulfilled_quantity: item.fulfilled_quantity || item.quantity, // default
+          fulfilled_quantity: item.fulfilled_quantity ?? 0, // item.fulfilled_quantity || item.quantity, // default
         }));
       }
 
@@ -524,7 +531,8 @@ export default function OrderDetailPage() {
                       <th className="p-4 text-right">Total</th>
                       <th className="p-4 text-center">Ordered</th>
                       {/* <th className="p-4 text-center">Fulfilled</th> */}
-                      {order.order_status === "accepted" && (
+                      {/* {order.order_status === "accepted" && ( */}
+                      {order.order_status === "pending" && (
                         <th className="p-4 text-center">Fulfill</th>
                       )}
                     </tr>
@@ -552,7 +560,8 @@ export default function OrderDetailPage() {
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
 
-                        {order.order_status === "accepted" && (
+                        {/* {order.order_status === "accepted" && ( */}
+                        {order.order_status === "pending" && (
                           <td>
                             <input
                               type="number"
