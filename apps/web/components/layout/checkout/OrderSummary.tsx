@@ -113,8 +113,8 @@ export default function OrderSummary({
           <span>Subtotal</span>
           <span>
             {symbol}
-            {(rate * subtotal).toFixed(2)}
-            {/* {subtotal.toFixed(2)} */}
+            {/* {(rate * subtotal).toFixed(2)} */}
+            {subtotal.toFixed(2)}
           </span>
         </div>
 
@@ -153,8 +153,8 @@ export default function OrderSummary({
           <span>Tax (8%)</span>
           <span>
             {symbol}
-            {(rate * tax).toFixed(2)}
-            {/* {tax.toFixed(2)} */}
+            {/* {(rate * tax).toFixed(2)} */}
+            {tax.toFixed(2)}
           </span>
         </div>
       </div>
@@ -165,8 +165,8 @@ export default function OrderSummary({
         <span>Total</span>
         <span>
           {symbol}
-          {(rate * total).toFixed(2)}
-          {/* {total.toFixed(2)} */}
+          {/* {(rate * total).toFixed(2)} */}
+          {total.toFixed(2)}
         </span>
       </div>
 

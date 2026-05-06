@@ -48,6 +48,8 @@ type OrderDetail = {
   tracking_number: string;
   shipping_label: string;
   order_type: "B2C" | "B2B";
+
+  shipment_id?: string;
   items: OrderItem[];
 };
 
@@ -69,6 +71,7 @@ export default function OrderDetailPage() {
 
   const [shippingMethodId, setShippingMethodId] = useState("");
   const [methods, setMethods] = useState<any[]>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   const [shipping, setShipping] = useState({
     weight: "",
@@ -170,7 +173,8 @@ export default function OrderDetailPage() {
 
       showToast("success", "Order updated");
 
-      window.location.reload();
+      // window.location.reload();
+      await fetchOrder();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
@@ -220,7 +224,8 @@ export default function OrderDetailPage() {
       // if (data.label?.url) window.open(data.label.url);
 
       showToast("success", "Shipment created");
-      window.location.reload();
+      // window.location.reload();
+      await fetchOrder();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
@@ -228,10 +233,61 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleConfirmBooking = async () => {
+    if (!order?.shipment_id) {
+      showToast("error", "Shipment not found");
+      return;
+    }
+
+    try {
+      setBookingLoading(true);
+
+      const res = await fetch("/api/shipping/confirm-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shipmentId: order.shipment_id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Booking failed");
+      }
+
+      showToast("success", "Booking confirmed");
+
+      // refresh order data
+      // window.location.reload();
+      await fetchOrder();
+    } catch (err: any) {
+      console.error("Confirm booking error:", err);
+      showToast("error", err.message);
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
   // const isValid = shipping.weight && shipping.boxes && shippingMethodId;
   const isValid = shipping.weight && shipping.boxes;
 
   const [updating, setUpdating] = useState(false);
+
+  const fetchOrder = async () => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}`);
+      if (!res.ok) throw new Error("Order not found");
+      const data = await res.json();
+      setOrder(data.order);
+    } catch (err) {
+      showToast("error", "Could not load order details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -284,7 +340,8 @@ export default function OrderDetailPage() {
       showToast("success", `Order ${action} processed`);
 
       // refresh
-      window.location.reload();
+      // window.location.reload();
+      await fetchOrder();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
@@ -317,13 +374,19 @@ export default function OrderDetailPage() {
       }
 
       showToast("success", "Label generated");
-      window.location.reload();
+      // window.location.reload();
+      await fetchOrder();
     } catch (err: any) {
       showToast("error", err.message);
     } finally {
       setShippingLoading(false);
     }
   };
+
+  const hasShipment = !!order.tracking_number;
+
+  const isBooked = order.fulfillment_status === "booked";
+  const hasLabel = !!order.shipping_label;
 
   return (
     <div className="page-wrapper ">
@@ -641,7 +704,8 @@ export default function OrderDetailPage() {
             </div>
             {/* ================= SHIPPING ACTIONS ================= */}
             {/* 1. NO SHIPMENT */}
-            {!order.tracking_number && (
+            {/* {!order.tracking_number && ( */}
+            {!hasShipment && (
               <button
                 onClick={handleShip}
                 disabled={shippingLoading || !isValid}
@@ -651,7 +715,17 @@ export default function OrderDetailPage() {
               </button>
             )}
             {/* 2. SHIPMENT CREATED BUT NOT PAID */}
-            {order.tracking_number && !order.shipping_paid && (
+
+            {hasShipment && !isBooked && (
+              <button
+                onClick={handleConfirmBooking}
+                disabled={bookingLoading}
+                className="mt-3 w-full py-2 bg-orange-600 text-white rounded"
+              >
+                {bookingLoading ? "Confirming..." : "Confirm Booking"}
+              </button>
+            )}
+            {/* {order.tracking_number && !order.shipping_paid && (
               <>
                 <div className="mt-4 p-3 bg-yellow-50 border rounded text-sm text-yellow-700">
                   Shipment created but not booked. Complete payment to generate
@@ -665,9 +739,10 @@ export default function OrderDetailPage() {
                   Complete Booking / Payment
                 </button>
               </>
-            )}
+            )} */}
             {/*  3. BOOKED BUT NO LABEL */}
-            {order.shipping_paid && !order.shipping_label && (
+            {/* {order.shipping_paid && !order.shipping_label && ( */}
+            {isBooked && !hasLabel && (
               <button
                 onClick={handleGenerateLabel}
                 className="mt-4 w-full py-2 bg-green-600 text-white rounded"
@@ -684,7 +759,8 @@ export default function OrderDetailPage() {
               </button>
             )} */}
             {/* 4. LABEL READY */}
-            {order.shipping_label && (
+            {/* {order.shipping_label && ( */}
+            {hasLabel && (
               <a
                 href={order.shipping_label}
                 target="_blank"

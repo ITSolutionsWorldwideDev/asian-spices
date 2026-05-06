@@ -16,8 +16,10 @@ import { useSession } from "next-auth/react";
 
 import { checkoutSchema } from "@/lib/validation/checkout";
 import { useLoaderStore } from "@/store/useLoaderStore";
-import { calculateTotals } from "@/lib/pricing";
+import { calculateTotals, convertTotals } from "@/lib/pricing";
 import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
+
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 
 export type CheckoutData = {
   email: string;
@@ -132,11 +134,21 @@ export default function Checkout() {
   });
   const isFormValid = checkoutSchema.safeParse(formData).success;
 
-  const { subtotal, tax, shipping, total } = calculateTotals(
-    cart,
-    shippingMethod,
-  );
+  // const { subtotal, tax, shipping, total } = calculateTotals(
+  //   cart,
+  //   shippingMethod,
+  // );
 
+  const totals = calculateTotals(cart, shippingMethod);
+  const { rate, selectedCurrency } = useCurrencyStore();
+  const convertedTotals = convertTotals(totals, rate, selectedCurrency);
+
+  /* const converted = convertTotals(
+  { subtotal, tax, shipping, total },
+  rate,
+  selectedCurrency
+);
+ */
   // const subtotal = cart.reduce(
   //   (acc, item) => acc + item.price * item.quantity,
   //   0,
@@ -147,7 +159,7 @@ export default function Checkout() {
   // const TAX_RATE = 0.08;
 
   // const tax_amount = subtotal * TAX_RATE;
-  const tax_amount = tax;
+  // const tax_amount = tax;
 
   const placeOrder = async (method: "paynl" | "paypal") => {
     // Validate form
@@ -232,6 +244,11 @@ export default function Checkout() {
       }
       // Create Order
 
+      // console.log("subtotal ====", convertedTotals.subtotal);
+      // console.log("tax ====", convertedTotals.tax);
+      // console.log("total ====", convertedTotals.total);
+      // return false;
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: {
@@ -256,11 +273,11 @@ export default function Checkout() {
           },
           cartItems: cart,
           pricing: {
-            subtotal,
+            subtotal: convertedTotals.subtotal,
             discount: 0,
-            tax_amount: tax,
-            shipping: shipping,// SHIPPING_OPTIONS[shippingMethod].price,
-            total: total,// subtotal + SHIPPING_OPTIONS[shippingMethod].price,
+            tax_amount: convertedTotals.tax,
+            shipping: convertedTotals.shipping, // SHIPPING_OPTIONS[shippingMethod].price,
+            total: convertedTotals.total, // subtotal + SHIPPING_OPTIONS[shippingMethod].price,
           },
           shippingMethod,
           payment_status: "pending",
@@ -289,7 +306,7 @@ export default function Checkout() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId,
-            amount: total,
+            amount: convertedTotals.total,
             customerEmail: formData.email,
             paymentMethod: method,
           }),
@@ -403,16 +420,16 @@ export default function Checkout() {
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
           </div>
-
           {/* <OrderSummary items={cart} shippingMethod={shippingMethod} /> */}
-
+          {/* {convertedTotals.total} === {convertedTotals.subtotal} ===={" "}
+          {convertedTotals.tax} */}
           <OrderSummary
             items={cart}
             shippingMethod={shippingMethod}
-            subtotal={subtotal}
-            tax={tax}
-            shipping={shipping}
-            total={total}
+            subtotal={convertedTotals.subtotal}
+            tax={convertedTotals.tax}
+            shipping={convertedTotals.shipping}
+            total={convertedTotals.total}
           />
         </div>
       </div>
