@@ -3,6 +3,38 @@
 import { z } from "zod";
 
 export const profileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+});
+
+export const addressSchema = z
+  .object({
+    label: z.string().min(2, "Address label is required"),
+
+    address_line1: z
+      .string()
+      .min(5, "Address line 1 must be at least 5 characters"),
+
+    address_line2: z.string().optional(),
+
+    city: z.string().min(2, "City name is required"),
+
+    state: z.string().optional(),
+
+    postal_code: z.string().min(3, "Postal code is required"),
+
+    country: z.string().min(2, "Country is required"),
+
+    is_shipping_address: z.boolean().default(true),
+    is_billing_address: z.boolean().default(true),
+  })
+  .refine((data) => data.is_shipping_address || data.is_billing_address, {
+    message: "Select at least one address type",
+    path: ["is_shipping_address"],
+  });
+
+/* import { z } from "zod";
+
+export const profileSchema = z.object({
   name: z.string().min(2, "Name is required"),
 });
 
@@ -14,7 +46,7 @@ export const addressSchema = z.object({
   state: z.string().optional(),
   postal_code: z.string().min(3),
   country: z.string().min(2),
-});
+}); */
 
 /* export const passwordSchema = z.object({
   currentPassword: z.string().min(6),
