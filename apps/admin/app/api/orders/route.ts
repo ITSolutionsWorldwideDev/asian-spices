@@ -38,7 +38,14 @@ export async function GET(req: NextRequest) {
       values.push(orderStatus);
       where += ` AND o.order_status = $${values.length}`;
     } else {
-      where += ` AND o.order_status IN ('accepted','processing','completed','confirmed')`;
+      where += ` AND o.order_status IN (
+      'accepted',
+      'processing',
+      'completed',
+      'confirmed',
+      'fulfilled',
+      'partially_confirmed'
+      )`;
     }
 
     // 🔎 Global search
@@ -64,6 +71,7 @@ export async function GET(req: NextRequest) {
     if (status) {
       values.push(status);
       where += ` AND o.payment_status = $${values.length}`;
+      // where += ` AND o.order_status  = $${values.length}`;
     }
 
     let orderBy = "ORDER BY o.created_at DESC";

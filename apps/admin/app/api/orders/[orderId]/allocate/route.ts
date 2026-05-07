@@ -30,6 +30,29 @@ export async function POST(
     const { orderId } = await params;
     const { action, items } = await req.json();
 
+    if (!["full", "partial", "reject"].includes(action)) {
+      throw new Error("Invalid action");
+    }
+
+    const { rows: existing } = await client.query(
+      `
+      SELECT order_status
+      FROM store_orders
+      WHERE id = $1
+      `,
+      [orderId],
+    );
+
+    if (!existing.length) {
+      throw new Error("Order not found");
+    }
+
+    const currentStatus = existing[0].order_status;
+
+    if (["confirmed", "rejected"].includes(currentStatus)) {
+      throw new Error("Order already finalized");
+    }
+
     await client.query("BEGIN");
 
     // mark current attempt
@@ -142,9 +165,16 @@ export async function POST(
       for (const item of orderItems) {
         const userItem = items?.find((i: any) => i.item_id === item.id);
 
-        const fulfillQty = userItem
-          ? Math.min(userItem.fulfilled_quantity, item.stock)
-          : 0;
+        const requestedQty = Number(userItem?.fulfilled_quantity || 0);
+
+        const fulfillQty = Math.max(
+          0,
+          Math.min(requestedQty, item.quantity, item.stock),
+        );
+
+        // const fulfillQty = userItem
+        //   ? Math.min(userItem.fulfilled_quantity, item.stock)
+        //   : 0;
 
         // deduct stock
         await client.query(
@@ -173,52 +203,22 @@ export async function POST(
             `,
           [orderId, item.id, storeId, item.quantity, fulfillQty],
         );
-        // await client.query(
-        //   `
-        //   UPDATE order_item_allocations
-        //   SET fulfilled_quantity = $1,
-        //       status = CASE
-        //         WHEN $1 = 0 THEN 'rejected'
-        //         WHEN $1 < allocated_quantity THEN 'partial'
-        //         ELSE 'fulfilled'
-        //       END
-        //   WHERE order_item_id = $2 AND store_id = $3
-        //   `,
-        //   [fulfillQty, item.id, storeId],
-        // );
 
         // update order item
+
         await client.query(
           `
             UPDATE store_order_items
             SET 
-              fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1,
+              fulfilled_quantity = $1,
               status = CASE
-                WHEN COALESCE(fulfilled_quantity,0) + $1 = quantity THEN 'fulfilled'
-                WHEN COALESCE(fulfilled_quantity,0) + $1 = 0 THEN 'pending'
+                WHEN $1 = quantity THEN 'fulfilled'
+                WHEN $1 = 0 THEN 'pending'
                 ELSE 'partial'
               END
             WHERE id = $2
-          `,
+            `,
           [fulfillQty, item.id],
-        );
-        // await client.query(
-        //   `
-        //   UPDATE store_order_items
-        //   SET fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1
-        //   WHERE id = $2
-        //   `,
-        //   [fulfillQty, item.id],
-        // );
-
-        await client.query(
-          `
-          INSERT INTO order_item_allocations
-          (order_id, order_item_id, store_id, allocated_quantity)
-          VALUES ($1,$2,$3,$4)
-          ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
-          `,
-          [orderId, item.id, storeId, item.quantity],
         );
       }
 
@@ -252,3 +252,50 @@ export async function POST(
     client.release();
   }
 }
+
+// await client.query(
+//   `
+//   UPDATE order_item_allocations
+//   SET fulfilled_quantity = $1,
+//       status = CASE
+//         WHEN $1 = 0 THEN 'rejected'
+//         WHEN $1 < allocated_quantity THEN 'partial'
+//         ELSE 'fulfilled'
+//       END
+//   WHERE order_item_id = $2 AND store_id = $3
+//   `,
+//   [fulfillQty, item.id, storeId],
+// );
+// await client.query(
+//   `
+//   UPDATE store_order_items
+//   SET fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1
+//   WHERE id = $2
+//   `,
+//   [fulfillQty, item.id],
+// );
+
+// await client.query(
+//   `
+//   INSERT INTO order_item_allocations
+//   (order_id, order_item_id, store_id, allocated_quantity)
+//   VALUES ($1,$2,$3,$4)
+//   ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
+//   `,
+//   [orderId, item.id, storeId, item.quantity],
+// );
+// update order item
+// await client.query(
+//   `
+//     UPDATE store_order_items
+//     SET
+//       fulfilled_quantity = COALESCE(fulfilled_quantity,0) + $1,
+//       status = CASE
+//         WHEN COALESCE(fulfilled_quantity,0) + $1 = quantity THEN 'fulfilled'
+//         WHEN COALESCE(fulfilled_quantity,0) + $1 = 0 THEN 'pending'
+//         ELSE 'partial'
+//       END
+//     WHERE id = $2
+//   `,
+//   [fulfillQty, item.id],
+// );

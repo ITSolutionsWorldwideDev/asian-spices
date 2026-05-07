@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
 
     if (status) {
       values.push(status);
-      where += ` AND o.payment_status = $${values.length}`;
+      // where += ` AND o.payment_status = $${values.length}`;
+      where += ` AND o.order_status = $${values.length}`;
     }
 
     let orderBy = "ORDER BY o.created_at DESC";

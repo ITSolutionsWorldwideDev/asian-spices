@@ -95,9 +95,41 @@ export default function OrderDetailPage() {
 
   const total = Number(order.total_amount);
 
+  const canEditAllocation = order.order_status === "pending";
+
   const isFullPossible = order.items.every(
     (i) => (i.available_stock ?? 0) >= i.quantity,
   );
+
+  const hasPartialQty = order.items.some(
+    (i) => (i.fulfilled_quantity ?? 0) > 0,
+  );
+
+  // ================= HELPERS =================
+  const updateQty = (itemId: string, value: string) => {
+    if (!order) return;
+
+    const qty = parseInt(value || "0", 10);
+
+    setOrder((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        items: prev.items.map((item) =>
+          item.order_item_id === itemId
+            ? {
+                ...item,
+                fulfilled_quantity: Math.max(
+                  0,
+                  Math.min(qty, item.quantity, item.available_stock ?? 0),
+                ),
+              }
+            : item,
+        ),
+      };
+    });
+  };
 
   // ================= DECISION =================
   const handleDecision = async (action: "full" | "partial" | "reject") => {
@@ -106,13 +138,23 @@ export default function OrderDetailPage() {
 
       const payload: any = { action };
 
+      // PARTIAL
       if (action === "partial") {
         payload.items = order.items.map((item) => ({
           item_id: item.order_item_id,
-          fulfilled_quantity: item.available_stock ?? 0, // default partial
+          fulfilled_quantity: item.fulfilled_quantity ?? 0, // default partial
         }));
       }
 
+      // FULL
+      if (action === "full") {
+        payload.items = order.items.map((item) => ({
+          item_id: item.order_item_id,
+          fulfilled_quantity: item.quantity,
+        }));
+      }
+
+      // fulfilled_quantity: item.available_stock ?? 0, // default partial
       const res = await fetch(`/api/orders/${orderId}/allocate`, {
         method: "POST",
         headers: {
@@ -238,24 +280,6 @@ export default function OrderDetailPage() {
               Current Status: <strong>{order.fulfillment_status}</strong>
             </p>
 
-            {/* {order.order_status === "pending" && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleDecision("approve")}
-                  className="btn btn-success"
-                >
-                  Approve Order
-                </button>
-
-                <button
-                  onClick={() => handleDecision("reject")}
-                  className="btn btn-danger"
-                >
-                  Reject Order
-                </button>
-              </div>
-            )} */}
-
             {/* ================= DECISION ACTIONS ================= */}
             {order.order_status === "pending" && (
               <div className="flex gap-3">
@@ -267,9 +291,17 @@ export default function OrderDetailPage() {
                   Accept Full
                 </button>
 
-                <button
+                {/* <button
                   onClick={() => handleDecision("partial")}
                   className="btn btn-warning"
+                >
+                  Accept Partial
+                </button> */}
+
+                <button
+                  disabled={!hasPartialQty}
+                  onClick={() => handleDecision("partial")}
+                  className="btn btn-warning disabled:opacity-50"
                 >
                   Accept Partial
                 </button>
@@ -288,13 +320,6 @@ export default function OrderDetailPage() {
                 You rejected this order
               </div>
             )}
-
-            {/* <button
-              onClick={() => handleAction("reject")}
-              className="btn btn-danger mt-4 w-full"
-            >
-              Cancel Order
-            </button> */}
           </div>
         </div>
 
@@ -316,7 +341,9 @@ export default function OrderDetailPage() {
                       <th className="p-4 text-center">Available</th>
                       <th className="p-4 text-right">Total</th>
                       <th className="p-4 text-center">Ordered</th>
-                      {/* <th className="p-4 text-center">Fulfilled</th> */}
+                      {canEditAllocation && (
+                        <th className="p-4 text-center">Fulfill</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -337,11 +364,38 @@ export default function OrderDetailPage() {
                           ${Number(item.price).toFixed(2)}
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
-                        <td className="p-4 text-center">{item.available_stock ?? 0}</td>
+                        <td className="p-4 text-center">
+                          {item.available_stock ?? 0}
+                        </td>
                         <td className="p-4 text-right font-medium">
                           ${(Number(item.price) * item.quantity).toFixed(2)}
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
+
+                        {canEditAllocation && (
+                          <td className="p-4 text-center">
+                            <input
+                              type="number"
+                              min={0}
+                              max={Math.min(
+                                item.quantity,
+                                item.available_stock ?? 0,
+                              )}
+                              value={item.fulfilled_quantity ?? 0}
+                              onChange={(e) =>
+                                updateQty(item.order_item_id, e.target.value)
+                              }
+                              className="w-20 border rounded px-2 py-1 text-center"
+                            />
+                            <div className="text-xs text-gray-400 mt-1">
+                              Max:{" "}
+                              {Math.min(
+                                item.quantity,
+                                item.available_stock ?? 0,
+                              )}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -375,4 +429,24 @@ export default function OrderDetailPage() {
       </div>
     </div>
   );
+}
+
+{
+  /* {order.order_status === "pending" && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleDecision("approve")}
+                  className="btn btn-success"
+                >
+                  Approve Order
+                </button>
+
+                <button
+                  onClick={() => handleDecision("reject")}
+                  className="btn btn-danger"
+                >
+                  Reject Order
+                </button>
+              </div>
+            )} */
 }
