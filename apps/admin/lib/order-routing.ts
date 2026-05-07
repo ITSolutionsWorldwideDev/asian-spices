@@ -104,7 +104,6 @@ export const sortStores = (
     });
 };
 
-
 export const assignDefaultStore = async (client: any, orderId: string) => {
   if (!DEFAULT_STORE_ID) {
     throw new AppError(
@@ -153,7 +152,7 @@ const createAllocations = async (
     WHERE oi.order_id = $1
       AND (oi.quantity - COALESCE(oi.fulfilled_quantity,0)) > 0
     `,
-    [orderId,storeId],
+    [orderId, storeId],
   );
 };
 
@@ -161,8 +160,8 @@ export const resolveOrderStatus = async (client: any, orderId: string) => {
   const { rows } = await client.query(
     `
       SELECT 
-        SUM(quantity) as total,
-        SUM(fulfilled_quantity) as fulfilled
+        COALESCE(SUM(quantity),0) as total,
+        COALESCE(SUM(fulfilled_quantity),0) as fulfilled
       FROM store_order_items
       WHERE order_id = $1
     `,
@@ -301,17 +300,20 @@ export const isStoreOpenNow = async (client: any, storeId: string) => {
   return currentTime >= wh.open_time && currentTime <= wh.close_time;
 };
 
-
 export const getStoresThatCanFulfillAllItems = async (
   client: any,
   orderId: string,
-  country: string
+  country: string,
 ) => {
   const { rows } = await client.query(
     `
     SELECT 
       spc.store_id,
-      SUM(spc.price * oi.quantity) AS total_price,
+      COUNT(DISTINCT oi.product_id) as matched_items,
+      SUM(
+        spc.price * 
+        (oi.quantity - COALESCE(oi.fulfilled_quantity,0))
+      ) AS total_price,
       sa.latitude,
       sa.longitude,
       sa.country
@@ -321,26 +323,31 @@ export const getStoresThatCanFulfillAllItems = async (
     JOIN store_addresses sa 
       ON sa.store_id = spc.store_id
     WHERE oi.order_id = $1
+      AND COALESCE(oi.fulfilled_quantity,0) < oi.quantity
       AND spc.status = 1
       AND sa.country = $2
-      AND spc.quantity >= oi.quantity
+      AND spc.quantity >= (oi.quantity - COALESCE(oi.fulfilled_quantity,0))
     GROUP BY spc.store_id, sa.latitude, sa.longitude, sa.country
     HAVING COUNT(DISTINCT oi.product_id) = (
       SELECT COUNT(DISTINCT product_id)
       FROM store_order_items
       WHERE order_id = $1
+      AND COALESCE(fulfilled_quantity,0) < quantity
     )
     `,
-    [orderId, country]
+    [orderId, country],
   );
 
   return rows;
 };
 
+// AND spc.quantity >= oi.quantity
+// SUM(spc.price * oi.quantity) AS total_price,
+
 export const getStoresWithPartialItems = async (
   client: any,
   orderId: string,
-  country: string
+  country: string,
 ) => {
   const { rows } = await client.query(
     `
@@ -361,18 +368,16 @@ export const getStoresWithPartialItems = async (
       AND sa.country = $2
       AND spc.quantity > 0
     `,
-    [orderId, country]
+    [orderId, country],
   );
 
   return rows;
 };
 
-
-
 export const assignNextStore = async (client: any, orderId: string) => {
   const { rows } = await client.query(
     `SELECT * FROM store_orders WHERE id = $1`,
-    [orderId]
+    [orderId],
   );
 
   const order = rows[0];
@@ -388,7 +393,7 @@ export const assignNextStore = async (client: any, orderId: string) => {
   const stores = await getStoresThatCanFulfillAllItems(
     client,
     orderId,
-    order.country
+    order.country,
   );
 
   if (!stores.length) {
@@ -399,8 +404,8 @@ export const assignNextStore = async (client: any, orderId: string) => {
   const sorted = sortStores(stores, order.latitude, order.longitude);
 
   const { rows: attempts } = await client.query(
-    `SELECT store_id FROM order_routing_attempts WHERE order_id = $1`,
-    [orderId]
+    `SELECT store_id FROM order_routing_attempts WHERE order_id = $1 AND status = 'rejected'`,
+    [orderId],
   );
 
   const tried = attempts.map((a: any) => a.store_id);
@@ -416,7 +421,7 @@ export const assignNextStore = async (client: any, orderId: string) => {
      SET current_store_id = $1,
          routing_status = 'assigned'
      WHERE id = $2`,
-    [nextStore.store_id, orderId]
+    [nextStore.store_id, orderId],
   );
 
   await createAllocations(client, orderId, nextStore.store_id);
@@ -424,7 +429,7 @@ export const assignNextStore = async (client: any, orderId: string) => {
   await client.query(
     `INSERT INTO order_routing_attempts (order_id, store_id, attempt_number)
      VALUES ($1,$2,$3)`,
-    [orderId, nextStore.store_id, attempts.length + 1]
+    [orderId, nextStore.store_id, attempts.length + 1],
   );
 
   await logOrderEvent(client, {
@@ -437,22 +442,44 @@ export const assignNextStore = async (client: any, orderId: string) => {
 export const assignMultiStore = async (client: any, orderId: string) => {
   const { rows: orderItems } = await client.query(
     `SELECT * FROM store_order_items WHERE order_id = $1`,
-    [orderId]
+    [orderId],
   );
 
+  // already attempted stores
+  const { rows: attempts } = await client.query(
+    `
+    SELECT DISTINCT store_id
+    FROM order_routing_attempts
+    WHERE order_id = $1
+    `,
+    [orderId],
+  );
+
+  const triedStoreIds = attempts.map((a: any) => a.store_id);
+
   for (const item of orderItems) {
+    // ✅ ONLY remaining qty
+    // let remaining = item.quantity;
+    let remaining = item.quantity - (item.fulfilled_quantity || 0);
+
+    // fully completed item
+    if (remaining <= 0) {
+      continue;
+    }
+
+    // candidate stores
     const { rows: stores } = await client.query(
       `
-      SELECT spc.store_id, spc.quantity
+      SELECT spc.store_id, spc.quantity, spc.price
       FROM store_product_catalog spc
       WHERE spc.product_id = $1
         AND spc.quantity > 0
+        AND spc.store_id != ALL($2)
       ORDER BY spc.price ASC
       `,
-      [item.product_id]
+      [item.product_id, triedStoreIds],
+      // [item.product_id],
     );
-
-    let remaining = item.quantity;
 
     for (const store of stores) {
       if (remaining <= 0) break;
@@ -462,11 +489,49 @@ export const assignMultiStore = async (client: any, orderId: string) => {
       await client.query(
         `
         INSERT INTO order_item_allocations
-        (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        (
+          order_id,
+          order_item_id,
+          store_id,
+          allocated_quantity,
+          fulfilled_quantity,
+          status
+        )
         VALUES ($1,$2,$3,$4,0,'pending')
-        ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
+        ON CONFLICT (order_id, order_item_id, store_id) 
+        DO UPDATE SET
+          allocated_quantity = EXCLUDED.allocated_quantity,
+          status = 'pending'
         `,
-        [orderId, item.id, store.store_id, allocateQty]
+        [orderId, item.id, store.store_id, allocateQty],
+      );
+
+      // routing attempt
+      await client.query(
+        `
+        INSERT INTO order_routing_attempts
+        (
+          order_id,
+          store_id,
+          attempt_number,
+          status
+        )
+        VALUES (
+          $1,
+          $2,
+          COALESCE(
+            (
+              SELECT MAX(attempt_number) + 1
+              FROM order_routing_attempts
+              WHERE order_id = $1
+            ),
+            1
+          ),
+          'pending'
+        )
+        ON CONFLICT DO NOTHING
+        `,
+        [orderId, store.store_id],
       );
 
       remaining -= allocateQty;
@@ -477,11 +542,21 @@ export const assignMultiStore = async (client: any, orderId: string) => {
       await client.query(
         `
         INSERT INTO order_item_allocations
-        (order_id, order_item_id, store_id, allocated_quantity, fulfilled_quantity, status)
+        (
+          order_id,
+          order_item_id,
+          store_id,
+          allocated_quantity,
+          fulfilled_quantity,
+          status
+        )
         VALUES ($1,$2,$3,$4,0,'pending')
-        ON CONFLICT (order_id, order_item_id, store_id) DO NOTHING
+        ON CONFLICT (order_id, order_item_id, store_id) 
+        DO UPDATE SET
+          allocated_quantity = EXCLUDED.allocated_quantity,
+          status = 'pending'
         `,
-        [orderId, item.id, DEFAULT_STORE_ID, remaining]
+        [orderId, item.id, DEFAULT_STORE_ID, remaining],
       );
     }
   }
@@ -490,7 +565,7 @@ export const assignMultiStore = async (client: any, orderId: string) => {
     `UPDATE store_orders
      SET routing_status = 'split'
      WHERE id = $1`,
-    [orderId]
+    [orderId],
   );
 
   await logOrderEvent(client, {
@@ -499,10 +574,6 @@ export const assignMultiStore = async (client: any, orderId: string) => {
     message: "Order split across multiple stores",
   });
 };
-
-
-
-
 
 /* export const assignNextStore = async (client: any, orderId: string) => {
   try {
@@ -616,9 +687,7 @@ export const assignMultiStore = async (client: any, orderId: string) => {
   }
 }; */
 
-
-
-  /* const { rows } = await client.query(
+/* const { rows } = await client.query(
     `
       SELECT 
         spc.store_id,
