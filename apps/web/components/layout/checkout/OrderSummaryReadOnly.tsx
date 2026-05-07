@@ -89,13 +89,16 @@ export default function OrderSummaryReadOnly({
                 fill
                 className="object-cover"
               />
-              <span className="absolute top-0 -right-1 bg-black text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
+              {/* <span className="absolute top-0 -right-1 bg-black text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
                 {item.quantity}
-              </span>
+              </span> */}
             </div>
 
             <div className="flex-1">
               <p className="text-sm font-medium">{item.title}</p>
+              
+              <p className="text-xs text-gray-500 space-x-0.5">{symbol}{item.price} x {item.quantity} = {symbol}
+                      {(rate * (item.price * item.quantity)).toFixed(2)}</p>
               {/* <p className="text-xs text-gray-500">{item.weight}</p> */}
             </div>
           </div>

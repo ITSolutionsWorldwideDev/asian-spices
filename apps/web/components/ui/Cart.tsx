@@ -124,13 +124,17 @@ export default function Cart() {
                       Weight: {item.weight}
                     </p> */}
                     <span className="inline-block mt-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-600">
-                      In Stock {item.price}
+                      In Stock
                     </span>
                   </div>
 
-                  <div className="sm:text-right">
-                    <p className="font-semibold">
+                  <div className="sm:text-right  text-sm">
+                    <p className="font-normal mb-2">
                       {symbol}
+                      {(rate * (item.price)).toFixed(2)} x {item.quantity}
+                    </p>
+                    <p className="font-normal">
+                      Total: {symbol}
                       {(rate * (item.price * item.quantity)).toFixed(2)}
                     </p>
                   </div>

@@ -97,8 +97,10 @@ export default function OrderSummary({
 
             <div className="flex-1">
               <p className="text-sm font-medium">
-                {item.title} x {item.quantity}
+                {item.title} 
               </p>
+              <p className="text-xs text-gray-500 space-x-0.5">{symbol}{item.price} x {item.quantity} = {symbol}
+                      {(rate * (item.price * item.quantity)).toFixed(2)}</p>
               {/* <p className="text-xs text-gray-500">{item.weight}</p> */}
               {/* <p className="text-xs text-gray-500">Qty: </p> */}
             </div>

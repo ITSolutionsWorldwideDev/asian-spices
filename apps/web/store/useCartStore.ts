@@ -102,6 +102,7 @@ export const useCartStore = create<CartState>()(
               price: Number(item.price),
               quantity: item.quantity,
               image: item.image || "",
+              category_slug: item.category_slug || "",
             })),
           });
         }

@@ -93,7 +93,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         <h2 className="text-green-700 text-xl font-bold">
           ✅ Payment Successful
         </h2>
-        <p>Order #{order.order_number} has been confirmed.</p>
+        <p className="mb-4">Order #{order.order_number} has been confirmed.</p>
 
         <OrderSummaryReadOnly
           items={order.cart_items}
@@ -115,7 +115,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   if (order.payment_status === "failed") {
     return (
       <div className="bg-red-50 border p-6 rounded">
-        <h2 className="text-red-700 text-xl font-bold">❌ Payment Failed</h2>
+        <h2 className="text-red-700 text-xl font-bold mb-2">❌ Payment Failed</h2>
 
         <OrderTimeline status={order.payment_status} />
 
@@ -154,7 +154,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         <strong>Pay.nl</strong>.
       </p> */}
 
-      <p className="text-sm mt-2 text-gray-600">
+      <p className="text-sm mt-2 text-gray-600 mb-2">
         This page will update automatically.
       </p>
 
