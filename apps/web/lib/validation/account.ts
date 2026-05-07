@@ -16,7 +16,26 @@ export const addressSchema = z.object({
   country: z.string().min(2),
 });
 
-export const passwordSchema = z.object({
+/* export const passwordSchema = z.object({
   currentPassword: z.string().min(6),
   newPassword: z.string().min(6),
-});
+  confirmPassword: z.string().min(6),
+}); */
+export const passwordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, "Current password must be at least 6 characters"),
+
+    newPassword: z
+      .string()
+      .min(6, "New password must be at least 6 characters"),
+
+    confirmPassword: z
+      .string()
+      .min(6, "Confirm password must be at least 6 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New password and confirm password do not match",
+    path: ["confirmPassword"],
+  });

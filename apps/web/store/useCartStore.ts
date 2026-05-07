@@ -25,6 +25,7 @@ interface CartState {
 
   increaseQty: (id: string, isLoggedIn: boolean) => void;
   decreaseQty: (id: string, isLoggedIn: boolean) => void;
+  setQty: (id: string, quantity: number, isLoggedIn: boolean) => void;
 
   setCart: (items: CartItem[]) => void;
   clearCart: () => void;
@@ -163,6 +164,34 @@ export const useCartStore = create<CartState>()(
         }
       },
 
+      setQty: async (id, quantity, isLoggedIn) => {
+        // prevent invalid values
+        const qty = Math.max(1, quantity);
+
+        set({
+          cart: get().cart.map((i) =>
+            i.id === id ? { ...i, quantity: qty } : i,
+          ),
+        });
+
+        if (!isLoggedIn) return;
+
+        try {
+          await fetch("/api/cart/set-qty", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              product_id: id,
+              quantity: qty,
+            }),
+          });
+        } catch (err) {
+          console.error("Set qty failed", err);
+        }
+      },
+
       setCart: (items) => set({ cart: items }),
 
       clearCart: () => set({ cart: [] }),
@@ -177,6 +206,7 @@ export const useCartStore = create<CartState>()(
           removeFromCart: () => {},
           increaseQty: () => {},
           decreaseQty: () => {},
+          setQty: () => {},
           setCart: () => {},
           clearCart: () => {},
         };
@@ -184,4 +214,3 @@ export const useCartStore = create<CartState>()(
     },
   ),
 );
-

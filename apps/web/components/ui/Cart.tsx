@@ -20,7 +20,7 @@ import { useState } from "react";
 const FALLBACK_IMAGE = "/images/placeholder.png";
 
 export default function Cart() {
-  const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
+  const { cart, removeFromCart, clearCart, increaseQty, decreaseQty, setQty } =
     useCartStore();
 
   const { addToWishlist } = useWishlistStore();
@@ -131,7 +131,7 @@ export default function Cart() {
                   <div className="sm:text-right  text-sm">
                     <p className="font-normal mb-2">
                       {symbol}
-                      {(rate * (item.price)).toFixed(2)} x {item.quantity}
+                      {(rate * item.price).toFixed(2)} x {item.quantity}
                     </p>
                     <p className="font-normal">
                       Total: {symbol}
@@ -150,7 +150,20 @@ export default function Cart() {
                     >
                       −
                     </button>
-                    <span className="px-4 text-center">{item.quantity}</span>
+                    {/* <span className="px-4 text-center">{item.quantity}</span> */}
+                    <input
+                      type="number"
+                      min={1}
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+
+                        if (isNaN(value)) return;
+
+                        setQty(item.id, value, isLoggedIn);
+                      }}
+                      className="w-16 text-center outline-none"
+                    />
                     <button
                       onClick={() => increaseQty(item.id, isLoggedIn)}
                       className="px-3 py-1 text-lg hover:bg-gray-100 cursor-pointer rounded-lg"

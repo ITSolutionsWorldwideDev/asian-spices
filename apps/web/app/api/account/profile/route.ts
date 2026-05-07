@@ -17,9 +17,17 @@ export async function GET() {
 
   try {
     const { rows } = await client.query(
-      `SELECT id, email, name FROM users WHERE id = $1`,
+      `SELECT c.first_name,c.last_name,c.phone, u.id, u.email, u.name,
+          COALESCE(
+              NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''),
+              u.name
+          ) AS displayname
+      FROM users as u 
+      LEFT JOIN store_customers c ON c.user_id = u.id
+       WHERE u.id = $1`,
       [session.user.id],
     );
+    // SELECT id, email, name FROM users 
 
     return NextResponse.json({ user: rows[0] });
   } finally {

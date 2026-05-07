@@ -38,8 +38,6 @@ export default function OrderSummary({
   shipping,
   total,
 }: Props) {
-  // const { cart, removeFromCart, clearCart, increaseQty, decreaseQty } =
-  //   useCartStore();
   const { symbol, rate } = useCurrencyStore();
 
   // const shippingOption = SHIPPING_OPTIONS[shippingMethod];

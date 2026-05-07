@@ -41,16 +41,8 @@ export default async function AccountLayout({
       <div className=" bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
         <div className="container mx-auto px-4 py-10 flex-1">
           {/* HEADER */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">
-              Welcome, {user?.email || "User"} 👋
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Manage your account settings, orders and addresses
-            </p>
-
-            <UserMenu email={user?.email} />
-          </div>
+          
+          <UserMenu email={user?.email} />
 
           {/* MOBILE TABS */}
           <AccountTabs />

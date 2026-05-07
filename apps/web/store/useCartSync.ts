@@ -34,8 +34,6 @@ export const useCartSync = () => {
         const res = await fetch("/api/cart");
         const dbCart = await res.json();
 
-        console.log('dbCart === ',dbCart);
-
         const formatted = dbCart.map((item: any) => ({
           id: item.product_id,
           title: item.title || "Product",

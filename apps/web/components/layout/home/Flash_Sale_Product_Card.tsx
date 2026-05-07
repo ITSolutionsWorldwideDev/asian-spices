@@ -101,9 +101,9 @@ const FlashSaleProductCard = () => {
             <span className="absolute z-20 top-3 left-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
               {item.off}
             </span>
-            <span className="absolute bottom-3 z-50 right-3 bg-white/90 text-black text-xs px-2 py-1 rounded-full">
+            {/* <span className="absolute bottom-3 z-50 right-3 bg-white/90 text-black text-xs px-2 py-1 rounded-full">
               only {item.left} left!
-            </span>
+            </span> */}
 
             <div
               className="relative h-48 w-full overflow-hidden rounded-xl  cursor-pointer"

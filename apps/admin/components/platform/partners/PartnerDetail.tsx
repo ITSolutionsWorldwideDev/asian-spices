@@ -152,8 +152,7 @@ function Field({ label, value }: any) {
   );
 }
 
-function DocumentPreview({ label, files }: any) {
-
+function DocumentPreview({ label, files }: { label: string; files: string[] }) {
   // console.log('files.length ==== ',files.length);
   if (!files || files.length === 0) {
     return (
@@ -163,7 +162,37 @@ function DocumentPreview({ label, files }: any) {
       </div>
     );
   }
-  // console.log('files ==== ',files);
+  console.log("files ==== ", files);
+
+  // ✅ convert base64 -> blob url
+  const openBase64File = (base64: string) => {
+    try {
+      const arr = base64.split(",");
+      const mime = arr[0].match(/:(.*?);/)?.[1] || "";
+
+      const byteString = atob(arr[1]);
+
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+
+      const blob = new Blob([ab], { type: mime });
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      window.open(blobUrl, "_blank");
+
+      // cleanup
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to open file", err);
+    }
+  };
 
   return (
     <div className="col-span-2 space-y-2">
@@ -171,12 +200,49 @@ function DocumentPreview({ label, files }: any) {
 
       <div className="flex flex-wrap gap-3">
         {files?.map((file: string, index: number) => {
-          const isPdf = file?.endsWith(".pdf");
+          // const isPdf = file?.endsWith(".pdf");
+
+          const isPdf =
+            file?.startsWith("data:application/pdf") || file?.includes(".pdf");
+
+          const isImage = file?.startsWith("data:image");
 
           return (
+            <div key={index} className="border rounded p-2 w-40 bg-white">
+              {/* PREVIEW */}
+              {isPdf ? (
+                <iframe src={file} className="w-full h-32 rounded" />
+              ) : isImage ? (
+                <img
+                  src={file}
+                  alt="document"
+                  className="w-full h-32 object-cover rounded"
+                />
+              ) : (
+                <div className="h-32 flex items-center justify-center text-xs text-gray-500">
+                  Unsupported File
+                </div>
+              )}
+
+              {/* OPEN BUTTON */}
+              <button
+                onClick={() => openBase64File(file)}
+                className="text-xs text-blue-600 mt-2 underline cursor-pointer"
+              >
+                Open
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* return (
             <div key={index} className="border rounded p-2 w-40">
               {isPdf ? (
-                <iframe src={file} className="w-full h-32" />
+                <iframe src={file} className="w-full h-32 rounded" />
               ) : (
                 <img
                   src={file}
@@ -193,45 +259,4 @@ function DocumentPreview({ label, files }: any) {
                 Open
               </a>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* "use client";
-
-import { approvePartner, rejectPartner } from "./actions";
-
-export default function PartnerDetail({ partner }: any) {
-  return (
-    <div className="card p-6 space-y-4">
-      <h2 className="text-xl font-semibold">
-        {partner.company_name}
-      </h2>
-
-      <p>Email: {partner.business_email_address}</p>
-      <p>Phone: {partner.business_phone_number}</p>
-      <p>Status: {partner.status}</p>
-
-      {partner.status === "pending" && (
-        <div className="flex gap-3">
-          <button
-            className="btn btn-success"
-            onClick={() => approvePartner(partner.partner_id)}
-          >
-            Approve
-          </button>
-
-          <button
-            className="btn btn-danger"
-            onClick={() => rejectPartner(partner.partner_id)}
-          >
-            Reject
-          </button>
-        </div>
-      )}
-    </div>
-  );
-} */
+          ); */

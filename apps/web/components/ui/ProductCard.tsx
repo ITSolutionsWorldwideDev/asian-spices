@@ -65,7 +65,7 @@ export default function ProductCard({ products }: ProductCardProps) {
     setMounted(true);
   }, []);
   // const addToCart = useCartStore((state) => state.addToCart);
-  const { cart, addToCart, increaseQty, decreaseQty } = useCartStore();
+  const { cart, addToCart, increaseQty, decreaseQty, setQty } = useCartStore();
 
   const [showAll, setShowAll] = useState(false);
 
@@ -112,11 +112,11 @@ export default function ProductCard({ products }: ProductCardProps) {
               </button>
 
               {/* Product left in stock */}
-              {product.quantity && (
+              {/* {product.quantity && (
                 <span className="absolute bottom-[45%] right-1/11 bg-white text-black text-xs px-2 py-1 rounded-full flex items-center">
                   Only {product.quantity} Left!
                 </span>
-              )}
+              )} */}
 
               {/* Image */}
 
@@ -175,7 +175,20 @@ export default function ProductCard({ products }: ProductCardProps) {
                     −
                   </button>
 
-                  <span className="px-4">{cartItem.quantity}</span>
+                  {/* <span className="px-4">{cartItem.quantity}</span> */}
+                  <input
+                      type="number"
+                      min={1}
+                      value={cartItem.quantity}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+
+                        if (isNaN(value)) return;
+
+                        setQty(product.id, value, isLoggedIn);
+                      }}
+                      className="w-8 text-center outline-none"
+                    />
 
                   <button
                     onClick={() => increaseQty(product.id, isLoggedIn)}

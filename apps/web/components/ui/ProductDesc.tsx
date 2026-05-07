@@ -16,7 +16,7 @@ export default function ProductDesc({ product }: { product: Product }) {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
-  const { cart, addToCart, increaseQty, decreaseQty } = useCartStore();
+  const { cart, addToCart, increaseQty, decreaseQty, setQty } = useCartStore();
 
   // 🔥 find product in cart
   const cartItem = cart.find((item) => item.id === product.id);
@@ -110,17 +110,17 @@ export default function ProductDesc({ product }: { product: Product }) {
             </span> */}
           </div>
 
-          <p className="text-green-600 font-medium">
+          {/* <p className="text-green-600 font-medium">
             You save ${product.savings}
-          </p>
+          </p> */}
 
           {/* Stock  inStock*/}
-          {product.quantity && (
+          {/* {product.quantity && (
             <div className="bg-green-100 text-green-700 px-4 py-3 rounded-xl text-sm font-medium">
               ✔ In Stock{" "}
               {product.shippingNote ? "-" + product.shippingNote : ""}
             </div>
-          )}
+          )} */}
 
           {/* Quantity */}
 
@@ -134,7 +134,20 @@ export default function ProductDesc({ product }: { product: Product }) {
                   –
                 </button>
 
-                <span className="px-6 py-2">{cartItem.quantity}</span>
+                {/* <span className="px-6 py-2">{cartItem.quantity}</span> */}
+                <input
+                      type="number"
+                      min={1}
+                      value={cartItem.quantity}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+
+                        if (isNaN(value)) return;
+
+                        setQty(product.id, value, isLoggedIn);
+                      }}
+                      className="w-16 text-center outline-none"
+                    />
 
                 <button
                   onClick={() => increaseQty(product.id, isLoggedIn)}
@@ -147,24 +160,8 @@ export default function ProductDesc({ product }: { product: Product }) {
               <></>
             )}
 
-            {/* <button
-                onClick={() =>
-                  addToCart(
-                    {
-                      id: product.id,
-                      title: product.name,
-                      price: product.price,
-                      image: images[0] || "/images/placeholder.png",
-                    },
-                    isLoggedIn,
-                  )
-                }
-                className="px-6 py-2 bg-orange-500 text-white rounded-lg"
-              >
-                Add to Cart
-              </button> */}
 
-            <span className="text-sm text-gray-500">{product.unit}</span>
+            {/* <span className="text-sm text-gray-500">{product.unit}</span> */}
           </div>
           {/* <div className="flex items-center gap-6">
             <div className="flex border rounded-lg">

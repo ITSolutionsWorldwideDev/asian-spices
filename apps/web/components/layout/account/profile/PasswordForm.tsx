@@ -4,49 +4,141 @@
 
 import { useZodForm } from "@acme/utils";
 import { passwordSchema } from "@/lib/validation/account";
+import { useLoaderStore } from "@/store/useLoaderStore";
 
 export default function PasswordForm() {
-  const { register, handleSubmit, reset } = useZodForm(passwordSchema);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useZodForm(passwordSchema);
+
+  const { show, hide } = useLoaderStore();
 
   const onSubmit = async (data: any) => {
-    const res = await fetch("/api/account/change-password", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    try {
+      show("Updating Password...");
 
-    const result = await res.json();
+      const res = await fetch("/api/account/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    if (!res.ok) {
-      alert(result.error);
-      return;
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.error);
+        return;
+      }
+
+      // alert("Password updated successfully");
+      reset();
+    } finally {
+      hide();
     }
-
-    alert("Password updated 🔐");
-    reset();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-10 gap-4">
-      <h2 className="font-semibold text-lg">Change Password</h2>
+    <div className="max-w-2xl mt-16">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 md:p-8">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Change Password
+          </h2>
 
-      <div className="space-x-4 space-y-4">
-        <input
-          type="password"
-          placeholder="Current password"
-          {...register("currentPassword")}
-          className="input md:w-1/2 sm:w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition bg-white"
-        />
+          <p className="text-sm text-gray-500 mt-1">
+            Update your account password securely.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-x-4 space-y-4 form-group">
+            {/* CURRENT PASSWORD */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Password<span className="text-danger ms-1">*</span>
+              </label>
+              <input
+                type="password"
+                placeholder="Current password"
+                {...register("currentPassword")}
+                className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition
+                ${
+                  errors.currentPassword
+                    ? "border-red-400 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                }`}
+              />
 
-        <input
-          type="password"
-          placeholder="New password"
-          {...register("newPassword")}
-          className="input md:w-1/2 sm:w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition bg-white"
-        />
-        <button className="bg-orange-500 hover:bg-orange-600 md:w-1/2 sm:w-full  text-white rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Update Password
-        </button>
+              {errors.currentPassword && (
+                <p className="mt-2 text-xs text-red-500">
+                  {String(errors.currentPassword.message)}
+                </p>
+              )}
+            </div>
+            {/* NEW PASSWORD */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Password<span className="text-danger ms-1">*</span>
+              </label>
+
+              <input
+                type="password"
+                placeholder="New password"
+                {...register("newPassword")}
+                className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition
+                ${
+                  errors.newPassword
+                    ? "border-red-400 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                }`}
+              />
+
+              {errors.newPassword && (
+                <p className="mt-2 text-xs text-red-500">
+                  {String(errors.newPassword.message)}
+                </p>
+              )}
+            </div>
+
+            {/* CONFIRM PASSWORD */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password<span className="text-danger ms-1">*</span>
+              </label>
+
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                {...register("confirmPassword")}
+                className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition
+                ${
+                  errors.confirmPassword
+                    ? "border-red-400 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                }`}
+              />
+              {errors.confirmPassword && (
+                <p className="mt-2 text-xs text-red-500">
+                  {String(errors.confirmPassword.message)}
+                </p>
+              )}
+            </div>
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                Update Password
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 }
