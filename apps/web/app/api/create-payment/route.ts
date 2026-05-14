@@ -10,10 +10,16 @@ const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
 // PayPal config
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
+
 const PAYPAL_API =
-  process.env.NODE_ENV === "production"
+  process.env.PAYPAL_ENV === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
+    
+// const PAYPAL_API =
+//   process.env.NODE_ENV === "production"
+//     ? "https://api-m.paypal.com"
+//     : "https://api-m.sandbox.paypal.com";
 
 export async function POST(req: NextRequest) {
   try {

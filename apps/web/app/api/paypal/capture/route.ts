@@ -3,10 +3,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
+
 const PAYPAL_API =
-  process.env.NODE_ENV === "production"
+  process.env.PAYPAL_ENV === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
+
+// const PAYPAL_API =
+//   process.env.NODE_ENV === "production"
+//     ? "https://api-m.paypal.com"
+//     : "https://api-m.sandbox.paypal.com";
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET!;

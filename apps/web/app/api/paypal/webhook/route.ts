@@ -5,9 +5,16 @@ import { pool } from "@acme/db";
 // PayPal Webhook verification endpoint
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
-const PAYPAL_API = process.env.NODE_ENV === "production"
-  ? "https://api-m.paypal.com"
-  : "https://api-m.sandbox.paypal.com";
+
+const PAYPAL_API =
+  process.env.PAYPAL_ENV === "production"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+
+
+// const PAYPAL_API = process.env.NODE_ENV === "production"
+//   ? "https://api-m.paypal.com"
+//   : "https://api-m.sandbox.paypal.com";
 
 // Verify PayPal webhook signature
 async function verifyPayPalWebhook(req: NextRequest, body: any) {
