@@ -390,6 +390,8 @@ export default function OrderDetailPage() {
     }
   };
 
+  console.log('order === ',order);
+
   const hasShipment = !!order.tracking_number;
 
   const isBooked = order.fulfillment_status === "booked";

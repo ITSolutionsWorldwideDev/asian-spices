@@ -4,10 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
+type Props = {
+  params: Promise<{ productId: string }>;
+};
+
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> }
+  { params }: Props
 ) {
   const client = await pool.connect();
 

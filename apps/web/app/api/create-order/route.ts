@@ -259,8 +259,8 @@ export async function POST(req: NextRequest) {
         (c) => c.store_id === bestStore && c.product_id === item.id,
       );
 
-      console.log('ORDER ITEMS product ==== ',product);
-      console.log('ORDER ITEMS ==== ',item);
+      // console.log('ORDER ITEMS product ==== ',product);
+      // console.log('ORDER ITEMS ==== ',item);
 
       if (!product || product.quantity < item.quantity) {
         return errorResponse(`${item.title} is out of stock`, "OUT_OF_STOCK");

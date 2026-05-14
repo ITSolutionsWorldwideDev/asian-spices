@@ -108,6 +108,29 @@ const PLATFORM_MENU = [
       { label: "Media", link: "/media", icon: "table-plus", submenu: false },
     ],
   },
+
+  {
+    label: "Recipes",
+    submenu: true,
+    submenuHdr: "Recipes",
+    submenuItems: [
+      {
+        label: "Recipe Categories",
+        link: "/recipe-categories",
+        icon: "list-details",
+        submenu: false,
+      },
+      { label: "All Recipes", link: "/recipes", icon: "box", submenu: false },
+      { label: "Recipe Tags", link: "/recipe-tags", icon: "box", submenu: false },
+      { label: "Analytics", link: "/analytics", icon: "box", submenu: false },
+      {
+        label: "Create Receipe",
+        link: "/recipes/new",
+        icon: "table-plus",
+        submenu: false,
+      },
+    ],
+  },
 ];
 
 export default function PlatformSidebar() {

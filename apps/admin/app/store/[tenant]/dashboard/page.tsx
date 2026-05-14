@@ -94,7 +94,7 @@ export default async function StoreDashboard({
               <p className="text-gray-500 mt-1">Add, update, and manage store inventory.</p>
             </div>
             <a
-              href="/products"
+              href="/products-catalog"
               className="mt-4 inline-block bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition"
             >
               Go to Products
