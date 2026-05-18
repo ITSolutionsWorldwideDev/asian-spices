@@ -60,6 +60,7 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^7.1.0",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@react-latest-ui/react-sticky-notes": "^0.2.6",
     "@tabler/icons-react": "^3.35.0",
     "@tabler/icons-webfont": "^3.35.0",

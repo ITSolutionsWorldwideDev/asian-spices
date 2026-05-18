@@ -1,72 +1,137 @@
 // apps/web/app/recipes/page.tsx
 
-/* import Footer from "@/components/ui/Footer";
+import RecipeGrid from "@/components/layout/recipes/RecipeGrid";
+import RecipePagination from "@/components/layout/recipes/RecipePagination";
+import RecipeSearchBar from "@/components/layout/recipes/RecipeSearchBar";
+import RecipeSidebar from "@/components/layout/recipes/RecipeSidebar";
 import HeadingDescription from "@/components/ui/HeadingDescription";
+
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
+import Footer from "@/components/ui/Footer";
+
+// import RecipeHero from "@/components/recipes/RecipeHero";
 
 import {
-  getBrands,
-  getProducts,
-  getSubcategories,
-} from "@/lib/dbactions/products";
+  getRecipes,
+  getRecipeCategories,
+  getRecipeTags,
+} from "@/lib/dbactions/recipes";
 
-import FilterSidebar from "@/components/layout/products/FilterSidebar";
-import InfiniteProducts from "@/components/layout/products/InfiniteProducts";
-import SortDropdown from "@/components/layout/product_filter_search/SortDropdown";
 
-interface PageProps {
+interface RecipesPageProps {
   searchParams: Promise<{
-    subcategories?: string;
-    brands?: string;
-    min?: string;
-    max?: string;
-    search?: string;
     page?: string;
+    search?: string;
+    category?: string;
+    tag?: string;
   }>;
 }
 
-type Filters = {
-  category: string;
-  subcategories: string[];
-  brands: string[];
-  minPrice?: string;
-  maxPrice?: string;
+/* async function getRecipes(params: {
+  page?: string;
   search?: string;
-  page: number;
-};
+  category?: string;
+  tag?: string;
+}) {
+  const query = new URLSearchParams();
 
-export default async function RecipesPage({ searchParams }: PageProps) {
+  if (params.page) {
+    query.set("page", params.page);
+  }
+
+  if (params.search) {
+    query.set("search", params.search);
+  }
+
+  if (params.category) {
+    query.set("category", params.category);
+  }
+
+  if (params.tag) {
+    query.set("tag", params.tag);
+  }
+
+  const res = await fetch(
+    `/api/recipes?${query.toString()}`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch recipes");
+  }
+
+  return res.json();
+}
+
+async function getCategories() {
+  const res = await fetch(
+    `/api/recipe-categories`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const data = await res.json();
+
+  return data.items || [];
+}
+
+async function getTags() {
+  const res = await fetch(
+    `/api/recipe-tags`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const data = await res.json();
+
+  return data.items || [];
+} */
+
+export async function generateMetadata() {
+  return {
+    title: "Recipes",
+    description:
+      "Explore delicious recipes with categories, tags, and cooking inspiration.",
+  };
+}
+
+export default async function RecipesPage({
+  searchParams,
+}: RecipesPageProps) {
   const params = await searchParams;
 
-  const cleanArray = (val?: string) => {
-    if (!val) return [];
+  const [
+    recipesData,
+    categories,
+    tags,
+  ] = await Promise.all([
+    getRecipes(params),
+    getRecipeCategories(),
+    getRecipeTags(),
+  ]);
 
-    return val
-      .split(",")
-      .map((v) => v.trim())
-      .filter((v) => v !== "" && v !== "null" && v !== "undefined");
-  };
+  const recipes = recipesData.items || [];
 
-  const filters: Filters = {
-    category: "recipes",
-    subcategories: cleanArray(params.subcategories),
-    brands: cleanArray(params.brands),
-    minPrice: params.min,
-    maxPrice: params.max,
-    search: params.search,
-    page: Number(params.page || 1),
-  };
-
-  const subcategories = await getSubcategories("recipes");
-  const brands = await getBrands();
-
-  const products = await getProducts(filters);
+  const pagination = recipesData.pagination;
 
   return (
-    <div className="category-animation">
 
+    <>
+    
       <ProductPageHeader
         heading="A World of Recipes, One Pinch of Spice"
         text="Explore a diverse collection of recipes where every dish tells a flavorful story, from street‑style bites to homely classics, all elevated by the essence of spices."
@@ -79,33 +144,68 @@ export default async function RecipesPage({ searchParams }: PageProps) {
         description="Diverse  Collection But Taste So Yummy...!"
       />
 
-      <div className="grid lg:grid-cols-[260px_1fr] gap-6 container mx-auto p-5">
-        <FilterSidebar subcategories={subcategories} brands={brands} />
+      <div className="container mx-auto px-4 py-10">
+        {/* SEARCH */}
+        <div className="mb-8">
+          <RecipeSearchBar
+            defaultSearch={params.search || ""}
+          />
+        </div>
 
-        <div>
-          <SortDropdown />
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
+          {/* SIDEBAR */}
+          <RecipeSidebar
+            categories={categories}
+            tags={tags}
+            selectedCategory={params.category}
+            selectedTag={params.tag}
+          />
 
-          <InfiniteProducts initialProducts={products} filters={filters} />
+          {/* RIGHT CONTENT */}
+          <div className="space-y-8">
+            {/* RESULTS INFO */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Explore Recipes
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  {pagination.total} recipes found
+                </p>
+              </div>
+            </div>
+
+            {/* RECIPES GRID */}
+            <RecipeGrid recipes={recipes} />
+
+            {/* PAGINATION */}
+            <RecipePagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+            />
+          </div>
         </div>
       </div>
+
 
       <RegisterOnApp />
       <Reviews />
       <Footer />
-    </div>
-  );
-} */
 
-import ProductPageHeader from "@/components/ui/ProductPageHeader";
+    </>
+  );
+}
+
+/* import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 
 import React from "react";
 import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
-import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductDisplay from "@/components/layout/recipes/ProductDisplay";
-import Cart from "@/components/ui/Cart";
 
 const RecipesPage = () => {
   const categoriesData = [
@@ -143,10 +243,8 @@ const RecipesPage = () => {
     "Good Spices",
   ];
 
-  //
   return (
     <div>
-
       <ProductPageHeader
         heading="A World of Recipes, One Pinch of Spice"
         text="Explore a diverse collection of recipes where every dish tells a flavorful story, from street‑style bites to homely classics, all elevated by the essence of spices."
@@ -160,12 +258,6 @@ const RecipesPage = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
-        {/* <ProductFilterSearch
-          // categoriesData={categoriesData}
-          storesData={storesData}
-          title1={"Recipes By Items"}
-          title2={"Recipes By Culture"}
-        /> */}
         <ProductDisplay />
       </div>
       <RegisterOnApp />
@@ -175,4 +267,12 @@ const RecipesPage = () => {
   );
 };
 
-export default RecipesPage;
+export default RecipesPage; */
+
+
+
+      // <HeadingDescription
+      //   heading="Explore Our Collection"
+      //   text="All the flavors now you finger tips "
+      //   description="Diverse  Collection But Taste So Yummy...!"
+      // />
