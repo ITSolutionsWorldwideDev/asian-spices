@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
         rt.id,
         rt.name,
         rt.slug,
+        rt.color,
+        rt.is_active,
         rt.created_at,
         COUNT(r.id)::int AS recipes_count
       FROM recipe_tags rt
@@ -75,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    const { name, slug } = body;
+    const { name, slug, color, is_active } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -113,12 +115,19 @@ export async function POST(req: NextRequest) {
       `
       INSERT INTO recipe_tags (
         name,
-        slug
+        slug,
+        color,
+        is_active
       )
-      VALUES ($1, $2)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
       `,
-      [name, finalSlug],
+      [
+        name,
+        finalSlug,
+        color || "#ef4444",
+        is_active ?? true,
+      ],
     );
 
     return NextResponse.json({

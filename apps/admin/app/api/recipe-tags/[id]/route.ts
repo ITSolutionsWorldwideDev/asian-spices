@@ -9,7 +9,7 @@ import { requirePlatformAdmin } from "@/lib/auth/guards";
 ------------------------------ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await requirePlatformAdmin();
@@ -27,13 +27,13 @@ export async function GET(
       WHERE rt.id = $1
       GROUP BY rt.id
       `,
-      [id]
+      [id],
     );
 
     if (!rows.length) {
       return NextResponse.json(
         { success: false, error: "Tag not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -49,7 +49,7 @@ export async function GET(
         success: false,
         error: error.message || "Failed to fetch tag",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -59,7 +59,7 @@ export async function GET(
 ------------------------------ */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await requirePlatformAdmin();
@@ -67,12 +67,14 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const { name, slug } = body;
+    const { name, slug, color, is_active } = body;
+
+    console.log('body ==== ',body);
 
     if (!name) {
       return NextResponse.json(
         { success: false, error: "Tag name is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,13 +93,13 @@ export async function PUT(
       WHERE slug = $1 AND id != $2
       LIMIT 1
       `,
-      [finalSlug, id]
+      [finalSlug, id],
     );
 
     if (duplicate.rows.length > 0) {
       return NextResponse.json(
         { success: false, error: "Slug already exists" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -106,17 +108,19 @@ export async function PUT(
       UPDATE recipe_tags
       SET
         name = $1,
-        slug = $2
-      WHERE id = $3
+        slug = $2,
+        color = $3,
+        is_active = $4
+      WHERE id = $5
       RETURNING *
       `,
-      [name, finalSlug, id]
+      [name, finalSlug, color || "#ef4444", is_active ?? true, id],
     );
 
     if (!rows.length) {
       return NextResponse.json(
         { success: false, error: "Tag not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -133,7 +137,7 @@ export async function PUT(
         success: false,
         error: error.message || "Failed to update tag",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -143,7 +147,7 @@ export async function PUT(
 ------------------------------ */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await requirePlatformAdmin();
@@ -157,16 +161,16 @@ export async function DELETE(
       FROM recipe_recipe_tags
       WHERE tag_id = $1
       `,
-      [id]
+      [id],
     );
 
-    if (usage.rows[0].total > 0) {
+    if (Number(usage.rows[0].total) > 0) {
       return NextResponse.json(
         {
           success: false,
           error: "Cannot delete tag in use by recipes",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -176,13 +180,13 @@ export async function DELETE(
       WHERE id = $1
       RETURNING id
       `,
-      [id]
+      [id],
     );
 
     if (!result.rows.length) {
       return NextResponse.json(
         { success: false, error: "Tag not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -198,7 +202,7 @@ export async function DELETE(
         success: false,
         error: error.message || "Failed to delete tag",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

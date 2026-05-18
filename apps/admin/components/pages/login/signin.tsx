@@ -69,7 +69,7 @@ export default function SigninComponent() {
           <div className="login-wrapper">
             <div className="grid grid-cols-1 lg:grid-cols-2 m-0">
               <div className="p-0">
-                <div className="login-content">
+                <div className="login-content bg-black">
                   <form onSubmit={handleLogin}>
                     <div className="login-userset">
                       <a href="index.html" className="login-logo logo-white">

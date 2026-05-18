@@ -7,19 +7,28 @@ import { ArrowLeft } from "react-feather";
 
 import { useEffect, useState, useTransition } from "react";
 import { saveRecipe } from "@/components/platform/recipes/actions";
+import TextEditorNew from "@/core/common/texteditor/texteditor";
+
+import { extractYoutubeData } from "@acme/utils";
+import { useToast } from "@repo/ui";
 
 export default function RecipeForm({ recipe }: { recipe?: any }) {
   const [pending, startTransition] = useTransition();
 
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
   const isEdit = !!recipe;
 
   const [categories, setCategories] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
 
   const [formState, setFormState] = useState({
     title: recipe?.title || "",
     slug: recipe?.slug || "",
 
     shortDescription: recipe?.short_description || "",
+    content: recipe?.content || "",
 
     youtubeUrl: recipe?.youtube_url || "",
 
@@ -27,20 +36,58 @@ export default function RecipeForm({ recipe }: { recipe?: any }) {
 
     categoryId: recipe?.category_id || "",
 
+    tagIds: recipe?.tag_ids || [],
+
     status: recipe?.status || "draft",
+
+    seoTitle: recipe?.seo_title || "",
+    seoDescription: recipe?.seo_description || "",
+    seoKeywords: recipe?.seo_keywords || "",
   });
 
   useEffect(() => {
-    async function loadCategories() {
-      const res = await fetch("/api/recipe-categories");
+    async function loadData() {
+      const [catRes, tagRes] = await Promise.all([
+        fetch("/api/recipe-categories"),
+        fetch("/api/recipe-tags"),
+      ]);
 
-      const data = await res.json();
+      const catData = await catRes.json();
+      const tagData = await tagRes.json();
 
-      setCategories(data);
+      setCategories(catData.items || []);
+      setTags(tagData.items || []);
     }
 
-    loadCategories();
+    loadData();
   }, []);
+
+  // useEffect(() => {
+  //   async function loadCategories() {
+  //     const res = await fetch(`/api/recipe-categories`);
+
+  //     const data = await res.json();
+
+  //     setCategories(data.items || []);
+
+  //     // setCategories(data);
+  //   }
+
+  //   loadCategories();
+  // }, []);
+
+  const toggleTag = (tagId: string) => {
+    setFormState((prev: any) => {
+      const exists = prev.tagIds.includes(tagId);
+
+      return {
+        ...prev,
+        tagIds: exists
+          ? prev.tagIds.filter((id: string) => id !== tagId)
+          : [...prev.tagIds, tagId],
+      };
+    });
+  };
 
   const generateSlug = (text: string) =>
     text
@@ -65,20 +112,37 @@ export default function RecipeForm({ recipe }: { recipe?: any }) {
   };
 
   const handleSubmit = async (formData: FormData) => {
-    startTransition(async () => {
-      Object.entries(formState).forEach(([key, value]) => {
-        formData.set(key, value);
+    try {
+      setLoading(true);
+      startTransition(async () => {
+        Object.entries(formState).forEach(([key, value]) => {
+          // formData.set(key, value);
+          if (Array.isArray(value)) {
+            formData.set(key, JSON.stringify(value));
+          } else {
+            formData.set(key, value);
+          }
+        });
+
+        const result = await saveRecipe(recipe?.id, formData);
+
+        console.log("result ==== ", result);
+
+        if (result?.success) {
+          showToast("success", "Recipe saved");
+        } else {
+          if (result?.message) showToast("error", result.message);
+        }
       });
-
-      const result = await saveRecipe(recipe?.id, formData);
-
-      if (!result?.success) {
-        alert(result?.error);
-      } else {
-        alert("Recipe saved");
-      }
-    });
+    } catch (err) {
+      console.error(err);
+      // showToast("error", "Failed to load recipe tags");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const youtubeData = extractYoutubeData(formState.youtubeUrl);
 
   return (
     <form
@@ -124,11 +188,22 @@ export default function RecipeForm({ recipe }: { recipe?: any }) {
             onChange={(v: any) => handleChange("shortDescription", v)}
           />
 
-          <TextAreaField
+          {/* <TextAreaField
             label="Recipe Content"
-            value={""}
-            onChange={() => {}}
-          />
+            value={formState.content}
+            onChange={(v: any) => handleChange("content", v)}
+          /> */}
+
+          <div>
+            <label className="block mb-2 text-sm font-semibold">
+              Recipe Content
+            </label>
+
+            <TextEditorNew
+              value={formState.content}
+              onChange={(value) => handleChange("content", value)}
+            />
+          </div>
         </div>
 
         {/* RIGHT */}
@@ -162,7 +237,17 @@ export default function RecipeForm({ recipe }: { recipe?: any }) {
               onChange={(v: any) => handleChange("youtubeUrl", v)}
             />
 
-            {formState.youtubeUrl && (
+            {youtubeData && (
+              <iframe
+                className="w-full aspect-video rounded-lg mt-4"
+                src={youtubeData.embedUrl}
+                allowFullScreen
+              />
+            )}
+          </div>
+
+          {/* 
+              {formState.youtubeUrl && (
               <iframe
                 className="w-full aspect-video rounded-lg mt-4"
                 src={`https://www.youtube.com/embed/${
@@ -170,18 +255,71 @@ export default function RecipeForm({ recipe }: { recipe?: any }) {
                 }`}
               />
             )}
-          </div>
-
+              */}
           <div className="border rounded-lg p-4">
             <SelectField
               label="Category"
               value={formState.categoryId}
               onChange={(v: any) => handleChange("categoryId", v)}
-              options={categories.map((c) => ({
+              options={categories?.map((c) => ({
                 label: c.name,
                 value: c.id,
               }))}
             />
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-semibold mb-4">Recipe Tags</h3>
+
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => {
+                const selected = formState.tagIds.includes(tag.id);
+
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => toggleTag(tag.id)}
+                    className={`px-3 py-1 rounded-full border text-sm transition ${
+                      selected
+                        ? "text-white border-transparent"
+                        : "bg-white border-gray-300"
+                    }`}
+                    style={{
+                      background: selected ? tag.color : undefined,
+                    }}
+                  >
+                    {tag.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4 space-y-4">
+            <h3 className="font-semibold">SEO</h3>
+
+            <InputField
+              label="SEO Title"
+              value={formState.seoTitle}
+              onChange={(v: any) => handleChange("seoTitle", v)}
+            />
+
+            <TextAreaField
+              label="SEO Description"
+              value={formState.seoDescription}
+              onChange={(v: any) => handleChange("seoDescription", v)}
+            />
+
+            <InputField
+              label="SEO Keywords"
+              value={formState.seoKeywords}
+              onChange={(v: any) => handleChange("seoKeywords", v)}
+            />
+
+            <p className="text-xs text-gray-500">
+              Separate keywords with commas
+            </p>
           </div>
         </div>
       </div>
@@ -243,3 +381,17 @@ function SelectField({ label, value, onChange, options }: any) {
     </div>
   );
 }
+
+/* 
+
+const videoId = extractYoutubeId(formState.youtubeUrl);
+
+{videoId && (
+  <iframe
+    className="w-full aspect-video rounded-lg mt-4"
+    src={`https://www.youtube.com/embed/${videoId}`}
+    allowFullScreen
+  />
+)}
+
+*/

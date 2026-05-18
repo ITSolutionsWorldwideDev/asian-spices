@@ -1,5 +1,20 @@
-import React from 'react'
+// apps/admin/core/common/texteditor/texteditor.tsx
+
+import React from 'react';
+
+import {
+  Editor,
+  EditorProvider,
+  Toolbar,
+  BtnBold,
+  BtnItalic,
+  BtnUnderline,
+  BtnBulletList,
+  BtnNumberedList,
+} from "react-simple-wysiwyg";
+
 import DefaultEditor from "react-simple-wysiwyg";
+
 const TextEditor = () => {
     const [values, setValue] = React.useState();
   
@@ -13,6 +28,7 @@ const TextEditor = () => {
   )
 }
 
+
 export interface TextEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -20,6 +36,32 @@ export interface TextEditorProps {
 }
 
 const TextEditorNew: React.FC<TextEditorProps> = ({
+  value,
+  onChange,
+  readOnly = false,
+}) => {
+  return (
+    <EditorProvider>
+      <Editor
+        value={value}
+        disabled={readOnly}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <Toolbar>
+          <BtnBold />
+          <BtnItalic />
+          <BtnUnderline />
+          <BtnBulletList />
+          <BtnNumberedList />
+        </Toolbar>
+      </Editor>
+    </EditorProvider>
+  );
+};
+
+export default TextEditorNew;
+
+/* const TextEditorNew: React.FC<TextEditorProps> = ({
   value,
   onChange,
   readOnly = false,
@@ -36,5 +78,4 @@ const TextEditorNew: React.FC<TextEditorProps> = ({
 };
 
 
-export default TextEditorNew;
-// export default TextEditor;
+export default TextEditorNew; */

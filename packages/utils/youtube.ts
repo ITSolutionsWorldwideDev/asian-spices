@@ -1,17 +1,5 @@
-export function formatPrice(amount: number) {
-  return `$${(amount / 100).toFixed(2)}`;
-}
-
-export const formatCurrency = (
-  amount: number,
-  symbol: string,
-  decimals: number = 2,
-) => {
-  return `${symbol} ${amount.toFixed(decimals)}`;
-};
-
 // packages/shared/utils/youtube.ts
-export function extractYoutubeId(url: string) {
+/* export function extractYoutubeId(url: string) {
   try {
     const parsed = new URL(url);
 
@@ -29,6 +17,7 @@ export function extractYoutubeId(url: string) {
   }
 }
 
+
 export function extractYoutubeData(url: string) {
   try {
     const parsed = new URL(url);
@@ -42,7 +31,8 @@ export function extractYoutubeData(url: string) {
 
     const isValidHost = validHosts.some(
       (host) =>
-        parsed.hostname === host || parsed.hostname.endsWith(`.${host}`),
+        parsed.hostname === host ||
+        parsed.hostname.endsWith(`.${host}`),
     );
 
     if (!isValidHost) {
@@ -63,12 +53,12 @@ export function extractYoutubeData(url: string) {
 
     // youtube.com/embed/abc123
     else if (parsed.pathname.startsWith("/embed/")) {
-      videoId = parsed.pathname.split("/embed/")[1] || null;
+      videoId = parsed.pathname.split("/embed/")[1];
     }
 
     // youtube.com/shorts/abc123
     else if (parsed.pathname.startsWith("/shorts/")) {
-      videoId = parsed.pathname.split("/shorts/")[1] || null;
+      videoId = parsed.pathname.split("/shorts/")[1];
     }
 
     if (!videoId || videoId.length < 6) {
@@ -83,16 +73,4 @@ export function extractYoutubeData(url: string) {
   } catch {
     return null;
   }
-}
-
-
-/* import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-export function useZodForm(schema: any, defaultValues = {}) {
-  return useForm({
-    resolver: zodResolver(schema),
-    defaultValues,
-  });
-}
- */
+} */

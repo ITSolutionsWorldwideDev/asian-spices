@@ -86,7 +86,12 @@ export default function RecipeTagsPage() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/recipe-tags");
+      const url = isEditMode
+        ? `/api/recipe-tags/${formData.id}`
+        : "/api/recipe-tags";
+
+      const res = await fetch(url);
+      // const res = await fetch("/api/recipe-tags");
 
       const data = await res.json();
 
@@ -140,35 +145,38 @@ export default function RecipeTagsPage() {
    */
   const handleSubmit = async () => {
     try {
+      if (!formData.name.trim()) {
+        showToast("error", "Tag name is required");
+        return;
+      }
+
+      if (!formData.slug.trim()) {
+        showToast("error", "Slug is required");
+        return;
+      }
       const payload = {
         name: formData.name,
-
         slug: formData.slug,
-
         color: formData.color,
-
         is_active: formData.isActive,
       };
 
-      const res = await fetch("/api/recipe-tags", {
-        method: isEditMode ? "PUT" : "POST",
+      const url = isEditMode
+        ? `/api/recipe-tags/${formData.id}`
+        : "/api/recipe-tags";
 
+      const res = await fetch(url, {
+        method: isEditMode ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-
-        body: JSON.stringify(
-          isEditMode
-            ? {
-                id: formData.id,
-                ...payload,
-              }
-            : payload,
-        ),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error();
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Failed to save tag");
       }
 
       showToast("success", isEditMode ? "Tag updated" : "Tag created");
@@ -176,10 +184,10 @@ export default function RecipeTagsPage() {
       setIsModalOpen(false);
 
       fetchTags();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
 
-      showToast("error", "Failed to save tag");
+      showToast("error", err.message || "Failed to save tag");
     }
   };
 
@@ -338,7 +346,9 @@ export default function RecipeTagsPage() {
                 {isEditMode ? "Edit Recipe Tag" : "Create Recipe Tag"}
               </h3>
 
-              <Button onClick={() => setIsModalOpen(false)}>X</Button>
+              <Button type="button" onClick={() => setIsModalOpen(false)}>
+                X
+              </Button>
             </div>
 
             <div className="space-y-5">

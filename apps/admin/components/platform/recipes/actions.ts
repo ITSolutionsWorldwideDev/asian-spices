@@ -7,8 +7,20 @@ import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit";
 import { redirect } from "next/navigation";
+import { recipeSchema } from "@/lib/validations/recipeSchema";
+import { extractYoutubeData } from "@acme/utils";
+import { ZodError } from "zod";
 
-function extractYoutubeId(url: string) {
+function formatZodError(error: ZodError) {
+  return error.issues
+    .map((err) => {
+      const field = err.path.join(".");
+      return `${field || "field"}: ${err.message}`;
+    })
+    .join(", ");
+}
+
+/* function extractYoutubeId(url: string) {
   try {
     const parsed = new URL(url);
 
@@ -26,7 +38,7 @@ function extractYoutubeId(url: string) {
   } catch {
     return null;
   }
-}
+} */
 
 export async function deleteRecipe(recipeId: string) {
   const user = await requirePlatformAdmin();
@@ -62,6 +74,7 @@ export async function setRecipeStatus(
       status = $1,
       updated_at = NOW()
     WHERE id = $2
+    RETURNING id
     `,
     [status, recipeId],
   );
@@ -86,6 +99,18 @@ export async function saveRecipe(
 
   const data = Object.fromEntries(formData.entries());
 
+  const tagIds = JSON.parse((data.tagIds as string) || "[]");
+
+  const validated = recipeSchema.safeParse(data);
+
+  if (!validated.success) {
+    return {
+      success: false,
+      message: formatZodError(validated.error),
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
   const {
     title,
     slug,
@@ -105,20 +130,22 @@ export async function saveRecipe(
     isFeatured,
   } = data;
 
-  if (!title || !slug || !youtubeUrl || !categoryId) {
-    return {
-      success: false,
-      error: "Missing required fields",
-    };
-  }
+  let youtubeData = null;
+  let youtubeVideoId = null;
+  let finalThumbnailUrl = null;
 
-  const youtubeVideoId = extractYoutubeId(youtubeUrl as string);
+  if (youtubeUrl) {
+    youtubeData = extractYoutubeData(youtubeUrl as string);
 
-  if (!youtubeVideoId) {
-    return {
-      success: false,
-      error: "Invalid YouTube URL",
-    };
+    if (!youtubeData) {
+      return {
+        success: false,
+        error: "Invalid YouTube URL",
+      };
+    }
+
+    youtubeVideoId = youtubeData.videoId;
+    finalThumbnailUrl = thumbnailUrl || youtubeData.thumbnailUrl;
   }
 
   const client = await pool.connect();
@@ -161,10 +188,11 @@ export async function saveRecipe(
           title,
           slug,
           shortDescription || null,
-          content ? JSON.stringify(content) : JSON.stringify({}),
+          // content ? JSON.stringify(content) : JSON.stringify({}),
+          content || null,
           youtubeUrl,
           youtubeVideoId,
-          thumbnailUrl || null,
+          finalThumbnailUrl,
           categoryId,
           status || "draft",
           seoTitle || null,
@@ -216,16 +244,18 @@ export async function saveRecipe(
             $10,$11,$12,$13,$14,$15,$16,
             $17,$18
           )
-          RETURNING id
+            
+        RETURNING id
           `,
         [
           title,
           slug,
           shortDescription || null,
-          content ? JSON.stringify(content) : JSON.stringify({}),
+          // content ? JSON.stringify(content) : JSON.stringify({}),
+          content || null,
           youtubeUrl,
           youtubeVideoId,
-          thumbnailUrl || null,
+          finalThumbnailUrl,
           categoryId,
           status || "draft",
           seoTitle || null,
@@ -250,6 +280,27 @@ export async function saveRecipe(
       });
     }
 
+    await client.query(
+      `
+      DELETE FROM recipe_recipe_tags
+      WHERE recipe_id = $1
+      `,
+      [finalRecipeId],
+    );
+
+    for (const tagId of tagIds) {
+      await client.query(
+        `
+        INSERT INTO recipe_recipe_tags (
+          recipe_id,
+          tag_id
+        )
+        VALUES ($1, $2)
+        `,
+        [finalRecipeId, tagId],
+      );
+    }
+
     await client.query("COMMIT");
 
     revalidatePath("/platform/recipes");
@@ -265,6 +316,13 @@ export async function saveRecipe(
     };
   } catch (err: any) {
     await client.query("ROLLBACK");
+
+    if (err.code === "23505") {
+      return {
+        success: false,
+        error: err.message || "Slug already exists",
+      };
+    }
 
     return {
       success: false,
@@ -342,3 +400,24 @@ export async function duplicateRecipe(recipeId: string) {
     client.release();
   }
 }
+
+/* 
+
+
+
+  // if (!title || !slug || !youtubeUrl || !categoryId) {
+  //   return {
+  //     success: false,
+  //     error: "Missing required fields",
+  //   };
+  // }
+
+  // const youtubeVideoId = extractYoutubeId(youtubeUrl as string);
+
+  // if (!youtubeVideoId) {
+  //   return {
+  //     success: false,
+  //     error: "Invalid YouTube URL",
+  //   };
+  // }
+*/
