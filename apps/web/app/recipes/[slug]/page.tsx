@@ -142,7 +142,7 @@ export default async function RecipeDetailPage({ params }: RecipePageProps) {
 
                 <div className="aspect-video rounded-xl overflow-hidden">
                   <iframe
-                    src={`https://www.youtube.com/embed/${recipe.youtube_video_id}`}
+                    src={`https://www.youtube.com/embed/${recipe.youtube_video_id}?controls=0&rel=0&modestbranding=1&iv_load_policy=3`}
                     className="w-full h-full"
                     allowFullScreen
                   />
