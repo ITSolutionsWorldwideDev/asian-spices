@@ -23,6 +23,11 @@ const navItems = [
     label: "Orders",
     icon: Package,
   },
+  {
+    href: "/account/recipes",
+    label: "My Recipes",
+    icon: Package,
+  },
 ];
 
 export default function AccountSidebar() {

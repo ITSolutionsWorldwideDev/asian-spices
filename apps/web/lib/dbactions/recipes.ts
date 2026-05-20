@@ -238,3 +238,63 @@ export async function getRecipeTags() {
 
   return rows;
 }
+
+export async function getRecipeById(id: string) {
+  const { rows } = await pool.query(
+    `
+    SELECT
+      r.id,
+      r.title,
+      r.slug,
+      r.short_description,
+      r.content,
+      r.thumbnail_url,
+      r.youtube_url,
+      r.youtube_video_id,
+      r.created_at,
+
+      r.seo_title,
+      r.seo_description,
+      r.seo_keywords,
+
+      r.status,
+
+      r.category_id,
+
+      c.name AS category_name,
+      c.slug AS category_slug,
+
+      COALESCE(
+        JSON_AGG(
+          DISTINCT JSONB_BUILD_OBJECT(
+            'id', rt.id,
+            'name', rt.name,
+            'slug', rt.slug,
+            'color', rt.color
+          )
+        ) FILTER (WHERE rt.id IS NOT NULL),
+        '[]'
+      ) AS tags
+
+    FROM recipes r
+
+    LEFT JOIN recipe_categories c
+      ON c.id = r.category_id
+
+    LEFT JOIN recipe_recipe_tags rrt
+      ON rrt.recipe_id = r.id
+
+    LEFT JOIN recipe_tags rt
+      ON rt.id = rrt.tag_id
+
+    WHERE r.id = $1
+
+    GROUP BY r.id, c.id
+
+    LIMIT 1
+    `,
+    [id],
+  );
+
+  return rows[0] || null;
+}

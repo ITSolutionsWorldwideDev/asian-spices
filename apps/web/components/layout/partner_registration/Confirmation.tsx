@@ -40,7 +40,7 @@ export default function Confirmation({ formData }: any) {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-700">
             <p className="font-semibold">✉ Confirmation Email Sent</p>
             <p className="mt-1">
-              A confirmation email has been sent to: asian@gmail.com
+              A confirmation email has been sent to: {formData.business_email_address}
             </p>
           </div>
 
