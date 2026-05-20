@@ -20,8 +20,10 @@ export default function DocumentUploadPage({
     { name: string; size: number; type: string }[]
   >([]);
 
-  
   // Format file size
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_FILES = 5;
 
   const formatSize = (size: number) => {
     if (size < 1024) return size + " B";
@@ -50,6 +52,27 @@ export default function DocumentUploadPage({
   ) => {
     if (!e.target.files) return;
 
+    const selectedFiles = Array.from(e.target.files);
+
+    // -----------------------------
+    // Validate file size (10MB max)
+    // -----------------------------
+    const oversizedFiles = selectedFiles.filter(
+      (file) => file.size > MAX_FILE_SIZE,
+    );
+
+    if (oversizedFiles.length > 0) {
+      alert(
+        `These files exceed 10MB:\n\n${oversizedFiles
+          .map((file) => `${file.name} (${formatSize(file.size)})`)
+          .join("\n")}`,
+      );
+
+      // Reset input
+      e.target.value = "";
+      return;
+    }
+
     const fileObjects = Array.from(e.target.files).map((file) => ({
       name: file.name,
       size: file.size,
@@ -67,25 +90,50 @@ export default function DocumentUploadPage({
     if (type === "chamber") {
       const updatedFiles = [...chamberFiles, ...fileObjects];
 
-      if (updatedFiles.length > 5) {
-        alert("You can only upload a maximum of 5 files.");
-        setChamberFiles(chamberFiles);
-        setFormData((prevForm: any) => ({
-          ...prevForm,
-          chamber_of_commerce_extract_document: [...chamberFiles],
-        }));
-      } else {
-        setChamberFiles(updatedFiles);
-        setFormData((prevForm: any) => ({
-          ...prevForm,
-          chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
-        }));
+      // Max 5 files validation
+      if (updatedFiles.length > MAX_FILES) {
+        alert(`You can only upload a maximum of ${MAX_FILES} files.`);
+        e.target.value = "";
+        return;
       }
+
+      // Max 5 files validation
+      if (updatedFiles.length > MAX_FILES) {
+        alert(`You can only upload a maximum of ${MAX_FILES} files.`);
+        e.target.value = "";
+        return;
+      }
+
+      setChamberFiles(updatedFiles);
+
+      setFormData((prevForm: any) => ({
+        ...prevForm,
+        chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
+      }));
+
+      // Max 5 files validation
+      // if (updatedFiles.length > MAX_FILES) {
+      //     alert("You can only upload a maximum of 5 files.");
+      //     setChamberFiles(chamberFiles);
+      //     setFormData((prevForm: any) => ({
+      //       ...prevForm,
+      //       chamber_of_commerce_extract_document: [...chamberFiles],
+      //     }));
+      //   } else {
+
+      //     setFormData((prevForm: any) => ({
+      //       ...prevForm,
+      //       chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
+      //     }));
+      //   }
     } else {
       const totalfiles = [...poaFiles, ...fileObjects];
-      if (totalfiles.length > 5) {
-        alert("You can only upload a maximum of 5 files.");
-        return poaFiles;
+
+      // Max 5 files validation
+      if (totalfiles.length > MAX_FILES) {
+        alert(`You can only upload a maximum of ${MAX_FILES} files.`);
+        e.target.value = "";
+        return;
       }
 
       setPoaFiles(totalfiles);
@@ -120,7 +168,6 @@ export default function DocumentUploadPage({
     type: "chamber" | "poa";
     required?: boolean;
   }) => {
-    
     return (
       <div className="space-y-3">
         <div>

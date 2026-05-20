@@ -39,7 +39,7 @@ export default function PartnersClient({
           <h6 className="text-gray-500">Manage partner applications</h6>
         </div>
 
-        <Link href="/platform/stores/new" className="btn btn-primary">
+        <Link href="/platform/partners/new" className="btn btn-primary">
           Add Partner
         </Link>
       </div>

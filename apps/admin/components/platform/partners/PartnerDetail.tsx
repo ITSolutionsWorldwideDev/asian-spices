@@ -162,6 +162,7 @@ function DocumentPreview({ label, files }: { label: string; files: string[] }) {
       </div>
     );
   }
+  console.log("label ==== ", label);
   console.log("files ==== ", files);
 
   // ✅ convert base64 -> blob url

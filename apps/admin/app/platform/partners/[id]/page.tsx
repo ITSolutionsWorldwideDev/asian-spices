@@ -40,6 +40,8 @@ export default async function PartnerDetailPage({
 
   const partner = rows[0];
 
+  console.log('partner === ',partner);
+
   if (!partner) {
     return <p>Partner not found</p>;
   }
