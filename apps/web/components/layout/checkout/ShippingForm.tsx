@@ -53,7 +53,7 @@ export default function ShippingForm({
       } catch (err) {
         console.error("Failed to load countries", err);
       } finally {
-        hide(); // 🔥 STOP LOADER ALWAYS
+        hide();
       }
     };
 
@@ -69,37 +69,81 @@ export default function ShippingForm({
           <div className="mb-6">
             <h3 className="font-semibold mb-3">Saved Addresses</h3>
 
-            <div className="space-y-3">
-              {addresses.map((addr) => (
-                <div
-                  key={addr.id}
-                  onClick={() => {
-                    setSelectedAddress(addr);
+            <div className="grid gap-4">
+              {addresses.map((addr) => {
+                const addressParts = [
+                  addr.address_line1,
+                  addr.address_line2,
+                  addr.postal_code,
+                  addr.city,
+                  addr.state,
+                  addr.country || "NL",
+                ].filter(Boolean);
+                return (
+                  <div
+                    key={addr.id}
+                    onClick={() => {
+                      setSelectedAddress(addr);
 
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      firstName: addr.first_name || "",
-                      lastName: addr.last_name || "",
-                      address: addr.address_line1 || "",
-                      appartment: addr.address_line2 || "",
-                      city: addr.city || "",
-                      state: addr.state || "",
-                      zip: addr.postal_code || "",
-                      country: addr.country || "NL",
-                    }));
-                  }}
-                  className={`p-4 border rounded-lg cursor-pointer ${
-                    selectedAddress?.id === addr.id
-                      ? "border-orange-500 bg-orange-50"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <p className="font-medium">{addr.label}</p>
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        firstName: addr.first_name || "",
+                        lastName: addr.last_name || "",
+                        address: addr.address_line1 || "",
+                        appartment: addr.address_line2 || "",
+                        city: addr.city || "",
+                        state: addr.state || "",
+                        zip: addr.postal_code || "",
+                        country: addr.country || "NL",
+                      }));
+                    }}
+                    className={`group relative overflow-hidden rounded-2xl border p-5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+                      selectedAddress?.id === addr.id
+                        ? "border-orange-500 bg-gradient-to-r from-orange-50 to-orange-100 shadow-md"
+                        : "border-gray-200 bg-white hover:border-orange-300"
+                    }`}
+                  >
+                    {selectedAddress?.id === addr.id && (
+                      <div className="absolute top-3 right-3">
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500 text-white text-xs">
+                          ✓
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          selectedAddress?.id === addr.id
+                            ? "bg-orange-500"
+                            : "bg-gray-300"
+                        }`}
+                      />
+
+                      <p className="font-semibold text-gray-800 text-base">
+                        {addr.label || "Address"}
+                      </p>
+                    </div>
+
+                    {(addr.first_name || addr.last_name) && (
+                      <p className="text-sm font-medium text-gray-700 mb-1">
+                        {[addr.first_name, addr.last_name]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </p>
+                    )}
+
+                    <p className="text-sm leading-6 text-gray-600">
+                      {addressParts.join(", ")}
+                    </p>
+
+                    {/* <p className="font-medium">{addr.label}</p>
                   <p className="text-sm text-gray-600">
-                    {addr.address_line1}, {addr.city}
-                  </p>
-                </div>
-              ))}
+                    {addr.address_line1},{addr.city}, {addr.state}, {addr.country || "NL"}
+                  </p> */}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

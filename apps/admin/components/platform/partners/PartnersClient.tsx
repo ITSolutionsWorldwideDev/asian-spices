@@ -38,6 +38,10 @@ export default function PartnersClient({
           <h4 className="text-lg font-semibold">Partners</h4>
           <h6 className="text-gray-500">Manage partner applications</h6>
         </div>
+
+        <Link href="/platform/stores/new" className="btn btn-primary">
+          Add Partner
+        </Link>
       </div>
 
       <div className="card">

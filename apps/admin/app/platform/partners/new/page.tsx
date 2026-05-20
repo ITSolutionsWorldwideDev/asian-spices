@@ -1,5 +1,6 @@
-// apps/admin/app/(platform)/platform/stores/new/page.tsx
-import StoreForm from "../[storeId]/StoreForm";
+// apps/admin/app/(platform)/platform/partners/new/page.tsx;
+
+import StoreForm from "../../stores/[storeId]/StoreForm";
 
 export default function NewStorePage() {
   return (

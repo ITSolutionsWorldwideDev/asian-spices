@@ -105,7 +105,7 @@ export default function IdentityVerification({
         setApiError("Please select a bank");
       }
     } finally {
-      hide(); // 🔥 STOP LOADER ALWAYS
+      hide(); 
     }
   };
 
@@ -143,7 +143,7 @@ export default function IdentityVerification({
       } catch (err) {
         console.error("poll error", err);
       } finally {
-        hide(); // 🔥 STOP LOADER ALWAYS
+        hide(); 
       }
     }, 3000);
   };
@@ -199,7 +199,7 @@ export default function IdentityVerification({
         setApiError("Please select a bank");
       }
     } finally {
-      hide(); // 🔥 STOP LOADER ALWAYS
+      hide(); 
     }
   };
 
@@ -343,117 +343,3 @@ export default function IdentityVerification({
     </div>
   );
 }
-
-// type Props = {
-//   activeStep: number;
-//   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-//   formData: Record<string, any>;
-//   setFormData: React.Dispatch<React.SetStateAction<any>>;
-//   completedSteps: number[];
-//   setCompletedSteps: React.Dispatch<React.SetStateAction<number[]>>;
-// };
-
-// const [selectedBank, setSelectedBank] = useState<string | null>(
-//   formData.selected_bank || null,
-// );
-
-// const banks = [
-//   "ABN AMRO",
-//   "ING",
-//   "Rabobank",
-//   "SNS Bank",
-//   "ASN Bank",
-//   "RegioBank",
-//   "Triodos Bank",
-//   "Knab",
-// ];
-
-/* const handleIDIN = async () => {
-    if (!selectedBank) {
-      alert("Please select a bank");
-      return;
-    }
-
-    try {
-      // ✅ persist form + step BEFORE redirect
-      localStorage.setItem(
-        "partner_registration",
-        JSON.stringify({
-          formData,
-          activeStep,
-          completedSteps,
-        }),
-      );
-
-      const tenant_res = await fetch("/api/adyen/tenants/create", {
-        method: "POST",
-        body: JSON.stringify({
-          name: formData.store_name,
-          email: formData.email,
-        }),
-      });
-
-      const tenant = await tenant_res.json();
-
-      console.log("tenant adat === ", tenant);
-
-      const res = await fetch("/api/partner-registration/idin/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          bank: selectedBank,
-          tenantId: tenant.id,
-          // formData,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl; // 🔥 redirect to bank
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to start verification");
-    }
-  }; */
-
-/* <button
-            disabled={!formData.selected_bank}
-            className={`w-full py-3 rounded-lg text-white font-medium transition ${
-              selectedBank
-                ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
-          >
-            🛡 Verify with iDIN
-          </button> */
-
-/* const handleSubmit = async () => {
-    setActiveStep(activeStep + 1);
-
-    try {
-      const response = await fetch("/api/partner-registration", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          "Failed to submit partner registration Form Please try again and fill all the required fields",
-        );
-      }
-      if (response.ok) {
-        alert("Partner registration submitted successfully!");
-        setActiveStep(activeStep + 1);
-      }
-    } catch (error) {
-      console.error("Error submitting partner registration:", error);
-      alert("An error occurred while submitting the form. Please try again.");
-    }
-  }; */

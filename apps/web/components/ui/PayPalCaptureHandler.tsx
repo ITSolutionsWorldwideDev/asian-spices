@@ -46,7 +46,7 @@ export default function PayPalCaptureHandler({
       } catch (err) {
         console.error("PayPal capture failed", err);
       } finally {
-        hide(); // 🔥 STOP LOADER ALWAYS
+        hide(); 
       }
     };
 

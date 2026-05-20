@@ -106,7 +106,7 @@ export default function Checkout() {
       } catch (err) {
         console.error("Failed to load addresses", err);
       } finally {
-        hide(); // 🔥 STOP LOADER ALWAYS
+        hide(); 
       }
     };
 
@@ -222,7 +222,7 @@ export default function Checkout() {
       };
 
       /*  finally {
-          hide(); // 🔥 STOP LOADER ALWAYS
+          hide(); 
         } */
 
       // Before calling placeOrder:
@@ -355,7 +355,7 @@ export default function Checkout() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
-      hide(); // 🔥 STOP LOADER ALWAYS
+      hide(); 
     }
 
     // catch (err: any) {

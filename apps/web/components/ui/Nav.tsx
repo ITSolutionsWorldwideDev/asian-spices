@@ -17,7 +17,6 @@ const Nav: React.FC = () => {
         <UpperSelection />
       </div>
       {/* Navbar */}
-      {/* <nav className="relative flex items-center justify-between p-2 md:p-4 container mx-auto"> */}
       <nav className="flex items-center justify-between px-3 sm:px-6 container mx-auto text-xs sm:text-sm">
         {/* LEFT: Logo */}
         <div className="flex items-center">
@@ -28,8 +27,6 @@ const Nav: React.FC = () => {
               width={180}
               height={60}
               className="h-8 sm:h-10 md:h-14 lg:h-16 w-auto object-contain"
-              // className="h-10 md:h-14 md:w-auto md:object-cover rounded"
-              // className="h-8 sm:h-10 md:h-14 md:w-auto md:object-cover rounded"
             />
           </Link>
         </div>
