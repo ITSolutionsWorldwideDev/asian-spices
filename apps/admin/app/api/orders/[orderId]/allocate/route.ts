@@ -1,4 +1,4 @@
-// /app/api/orders/[orderId]/allocate/route.ts
+// apps/admin/app/api/orders/[orderId]/allocate/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";

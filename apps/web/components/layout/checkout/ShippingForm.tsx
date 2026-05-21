@@ -125,13 +125,13 @@ export default function ShippingForm({
                       </p>
                     </div>
 
-                    {(addr.first_name || addr.last_name) && (
+                    {/* {(addr.first_name || addr.last_name) && (
                       <p className="text-sm font-medium text-gray-700 mb-1">
                         {[addr.first_name, addr.last_name]
                           .filter(Boolean)
                           .join(" ")}
                       </p>
-                    )}
+                    )} */}
 
                     <p className="text-sm leading-6 text-gray-600">
                       {addressParts.join(", ")}

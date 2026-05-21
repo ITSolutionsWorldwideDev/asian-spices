@@ -2,11 +2,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-// import {
-//   assignNextStore,
-//   logOrderEvent,
-//   ORDER_EVENTS,
-// } from "@/lib/order-routing";
 import { AppError } from "@/lib/errors";
 
 import {
@@ -133,7 +128,7 @@ export async function POST(req: NextRequest, { params }: any) {
       },
       { status: 500 },
     );
-    // return NextResponse.json({ error: "Failed" }, { status: 500 });
+    
   } finally {
     client.release();
   }

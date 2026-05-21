@@ -41,14 +41,6 @@ export type CheckoutData = {
   expiry: string;
 };
 
-// export const SHIPPING_OPTIONS = {
-//   standard: { label: "Standard Shipping", price: 5.99 },
-//   express: { label: "Express Shipping", price: 12.99 },
-//   overnight: { label: "Overnight Shipping", price: 24.99 },
-// } as const;
-
-// export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
-
 export default function Checkout() {
   const { data: session } = useSession();
   const isLoggedIn = !!session;
@@ -106,7 +98,7 @@ export default function Checkout() {
       } catch (err) {
         console.error("Failed to load addresses", err);
       } finally {
-        hide(); 
+        hide();
       }
     };
 
@@ -134,32 +126,9 @@ export default function Checkout() {
   });
   const isFormValid = checkoutSchema.safeParse(formData).success;
 
-  // const { subtotal, tax, shipping, total } = calculateTotals(
-  //   cart,
-  //   shippingMethod,
-  // );
-
   const totals = calculateTotals(cart, shippingMethod);
   const { rate, selectedCurrency } = useCurrencyStore();
   const convertedTotals = convertTotals(totals, rate, selectedCurrency);
-
-  /* const converted = convertTotals(
-  { subtotal, tax, shipping, total },
-  rate,
-  selectedCurrency
-);
- */
-  // const subtotal = cart.reduce(
-  //   (acc, item) => acc + item.price * item.quantity,
-  //   0,
-  // );
-
-  // const total = subtotal;
-
-  // const TAX_RATE = 0.08;
-
-  // const tax_amount = subtotal * TAX_RATE;
-  // const tax_amount = tax;
 
   const placeOrder = async (method: "paynl" | "paypal") => {
     // Validate form
@@ -221,33 +190,36 @@ export default function Checkout() {
         }
       };
 
-      /*  finally {
-          hide(); 
-        } */
-
       // Before calling placeOrder:
-      if (!formData.latitude || !formData.longitude) {
+      let latitude = formData.latitude;
+      let longitude = formData.longitude;
+
+      if (!latitude || !longitude) {
+        // if (!formData.latitude || !formData.longitude) {
         const fullAddress = [formData.zip, formData.country]
           .filter(Boolean)
           .join(", ");
 
         const geo = await geocodeAddress(fullAddress);
 
-        formData.latitude = geo.latitude;
-        formData.longitude = geo.longitude;
+        // formData.latitude = geo.latitude;
+        // formData.longitude = geo.longitude;
 
-        // setFormData((prev) => ({
-        //   ...prev,
-        //   latitude: geo.latitude,
-        //   longitude: geo.longitude,
-        // }));
+        latitude = geo.latitude;
+        longitude = geo.longitude;
+
+        setFormData((prev) => ({
+          ...prev,
+          latitude,
+          longitude,
+        }));
       }
       // Create Order
 
-      // console.log("subtotal ====", convertedTotals.subtotal);
-      // console.log("tax ====", convertedTotals.tax);
-      // console.log("total ====", convertedTotals.total);
-      // return false;
+      if (!cart.length) {
+        setApiError("Your cart is empty.");
+        return;
+      }
 
       const res = await fetch("/api/create-order", {
         method: "POST",
@@ -268,16 +240,19 @@ export default function Checkout() {
             state: formData.state,
             postal_code: formData.zip,
             country: formData.country,
-            latitude: formData.latitude,
-            longitude: formData.longitude,
+
+            latitude,
+            longitude,
+            // latitude: formData.latitude,
+            // longitude: formData.longitude,
           },
           cartItems: cart,
           pricing: {
             subtotal: convertedTotals.subtotal,
             discount: 0,
             tax_amount: convertedTotals.tax,
-            shipping: convertedTotals.shipping, // SHIPPING_OPTIONS[shippingMethod].price,
-            total: convertedTotals.total, // subtotal + SHIPPING_OPTIONS[shippingMethod].price,
+            shipping: convertedTotals.shipping,
+            total: convertedTotals.total,
           },
           shippingMethod,
           payment_status: "pending",
@@ -285,10 +260,6 @@ export default function Checkout() {
         }),
       });
       const order = await res.json();
-
-      /* if (!res.ok || !order.success) {
-        throw new Error(order.error || "Order creation failed");
-      } */
 
       if (!res.ok || !order.success) {
         throw {
@@ -355,17 +326,8 @@ export default function Checkout() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
-      hide(); 
+      hide();
     }
-
-    // catch (err: any) {
-    //   console.error("Checkout error:", err);
-
-    //   setApiError(err.message || "Something went wrong");
-
-    //   // optional scroll to top
-    //   window.scrollTo({ top: 0, behavior: "smooth" });
-    // }
   };
 
   return (

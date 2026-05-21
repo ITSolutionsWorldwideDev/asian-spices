@@ -2,7 +2,505 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import { randomUUID } from "crypto";
+
+import { getServerSession } from "next-auth";
+import { webAuthOptions } from "@acme/auth";
+
+import {
+  assignNextStore,
+  logOrderEvent,
+  ORDER_EVENTS,
+} from "@acme/order-routing";
+
+export async function POST(req: NextRequest) {
+  const client = await pool.connect();
+
+  const session = await getServerSession(webAuthOptions);
+
+  const userId = session?.user?.id || null;
+  const userEmail = session?.user?.email || null;
+
+  try {
+    const body = await req.json();
+
+    const {
+      customer,
+      shippingAddress,
+      cartItems,
+      pricing,
+    } = body;
+
+    if (!cartItems?.length) {
+      return errorResponse(
+        "Cart is empty",
+        "EMPTY_CART",
+      );
+    }
+
+    const email = userId
+      ? userEmail
+      : customer.email;
+
+    const {
+      latitude,
+      longitude,
+      country,
+    } = shippingAddress;
+
+    if (!latitude || !longitude) {
+      return errorResponse(
+        "Please enter a valid delivery address.",
+        "MISSING_LOCATION",
+      );
+    }
+
+    await client.query("BEGIN");
+
+    let customer_id: string;
+
+    // ====================================================
+    // 1️⃣ CUSTOMER
+    // ====================================================
+
+    if (userId) {
+      const existing = await client.query(
+        `
+        SELECT id
+        FROM store_customers
+        WHERE user_id = $1
+        LIMIT 1
+      `,
+        [userId],
+      );
+
+      if (existing.rowCount) {
+        customer_id = existing.rows[0].id;
+      } else {
+        const result = await client.query(
+          `
+          INSERT INTO store_customers
+          (
+            user_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            city,
+            postcode
+          )
+          VALUES ($1,$2,$3,$4,$5,$6,$7)
+          RETURNING id
+        `,
+          [
+            userId,
+            customer.firstName,
+            customer.lastName,
+            email,
+            customer.phone,
+            shippingAddress.city,
+            shippingAddress.postal_code,
+          ],
+        );
+
+        customer_id = result.rows[0].id;
+      }
+    } else {
+      // ====================================================
+      // GUEST CUSTOMER
+      // ====================================================
+
+      const result = await client.query(
+        `
+        INSERT INTO store_customers
+        (
+          first_name,
+          last_name,
+          email,
+          phone,
+          city,
+          postcode
+        )
+        VALUES ($1,$2,$3,$4,$5,$6)
+        RETURNING id
+      `,
+        [
+          customer.firstName,
+          customer.lastName,
+          email,
+          customer.phone,
+          shippingAddress.city,
+          shippingAddress.postal_code,
+        ],
+      );
+
+      customer_id = result.rows[0].id;
+
+      // optional guest auto account creation
+      const userCheck = await client.query(
+        `
+        SELECT id
+        FROM users
+        WHERE email = $1
+      `,
+        [email],
+      );
+
+      if (userCheck.rowCount === 0) {
+        const bcrypt = require("bcryptjs");
+
+        const tempPassword = Math.random()
+          .toString(36)
+          .slice(-8);
+
+        const hash = await bcrypt.hash(
+          tempPassword,
+          10,
+        );
+
+        const newUser = await client.query(
+          `
+          INSERT INTO users
+          (email, password_hash)
+          VALUES ($1,$2)
+          RETURNING id
+        `,
+          [email, hash],
+        );
+
+        const newUserId = newUser.rows[0].id;
+
+        await client.query(
+          `
+          UPDATE store_customers
+          SET user_id = $1
+          WHERE id = $2
+        `,
+          [newUserId, customer_id],
+        );
+      }
+    }
+
+    // ====================================================
+    // 2️⃣ ADDRESS
+    // ====================================================
+
+    await client.query(
+      `
+      INSERT INTO store_customer_addresses
+      (
+        customer_id,
+        label,
+        address_line1,
+        address_line2,
+        city,
+        state,
+        postal_code,
+        country,
+        latitude,
+        longitude
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10
+      )
+
+      ON CONFLICT
+      (
+        customer_id,
+        address_line1,
+        address_line2,
+        city,
+        state,
+        postal_code,
+        country
+      )
+      DO NOTHING
+    `,
+      [
+        customer_id,
+        "Home",
+        shippingAddress.address_line1,
+        shippingAddress.address_line2,
+        shippingAddress.city,
+        shippingAddress.state,
+        shippingAddress.postal_code,
+        shippingAddress.country,
+        latitude,
+        longitude,
+      ],
+    );
+
+    // ====================================================
+    // 3️⃣ VALIDATE PRODUCTS EXIST
+    // ====================================================
+
+    const productIds = cartItems.map(
+      (item: any) => item.id,
+    );
+
+    const productCatalog = await client.query(
+      `
+      SELECT
+        spc.store_id,
+        spc.product_id,
+        spc.price,
+        spc.quantity,
+        spc.status
+
+      FROM store_product_catalog spc
+
+      JOIN store_addresses sa
+        ON sa.store_id = spc.store_id
+
+      WHERE spc.product_id = ANY($1)
+        AND sa.country = $2
+        AND spc.status = 1
+        AND spc.quantity > 0
+    `,
+      [productIds, country],
+    );
+
+    if (!productCatalog.rowCount) {
+      return errorResponse(
+        "No stores available for your location.",
+        "NO_STORE_AVAILABLE",
+      );
+    }
+
+    // ====================================================
+    // 4️⃣ CREATE ORDER
+    // ====================================================
+
+    const orderNumber = `ORD-${Date.now()}`;
+
+    const orderResult = await client.query(
+      `
+      INSERT INTO store_orders
+      (
+        order_number,
+        customer_id,
+        customer_email,
+
+        order_status,
+        routing_status,
+        fulfillment_status,
+        payment_status,
+
+        subtotal,
+        discount_amount,
+        shipping_amount,
+        tax_amount,
+        total_amount,
+
+        shipping_address_line1,
+        shipping_address_line2,
+        shipping_city,
+        shipping_state,
+        shipping_postal_code,
+        shipping_country,
+
+        shipping_latitude,
+        shipping_longitude
+      )
+
+      VALUES
+      (
+        $1,$2,$3,
+        'pending',
+        'pending',
+        'pending',
+        'pending',
+
+        $4,$5,$6,$7,$8,
+
+        $9,$10,$11,$12,$13,$14,
+
+        $15,$16
+      )
+
+      RETURNING *
+    `,
+      [
+        orderNumber,
+        customer_id,
+        email,
+
+        pricing.subtotal,
+        pricing.discount,
+        pricing.shipping,
+        pricing.tax_amount,
+        pricing.total,
+
+        shippingAddress.address_line1,
+        shippingAddress.address_line2,
+        shippingAddress.city,
+        shippingAddress.state,
+        shippingAddress.postal_code,
+        shippingAddress.country,
+
+        latitude,
+        longitude,
+      ],
+    );
+
+    const order = orderResult.rows[0];
+
+    const order_id = order.id;
+
+    // ====================================================
+    // 5️⃣ CREATE ORDER ITEMS
+    // ====================================================
+
+    for (const item of cartItems) {
+      // lowest available price
+      const availableProducts =
+        productCatalog.rows
+          .filter(
+            (p: any) =>
+              p.product_id === item.id,
+          )
+          .sort(
+            (a: any, b: any) =>
+              Number(a.price) -
+              Number(b.price),
+          );
+
+      if (!availableProducts.length) {
+        throw new Error(
+          `${item.title} is unavailable`,
+        );
+      }
+
+      const selectedProduct =
+        availableProducts[0];
+
+      await client.query(
+        `
+        INSERT INTO store_order_items
+        (
+          order_id,
+          product_id,
+          quantity,
+          fulfilled_quantity,
+          price,
+          status
+        )
+        VALUES ($1,$2,$3,0,$4,'pending')
+      `,
+        [
+          order_id,
+          item.id,
+          item.quantity,
+          Number(selectedProduct.price),
+        ],
+      );
+    }
+
+    // ====================================================
+    // 6️⃣ ROUTE ORDER
+    // ====================================================
+
+    await assignNextStore(client, order_id);
+
+    // ====================================================
+    // 7️⃣ EVENT LOG
+    // ====================================================
+
+    await logOrderEvent(client, {
+      orderId: order_id,
+      eventType: ORDER_EVENTS.ASSIGNED,
+      message:
+        "Order created and routing started",
+      metadata: {
+        customer_id,
+        item_count: cartItems.length,
+      },
+    });
+
+    await client.query("COMMIT");
+
+    // ====================================================
+    // 8️⃣ FETCH FINAL ROUTED ORDER
+    // ====================================================
+
+    const finalOrder = await client.query(
+      `
+      SELECT
+        id,
+        order_number,
+        current_store_id,
+        routing_status,
+        fulfillment_status,
+        order_status
+      FROM store_orders
+      WHERE id = $1
+    `,
+      [order_id],
+    );
+
+    return NextResponse.json({
+      success: true,
+
+      orderId: order_id,
+
+      orderNumber:
+        finalOrder.rows[0].order_number,
+
+      currentStoreId:
+        finalOrder.rows[0].current_store_id,
+
+      routingStatus:
+        finalOrder.rows[0].routing_status,
+
+      fulfillmentStatus:
+        finalOrder.rows[0]
+          .fulfillment_status,
+
+      orderStatus:
+        finalOrder.rows[0].order_status,
+    });
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+
+    console.error(
+      "Create order error:",
+      error,
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error.message ||
+          "Order creation failed",
+      },
+      { status: 500 },
+    );
+  } finally {
+    client.release();
+  }
+}
+
+// ====================================================
+// ERROR RESPONSE
+// ====================================================
+
+const errorResponse = (
+  message: string,
+  code: string,
+  status = 400,
+) => {
+  return NextResponse.json(
+    {
+      success: false,
+      error: message,
+      code,
+    },
+    { status },
+  );
+};
+
+/* import { NextRequest, NextResponse } from "next/server";
+import { pool } from "@acme/db";
 
 import { getServerSession } from "next-auth";
 import { webAuthOptions } from "@acme/auth";
@@ -86,7 +584,6 @@ export async function POST(req: NextRequest) {
 
       customer_id = result.rows[0].id;
 
-      // 🔥 optional: create user account
       const userCheck = await client.query(
         `SELECT id FROM users WHERE email = $1`,
         [email],
@@ -137,21 +634,6 @@ export async function POST(req: NextRequest) {
         shippingAddress.country,
       ],
     );
-    /* await client.query(
-      `INSERT INTO store_customer_addresses
-       (customer_id, label, address_line1, address_line2, city, state, postal_code, country)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-      [
-        customer_id,
-        "Home",
-        shippingAddress.address_line1,
-        shippingAddress.address_line2,
-        shippingAddress.city,
-        shippingAddress.state,
-        shippingAddress.postal_code,
-        shippingAddress.country,
-      ],
-    ); */
 
     // =========================================
     // 3️⃣ FIND STORES
@@ -259,9 +741,6 @@ export async function POST(req: NextRequest) {
         (c) => c.store_id === bestStore && c.product_id === item.id,
       );
 
-      // console.log('ORDER ITEMS product ==== ',product);
-      // console.log('ORDER ITEMS ==== ',item);
-
       if (!product || product.quantity < item.quantity) {
         return errorResponse(`${item.title} is out of stock`, "OUT_OF_STOCK");
       }
@@ -342,334 +821,4 @@ const errorResponse = (message: string, code: string, status = 400) => {
     { status },
   );
 };
-
-// 6️⃣ Create Order
-// const orderResult = await client.query(
-//   `
-//   INSERT INTO store_orders
-//   (order_number, customer_id, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-//   VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-//   RETURNING id
-//   `,
-//   [
-//     `ORD-${Date.now()}`,
-//     customer_id,
-//     "pending",
-//     pricing.subtotal,
-//     pricing.discount,
-//     pricing.shipping,
-//     pricing.total,
-//     "pending",
-//   ],
-// );
-
-/* 
-
-export async function POST(req: NextRequest) {
-  const client = await pool.connect();
-
-  const session = await getServerSession(webAuthOptions);
-  const userId = session?.user?.id || null;
-  const userEmail = session?.user?.email || null;
-
-  try {
-    const body = await req.json();
-
-    const { customer, shippingAddress, cartItems, pricing } = body;
-
-    const email = userId ? userEmail : customer.email;
-
-    const { latitude, longitude } = shippingAddress;
-
-    if (!latitude || !longitude) {
-      return errorResponse(
-        "Please enter a valid delivery address to continue.",
-        "MISSING_LOCATION",
-      );
-    }
-
-    const store_id = randomUUID();
-
-    await client.query("BEGIN");
-
-    // 1️⃣ Insert Customer
-
-    let customer_id: string;
-
-    // 1️⃣ If logged in → try to find existing customer
-    if (userId) {
-      const existingCustomer = await client.query(
-        `SELECT id FROM customers WHERE user_id = $1 LIMIT 1`,
-        [userId],
-      );
-
-      if (existingCustomer.rowCount) {
-        customer_id = existingCustomer.rows[0].id;
-      } else {
-        const result = await client.query(
-          `INSERT INTO customers (user_id, email, first_name, last_name, phone)
-          VALUES ($1,$2,$3,$4,$5)
-          RETURNING id`,
-          [
-            userId,
-            email,
-            customer.firstName,
-            customer.lastName,
-            customer.phone,
-          ],
-        );
-
-        customer_id = result.rows[0].id;
-      }
-
-      // 🔥 assign CUSTOMER role
-      await client.query(
-        `INSERT INTO store_users (user_id, store_id, role_id)
-          SELECT $1, $2, id FROM roles 
-          WHERE key = 'customer'
-          AND NOT EXISTS (
-            SELECT 1 FROM store_users 
-            WHERE user_id = $1 AND store_id = $2
-          )`,
-        [userId, store_id],
-      );
-    } else {
-      // ✅ GUEST FLOW
-      const customerResult = await client.query(
-        `INSERT INTO store_customers 
-          (store_id, first_name, last_name, email, phone, city, postcode)
-          VALUES ($1,$2,$3,$4,$5,$6,$7)
-          RETURNING id`,
-        [
-          store_id,
-          customer.firstName,
-          customer.lastName,
-          email,
-          customer.phone,
-          shippingAddress.city,
-          shippingAddress.zip,
-        ],
-      );
-
-      customer_id = customerResult.rows[0].id;
-
-      const userCheck = await client.query(
-        `SELECT id FROM users WHERE email = $1`,
-        [email],
-      );
-
-      if (userCheck.rowCount === 0) {
-        const bcrypt = require("bcryptjs");
-        const tempPassword = Math.random().toString(36).slice(-8);
-
-        const hash = await bcrypt.hash(tempPassword, 10);
-
-        const newUser = await client.query(
-          `INSERT INTO users (email, password_hash)
-          VALUES ($1,$2)
-          RETURNING id`,
-          [email, hash],
-        );
-
-        const newUserId = newUser.rows[0].id;
-
-        // link customer
-        await client.query(
-          `UPDATE store_customers SET user_id = $1 WHERE id = $2`,
-          [newUserId, customer_id],
-        );
-
-        // assign role
-        await client.query(
-          `INSERT INTO store_users (user_id, store_id, role_id)
-            SELECT $1, $2, id FROM roles 
-            WHERE key = 'customer'
-            AND NOT EXISTS (
-              SELECT 1 FROM store_users 
-              WHERE user_id = $1 AND store_id = $2
-            )`,
-          [newUserId, store_id],
-        );
-      }
-    }
-
-    console.log("store_customer_addresses customer_id ==== ", customer_id);
-
-    // 2️⃣ Insert Address
-    await client.query(
-      `
-      INSERT INTO store_customer_addresses
-      (store_id, customer_id, label, address_line1, address_line2, city, state, postal_code, country)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-      `,
-      [
-        store_id,
-        customer_id,
-        "Home",
-        shippingAddress.address_line1,
-        shippingAddress.address_line2,
-        shippingAddress.city,
-        shippingAddress.state,
-        shippingAddress.postal_code,
-        shippingAddress.country,
-      ],
-    );
-
-    // 3️⃣ Find nearest stores
-    const storesResult = await client.query(
-      `
-      SELECT sa.store_id,
-        (
-          6371 * acos(
-            cos(radians($1)) * cos(radians(sa.latitude)) *
-            cos(radians(sa.longitude) - radians($2)) +
-            sin(radians($1)) * sin(radians(sa.latitude))
-          )
-        ) AS distance
-      FROM store_addresses sa
-      WHERE sa.latitude IS NOT NULL AND sa.longitude IS NOT NULL
-      ORDER BY distance ASC
-      LIMIT 10
-      `,
-      [latitude, longitude],
-    );
-    const nearestStores = storesResult.rows;
-
-    if (!nearestStores.length) {
-      return errorResponse(
-        "We don't deliver to your location yet.",
-        "NO_NEARBY_STORES",
-      );
-    }
-
-    const storeIds = nearestStores.map((s) => s.store_id);
-
-    const productIds = cartItems.map((item: any) => item.id);
-
-    // 4️⃣ Fetch catalog for nearby stores
-    const catalogResult = await client.query(
-      `
-      SELECT store_id, product_id, price, 9999 AS quantity
-      FROM store_product_catalog
-      WHERE product_id = ANY($1) AND store_id = ANY($2)
-      `,
-      [productIds, storeIds],
-    );
-    const catalog = catalogResult.rows;
-
-    console.log("nearestStores === ", nearestStores);
-    console.log("cartItems === ", cartItems);
-    console.log("catalog === ", catalog);
-
-    // 5️⃣ Select best store (lowest price, available stock)
-    const bestStore = selectBestStore(nearestStores, cartItems, catalog);
-
-    console.log("bestStore === ", bestStore);
-
-    if (!bestStore) {
-      return errorResponse(
-        "Sorry, no nearby store has all items in stock. Please adjust your cart.",
-        "NO_STORE_AVAILABLE",
-      );
-    }
-
-    const orderResult = await client.query(
-      `INSERT INTO store_orders
-        (store_id, order_number, customer_id, customer_email, order_status, subtotal, discount_amount, shipping_amount, total_amount, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       RETURNING id`,
-      [
-        bestStore,
-        `ORD-${Date.now()}`,
-        customer_id,
-        customer.email,
-        "pending",
-        pricing.subtotal,
-        pricing.discount,
-        pricing.shipping,
-        pricing.total,
-        "pending",
-      ],
-    );
-
-    const order_id = orderResult.rows[0].id;
-
-    // 7️⃣ Insert Order Items
-    for (const item of cartItems) {
-      const product = catalog.find(
-        (c) => c.store_id === bestStore && c.product_id === item.id,
-      );
-
-      if (!product || product.quantity < item.quantity) {
-        // throw new Error(`Insufficient stock for product ${item.id}`);
-        return errorResponse(
-          `Product ${item.title} is out of stock`,
-          "OUT_OF_STOCK",
-        );
-      }
-
-      await client.query(
-        `INSERT INTO store_order_items (order_id, product_id, quantity, price)
-         VALUES ($1,$2,$3,$4)`,
-        [order_id, item.id, item.quantity, Number(product.price)],
-      );
-    }
-
-    await client.query("COMMIT");
-
-    return NextResponse.json({
-      success: true,
-      orderId: order_id,
-      storeId: bestStore,
-    });
-  } catch (error: any) {
-    await client.query("ROLLBACK");
-    console.error("Create order error:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || "Order creation failed",
-      },
-      { status: 500 },
-    );
-  } finally {
-    client.release();
-  }
-}
-*/
-
-/*  const customerResult = await client.query(
-      `
-      INSERT INTO store_customers 
-      (first_name, last_name, email, phone, city, postcode)
-      VALUES ($1,$2,$3,$4,$5,$6)
-      RETURNING id
-      `,
-      [
-        customer.firstName,
-        customer.lastName,
-        customer.email,
-        customer.phone,
-        shippingAddress.city,
-        shippingAddress.postal_code,
-      ],
-    );
-
-    const customer_id = customerResult.rows[0].id; */
-
-// for (const item of cartItems) {
-//   await client.query(
-//     `
-//     INSERT INTO store_order_items
-//     (order_id, product_id, quantity, price)
-//     VALUES ($1,$2,$3,$4)
-//     `,
-//     [
-//       order_id,
-//       item.id,
-//       item.quantity,
-//       Number(item.price), // 🔥 FIX (string → number)
-//     ],
-//   );
-// }
+ */

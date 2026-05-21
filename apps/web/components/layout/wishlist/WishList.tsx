@@ -67,9 +67,7 @@ export default function WishList() {
         <div className="mt-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
             <div className="flex items-center gap-4 flex-wrap">
-              <h1 className="text-4xl font-bold text-gray-900">
-                My Wishlist
-              </h1>
+              <h1 className="text-4xl font-bold text-gray-900">My Wishlist</h1>
 
               <div className="px-4 py-1 rounded-full bg-orange-500 text-white text-sm font-medium">
                 {wishlist.length} Items
@@ -114,9 +112,7 @@ export default function WishList() {
               <div>
                 <p className="text-sm text-gray-500">Wishlist Items</p>
 
-                <h3 className="text-3xl font-bold">
-                  {wishlist.length}
-                </h3>
+                <h3 className="text-3xl font-bold">{wishlist.length}</h3>
               </div>
             </div>
           </div>
@@ -149,13 +145,9 @@ export default function WishList() {
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">
-                  Saved Favorites
-                </p>
+                <p className="text-sm text-gray-500">Saved Favorites</p>
 
-                <h3 className="text-3xl font-bold">
-                  {wishlist.length}
-                </h3>
+                <h3 className="text-3xl font-bold">{wishlist.length}</h3>
               </div>
             </div>
           </div>
@@ -165,10 +157,19 @@ export default function WishList() {
             PRODUCTS
         ========================================================= */}
 
-        <div className="mt-10 space-y-5">
-          {wishlist.map((item) => (
+        {/* 
+        {visibleProducts.map((product, index) => {
+        const cartItem = cart.find((item) => item.id === product.id);
+
+          return (
             <div
-              key={item.id}
+              key={`${product.id}-${index}`}
+        */}
+
+        <div className="mt-10 space-y-5">
+          {wishlist.map((item, index) => (
+            <div
+              key={`${item.id}-${index}`}
               className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm hover:shadow-xl transition"
             >
               <div className="flex flex-col lg:flex-row gap-6">
@@ -180,10 +181,7 @@ export default function WishList() {
                 >
                   <div className="relative w-full lg:w-36 h-36 overflow-hidden rounded-2xl bg-gray-100">
                     <Image
-                      src={
-                        item.image ||
-                        "/images/placeholder.png"
-                      }
+                      src={item.image || "/images/placeholder.png"}
                       alt={item.name}
                       fill
                       className="object-cover"
@@ -197,19 +195,35 @@ export default function WishList() {
                   {/* LEFT */}
 
                   <div className="flex-1">
-                    <Link
+                    {/* <Link
                       href={`/${item.category_slug}/${item.slug}`}
                     >
                       <h3 className="text-2xl font-bold text-gray-900 hover:text-orange-500 transition">
                         {item.name}
                       </h3>
+                    </Link> */}
+                    <Link
+                      href={`/${item.category_slug || "products"}/${item.slug || item.id}`}
+                    >
+                      <h3 className="font-semibold">{item.name}</h3>
                     </Link>
 
-                    <div className="mt-4">
+                    {/* <div className="mt-4">
                       <span className="text-3xl font-bold text-orange-500">
                         {symbol}
                         {(rate * item.price).toFixed(2)}
                       </span>
+                    </div> */}
+
+                    <div className="mt-4  text-sm text-orange-500">
+                      <p className="font-normal mb-2">
+                        {symbol}
+                        {(rate * item.price).toFixed(2)}
+                      </p>
+                      <p className="font-normal">
+                        Total: {symbol}
+                        {(rate * item.price).toFixed(2)}
+                      </p>
                     </div>
                   </div>
 
@@ -235,15 +249,12 @@ export default function WishList() {
                       className="bg-orange-500 hover:bg-orange-600 transition text-white rounded-xl py-3 px-5 font-semibold flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <ShoppingCart size={18} />
-
                       Add To Cart
                     </button>
 
                     {/* VIEW */}
 
-                    <Link
-                      href={`/${item.category_slug}/${item.slug}`}
-                    >
+                    <Link href={`/${item.category_slug}/${item.slug}`}>
                       <button className="w-full border border-gray-300 hover:bg-gray-50 transition rounded-xl py-3 px-5 font-medium cursor-pointer">
                         View Details
                       </button>
@@ -252,16 +263,10 @@ export default function WishList() {
                     {/* REMOVE */}
 
                     <button
-                      onClick={() =>
-                        removeFromWishlist(
-                          item.id,
-                          isLoggedIn,
-                        )
-                      }
+                      onClick={() => removeFromWishlist(item.id, isLoggedIn)}
                       className="border border-red-200 text-red-500 hover:bg-red-50 transition rounded-xl py-3 px-5 font-medium flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 size={18} />
-
                       Remove
                     </button>
                   </div>
@@ -287,8 +292,8 @@ export default function WishList() {
           </h2>
 
           <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            Add your saved products to cart and continue your
-            shopping experience.
+            Add your saved products to cart and continue your shopping
+            experience.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -301,7 +306,6 @@ export default function WishList() {
             <Link href="/cart">
               <button className="bg-orange-500 hover:bg-orange-600 transition text-white rounded-xl px-6 py-3 font-semibold flex items-center gap-2 cursor-pointer">
                 Go To Cart
-
                 <ArrowRight size={18} />
               </button>
             </Link>

@@ -76,9 +76,9 @@ export const useCartSync = () => {
         // Merge local wishlist into DB
 
         const wishlistRes = await fetch("/api/wishlist");
-        const dbWishlist = await wishlistRes.json();
+        const dbWishlist = await wishlistRes?.json();
 
-        const formattedWishlist = dbWishlist.map((item: any) => ({
+        const formattedWishlist = dbWishlist?.map((item: any) => ({
           id: item.product_id,
           name: item.name || "Product",
           image: item.image || "",
