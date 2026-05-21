@@ -9,9 +9,10 @@ import DocumentUpload from "./DocumentUpload";
 import ContactDetails from "./ContactDetails";
 import IdentityVerification from "./IdentityVerification";
 import Confirmation from "./Confirmation";
-// import { useState } from "react";
+
+
 export default function TabSwitching() {
-  // const [formData, setFormData] = useState([]);
+  
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -25,9 +26,7 @@ export default function TabSwitching() {
     { id: 4, label: "Contact Details" },
     { id: 5, label: "Identity Verification" },
     { id: 6, label: "Confirmation" },
-  ];
-
-  // const currentStep = steps[activeStep - 1];
+  ]; 
   const safeActiveStep = Math.min(Math.max(activeStep, 1), steps.length);
   const currentStep = steps[safeActiveStep - 1];
 

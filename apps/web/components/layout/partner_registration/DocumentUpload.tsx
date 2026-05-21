@@ -3,27 +3,33 @@
 "use client";
 
 import { useState } from "react";
-import { ChartBar, FileChartColumn } from "lucide-react";
-import { useReadAloud } from "@/hooks/SpeakLoud";
+import { FileChartColumn } from "lucide-react";
 import ReadAloudBtn from "./ReadAloudBtn";
+// import { useReadAloud } from "@/hooks/SpeakLoud";
+
 export default function DocumentUploadPage({
   formData,
   setFormData,
   activeStep,
   setActiveStep,
   setCompletedSteps,
-}: any) {
-  const [chamberFiles, setChamberFiles] = useState<
-    { name: string; size: number; type: string }[]
-  >([]);
-  const [poaFiles, setPoaFiles] = useState<
-    { name: string; size: number; type: string }[]
-  >([]);
-
-  // Format file size
+}: any) {  
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   const MAX_FILES = 5;
+
+  const chamberFiles = formData.chamberFiles || [];
+  const poaFiles = formData.power_of_attorney_document || [];
+
+
+  // const [chamberFiles, setChamberFiles] = useState<
+  //   { name: string; size: number; type: string }[]
+  // >([]);
+  // const [poaFiles, setPoaFiles] = useState<
+  //   { name: string; size: number; type: string }[]
+  // >([]);
+
+  // Format file size
 
   const formatSize = (size: number) => {
     if (size < 1024) return size + " B";
@@ -73,7 +79,52 @@ export default function DocumentUploadPage({
       return;
     }
 
-    const fileObjects = Array.from(e.target.files).map((file) => ({
+    const existingFiles =
+      type === "chamber"
+        ? chamberFiles
+        : poaFiles;
+
+    if (existingFiles.length + selectedFiles.length > MAX_FILES) {
+      alert(`Maximum ${MAX_FILES} files allowed`);
+
+      e.target.value = "";
+
+      return;
+    }
+
+    const filesWithBase64 = await Promise.all(
+      selectedFiles.map(async (file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        base64: await fileToBase64(file),
+      })),
+    );
+
+
+
+    if (type === "chamber") {
+      setFormData((prev: any) => ({
+        ...prev,
+        chamberFiles: [
+          ...(prev.chamberFiles || []),
+          ...filesWithBase64,
+        ],
+      }));
+    } else {
+      setFormData((prev: any) => ({
+        ...prev,
+        power_of_attorney_document: [
+          ...(prev.power_of_attorney_document || []),
+          ...filesWithBase64,
+        ],
+      }));
+    }
+
+    // reset input
+    e.target.value = "";
+
+    /* const fileObjects = Array.from(e.target.files).map((file) => ({
       name: file.name,
       size: file.size,
       type: file.type,
@@ -110,22 +161,6 @@ export default function DocumentUploadPage({
         ...prevForm,
         chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
       }));
-
-      // Max 5 files validation
-      // if (updatedFiles.length > MAX_FILES) {
-      //     alert("You can only upload a maximum of 5 files.");
-      //     setChamberFiles(chamberFiles);
-      //     setFormData((prevForm: any) => ({
-      //       ...prevForm,
-      //       chamber_of_commerce_extract_document: [...chamberFiles],
-      //     }));
-      //   } else {
-
-      //     setFormData((prevForm: any) => ({
-      //       ...prevForm,
-      //       chamberFiles: [...(prevForm.chamberFiles || []), ...base64s],
-      //     }));
-      //   }
     } else {
       const totalfiles = [...poaFiles, ...fileObjects];
 
@@ -144,14 +179,36 @@ export default function DocumentUploadPage({
           ...base64s,
         ],
       }));
-    }
+    } */
   };
 
-  const removeFile = (index: number, type: "chamber" | "poa") => {
+  /* const removeFile = (index: number, type: "chamber" | "poa") => {
     if (type === "chamber") {
       setChamberFiles(chamberFiles.filter((_, i) => i !== index));
     } else {
       setPoaFiles(poaFiles.filter((_, i) => i !== index));
+    }
+  }; */
+
+  const removeFile = (
+    index: number,
+    type: "chamber" | "poa",
+  ) => {
+    if (type === "chamber") {
+      setFormData((prev: any) => ({
+        ...prev,
+        chamberFiles: prev.chamberFiles.filter(
+          (_: any, i: number) => i !== index,
+        ),
+      }));
+    } else {
+      setFormData((prev: any) => ({
+        ...prev,
+        power_of_attorney_document:
+          prev.power_of_attorney_document.filter(
+            (_: any, i: number) => i !== index,
+          ),
+      }));
     }
   };
 
@@ -172,7 +229,7 @@ export default function DocumentUploadPage({
       <div className="space-y-3">
         <div>
           <label className="font-semibold text-gray-800">
-            {title} {required && <span className="text-red-500">*</span>}
+            {title} {required && (<span className="text-red-500">*</span>)}
           </label>
           <p className="text-sm text-gray-500">{description}</p>
         </div>
@@ -182,7 +239,6 @@ export default function DocumentUploadPage({
             type="file"
             multiple
             className="hidden"
-            // value={e.target.value}
             onChange={(e) => handleFileChange(e, type)}
             accept=".jpg,.jpeg,.png,.heic,.pdf"
           />
@@ -191,7 +247,7 @@ export default function DocumentUploadPage({
             JPG, PNG, HEIC, or PDF (max. 10MB each)
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            {files.length} / 5 files uploaded
+            {files.length} / {MAX_FILES} files uploaded
           </p>
         </label>
 
