@@ -11,14 +11,17 @@ import ProductImageGallery from "../layout/productdescpage/ProductImageGallery";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
 import { useSession } from "next-auth/react";
+import { Heart } from "lucide-react";
+import { useWishlistStore } from "@/store/useWishlistStore";
 
 export default function ProductDesc({ product }: { product: Product }) {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+
   const { cart, addToCart, increaseQty, decreaseQty, setQty } = useCartStore();
 
-  // 🔥 find product in cart
   const cartItem = cart.find((item) => item.id === product.id);
 
   const features = [
@@ -35,11 +38,8 @@ export default function ProductDesc({ product }: { product: Product }) {
       title: "Quality Guarantee",
     },
   ];
-  // const [quantity, setQuantity] = useState(1);
-  // const [activeImage, setActiveImage] = useState(product.images[0]);
 
   const highlights = product?.highlights || [];
-  // const images = product?.images || [
 
   const images =
     product.images && product?.images?.length > 0
@@ -70,13 +70,10 @@ export default function ProductDesc({ product }: { product: Product }) {
       </div>
 
       <div className="  grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Images */}
         <div>
-          {/* 🔥 NEW GALLERY */}
           <ProductImageGallery images={images} name={product.name} />
         </div>
 
-        {/* Product Info */}
         <div className="space-y-6">
           <span className="inline-block bg-orange-100 text-orange-600 text-sm px-4 py-1 rounded-full">
             {product.badge}
@@ -86,7 +83,6 @@ export default function ProductDesc({ product }: { product: Product }) {
 
           <p className="text-gray-500">Origin: {product.country_of_origin}</p>
 
-          {/* Rating */}
           <div className="flex items-center gap-2">
             <div className="flex text-yellow-400">
               {Array(5)
@@ -100,7 +96,6 @@ export default function ProductDesc({ product }: { product: Product }) {
             </span>
           </div>
 
-          {/* Price */}
           <div className="flex items-center gap-4">
             <span className="text-4xl font-bold text-orange-500">
               ${product.price}
@@ -133,21 +128,19 @@ export default function ProductDesc({ product }: { product: Product }) {
                 >
                   –
                 </button>
-
-                {/* <span className="px-6 py-2">{cartItem.quantity}</span> */}
                 <input
-                      type="number"
-                      min={1}
-                      value={cartItem.quantity}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
+                  type="number"
+                  min={1}
+                  value={cartItem.quantity}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
 
-                        if (isNaN(value)) return;
+                    if (isNaN(value)) return;
 
-                        setQty(product.id, value, isLoggedIn);
-                      }}
-                      className="w-16 text-center outline-none"
-                    />
+                    setQty(product.id, value, isLoggedIn);
+                  }}
+                  className="w-16 text-center outline-none"
+                />
 
                 <button
                   onClick={() => increaseQty(product.id, isLoggedIn)}
@@ -160,29 +153,8 @@ export default function ProductDesc({ product }: { product: Product }) {
               <></>
             )}
 
-
             {/* <span className="text-sm text-gray-500">{product.unit}</span> */}
           </div>
-          {/* <div className="flex items-center gap-6">
-            <div className="flex border rounded-lg">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-4 py-2"
-              >
-                –
-              </button>
-              <span className="px-6 py-2">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-4 py-2"
-              >
-                +
-              </button>
-            </div>
-            <span className="text-sm text-gray-500">{product.unit}</span>
-          </div> */}
-
-          {/* Add to cart */}
 
           {cartItem ? (
             <button
@@ -211,12 +183,38 @@ export default function ProductDesc({ product }: { product: Product }) {
               Add To Cart
             </button>
           )}
-          {/* <button className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold">
-            <ShoppingCart size={20} />
-            Add To Cart
-          </button> */}
 
-          {/* Highlights */}
+          <button
+            onClick={() =>
+              toggleWishlist(
+                {
+                  id: product.id,
+                  name: product.name,
+                  image: images[0],
+                  price: product.price,
+                  slug: product.slug,
+                  category_slug: product.category_slug,
+                },
+                isLoggedIn,
+              )
+            }
+            className={`w-full border py-4 rounded-xl flex items-center justify-center gap-2 text-lg font-semibold transition ${
+              isInWishlist(product.id)
+                ? "bg-red-500 border-red-500 text-white"
+                : "border-gray-300 hover:border-red-500 hover:text-red-500"
+            }`}
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isInWishlist(product.id) ? "fill-white" : ""
+              }`}
+            />
+
+            {isInWishlist(product.id)
+              ? "Remove From Wishlist"
+              : "Add To Wishlist"}
+          </button>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
             {highlights.map((item: any, idx: any) => (
               <div

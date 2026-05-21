@@ -134,7 +134,6 @@ const ResponsiveNavigation = () => {
   return (
     <>
       {/* mobilemenubtn */}
-      {/* <div className="lg:hidden border border-green-500 rounded-2xl"> */}
       <div className="lg:hidden">
         <button
           onClick={() => setMobileMenu(!mobileMenu)}
@@ -148,13 +147,12 @@ const ResponsiveNavigation = () => {
         </button>
       </div>
 
-      {/* deskstop navigatio */}
+      {/* desktop navigatio */}
       <div className="hidden lg:flex items-center space-x-4 ">
         {/* <ul className=" flex items-center rounded-full  py-2 space-x-6 bg-white/30 backdrop-blur shadow-inner p-10"> */}
         <ul className="flex items-center rounded-full py-2 px-6 space-x-6 bg-white/30 backdrop-blur shadow-inner">
           {navLinks.map((link) => (
             <li key={link.name} className="relative">
-              {/* NON-DROPDOWN LINKS */}
 
               {link.name.toLocaleLowerCase() == "home" ? (
                 <Link
@@ -207,7 +205,7 @@ const ResponsiveNavigation = () => {
                   {activeLink === link.name && isMenuOpen && (
                     <div className="absolute top-full left-0 mt-5 z-50">
                       {link.name === "Healthy Living" ? (
-                        // ✅ YOUR CUSTOM GRID UI HERE
+                        
                         <div className="fixed top-full left-0 mt-5 z-50">
                           <div className="w-6xl bg-gray-100 rounded-xl shadow-md ">
                             {/* Top Section */}
@@ -240,8 +238,7 @@ const ResponsiveNavigation = () => {
                                 </div>
                               ))}
                             </div>
-
-                            {/* Bottom Bar */}
+                            
                             <div className="bg-orange-100 px-6 py-4 rounded-xl">
                               <button className="text-orange-600 font-medium hover:underline">
                                 View All {link.name} Products →
@@ -250,7 +247,7 @@ const ResponsiveNavigation = () => {
                           </div>
                         </div>
                       ) : (
-                        // ✅ EXISTING DROPDOWN (for Category etc.)
+                        
                         <ul className="bg-white text-black shadow-lg rounded-lg w-64">
                           {link.children.map((child) => (
                             <li key={child.name}>
@@ -281,19 +278,18 @@ const ResponsiveNavigation = () => {
             </li>
           ))}
         </ul>
-
-        {/* Action Buttons */}
+        
       </div>
 
       {/* mobile navigation */}
       {mobileMenu && (
         <>
-          {/* Overlay */}
+        
           <div
             className="fixed inset-0 bg-black/40 z-40"
             onClick={() => setMobileMenu(false)}
           />
-          {/* <div className="absolute z-500 top-full left-0 right-0  mt-2 bg-amber-900/95 shadow-xl rounded-lg lg:hidden "> */}
+          
           <div className="fixed inset-x-0 top-[100px] z-50 bg-amber-900/95 shadow-xl rounded-b-lg lg:hidden max-h-[80vh] overflow-y-auto ">
             {navLinks.map((link) => (
               <div
@@ -326,7 +322,6 @@ const ResponsiveNavigation = () => {
                   </Link>
                 ) : (
                   <>
-                    {/* DROPDOWN BUTTON */}
                     <button
                       onClick={() => handleClick(link.name)}
                       className={`w-full flex items-center justify-between px-4 py-3 text-lg transition-colors duration-200 ${
@@ -339,7 +334,7 @@ const ResponsiveNavigation = () => {
                       <ChevronDown className="h-4 w-4" />
                     </button>
 
-                    {/* DROPDOWN CHILDREN */}
+
                     {activeLink === link.name && (
                       <div className="bg-amber-800/60">
                         {link.children.map((child, ind) => (
@@ -368,7 +363,6 @@ const ResponsiveNavigation = () => {
 
                                 {child.category && (
                                   <div>
-                                    {/* HEADING + CHEVRON */}
                                     <button
                                       onClick={() =>
                                         setActiveSection(
@@ -389,8 +383,7 @@ const ResponsiveNavigation = () => {
                                         }`}
                                       />
                                     </button>
-
-                                    {/* ITEMS (SHOW ONLY IF ACTIVE) */}
+                                    
                                     {activeSection === child.heading &&
                                       child.category.map((item) => (
                                         <Link
@@ -415,35 +408,14 @@ const ResponsiveNavigation = () => {
               </div>
             ))}
 
-            {/* ACTION BUTTONS */}
+
             <div
               className="p-4 flex flex-col space-y-2"
               onClick={() => setMobileMenu(!mobileMenu)}
             >
-              {/* <div className=" bg-white rounded-full   ">
-                <div className=" px-6 py-3 rounded-full flex justify-center">
-                  <button className="  font-bold   hover:shadow-xl transform cursor-pointer hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 ">
-                    <Link href="/login">Login</Link>
-                  </button>
-                  /
-                  <button className="   font-bold   hover:shadow-xl transform hover:scale-105 transition duration-300 focus:outline-none focus:ring-4 cursor-pointer ">
-                    <Link href="/signup">Signup</Link>
-                  </button>
-                </div>
-              </div> */}
 
               <div className="">
-                {!session ? (
-                  <div className="bg-white rounded-full px-6 py-3 text-center">
-                    <Link href="/login" className="font-bold">
-                      Login
-                    </Link>
-                    {" / "}
-                    <Link href="/signup" className="font-bold">
-                      Signup
-                    </Link>
-                  </div>
-                ) : (
+                {session ? (
                   <div className="bg-white rounded-xl p-4 space-y-3">
                     <p className="text-sm font-semibold text-gray-700">
                       {session.user?.email}
@@ -469,6 +441,16 @@ const ResponsiveNavigation = () => {
                     >
                       Logout
                     </button>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-full px-6 py-3 text-center">
+                    <Link href="/login" className="font-bold">
+                      Login
+                    </Link>
+                    {" / "}
+                    <Link href="/signup" className="font-bold">
+                      Signup
+                    </Link>
                   </div>
                 )}
               </div>
@@ -507,17 +489,6 @@ const ResponsiveNavigation = () => {
                   </span>
                 )}
               </div>
-
-              {/* <div
-                className="bg-white rounded-full cursor-pointer "
-                onClick={() => setCartOpen(!isCartOpen)}
-              >
-                <Link href={"/cart"}>
-                  <button className="px-3 py-3    font-bold rounded-full shadow-lg hover:shadow-xl   focus:ring-4 focus:ring-white/50 cursor-pointer">
-                    <HiOutlineShoppingBag />
-                  </button>
-                </Link>
-              </div> */}
             </div>
           </div>
         </>

@@ -54,17 +54,16 @@ export default function ProductCard({ products }: ProductCardProps) {
   const pathname = path.startsWith("/") ? path.slice(1) : path;
   const [cartBtn, setCartBtn] = useState<string | null>(null);
 
-  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
-
-  const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  // const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+  // const isInWishlist = useWishlistStore((state) => state.isInWishlist);
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const [mounted, setMounted] = useState(false);
 
-  // Wait for component to mount on client side
   useEffect(() => {
     setMounted(true);
   }, []);
-  // const addToCart = useCartStore((state) => state.addToCart);
+
   const { cart, addToCart, increaseQty, decreaseQty, setQty } = useCartStore();
 
   const [showAll, setShowAll] = useState(false);
@@ -80,7 +79,6 @@ export default function ProductCard({ products }: ProductCardProps) {
 
           return (
             <div
-              // key={product.id}
               key={`${product.id}-${index}`}
               className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
             >
@@ -100,10 +98,23 @@ export default function ProductCard({ products }: ProductCardProps) {
 
               {/* Like button */}
               <button
-                onClick={() => {
-                  toggleWishlist(product);
-                  isInWishlist(product.id);
-                }}
+                onClick={() =>
+                  toggleWishlist(
+                    {
+                      id: product.id,
+                      name: product.name,
+                      image: product.image,
+                      price: product.price,
+                      slug: product.slug,
+                      category_slug: product.category_slug,
+                    },
+                    isLoggedIn,
+                  )
+                }
+                // onClick={() => {
+                //   toggleWishlist(product);
+                //   isInWishlist(product.id);
+                // }}
                 className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
               >
                 <Heart
@@ -138,7 +149,6 @@ export default function ProductCard({ products }: ProductCardProps) {
             </div> */}
 
               {/* Title */}
-              {/* <Link href={`/${product.category_slug || "spices"}/${product.slug}`}> */}
               <Link
                 href={`/${product.category_slug || "spices"}/${product.slug}`.replace(
                   /\/+/g,
@@ -149,7 +159,7 @@ export default function ProductCard({ products }: ProductCardProps) {
                   {product.name?.split(" ").slice(0, 3).join(" ")}
                 </h3>
                 <span className="text-sm text-gray-400">
-                  {product.description?.split(" ").slice(0, 6).join(" ")}
+                  {product.description?.split(" ").slice(0, 3).join(" ")}...
                 </span>
               </Link>
               {/* Price */}
@@ -177,18 +187,18 @@ export default function ProductCard({ products }: ProductCardProps) {
 
                   {/* <span className="px-4">{cartItem.quantity}</span> */}
                   <input
-                      type="number"
-                      min={1}
-                      value={cartItem.quantity}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
+                    type="number"
+                    min={1}
+                    value={cartItem.quantity}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
 
-                        if (isNaN(value)) return;
+                      if (isNaN(value)) return;
 
-                        setQty(product.id, value, isLoggedIn);
-                      }}
-                      className="w-8 text-center outline-none"
-                    />
+                      setQty(product.id, value, isLoggedIn);
+                    }}
+                    className="w-8 text-center outline-none"
+                  />
 
                   <button
                     onClick={() => increaseQty(product.id, isLoggedIn)}
@@ -229,9 +239,10 @@ export default function ProductCard({ products }: ProductCardProps) {
         <div className="flex justify-center mt-8 mb-10">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="relative flex items-center justify-center px-10 py-5 bg-black  text-white font-semibold rounded-lg transition-colors group"
+            /* py-5 bg-black */
+            className="relative flex items-center justify-center px-10  bg-gradient-to-r from-orange-400 to-orange-500 hover:from-amber-600 hover:to-amber-400 text-white py-2  font-semibold rounded-lg transition-colors group"
           >
-            <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span>
+            {/* <span className="absolute inset-0 bg-linear-to-r  from-white/40 to-white/90 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center"></span> */}
             {showAll ? (
               "See Less"
             ) : (
@@ -246,29 +257,3 @@ export default function ProductCard({ products }: ProductCardProps) {
     </div>
   );
 }
-
-/* 
-
-
-  // const [productData, setProductData] = useState<Product[]>([]);
-
-  // useEffect(() => {
-  //   const fetchProductsData = async () => {
-  //     try {
-  //       let url = `/api/products?path=${pathname}`;
-  //       if (selectedCategories.length > 0) {
-  //         const query = selectedCategories
-  //           .map((cat) => `categories=${encodeURIComponent(cat)}`)
-  //           .join("&");
-  //         url += `&${query}`;
-  //       }
-  //       const res = await fetch(url);
-  //       const data = await res.json();
-  //       setProductData(data.data);
-  //     } catch (error) {
-  //       console.error("Error fetching products:", error);
-  //     }
-  //   };
-  //   fetchProductsData();
-  // }, [selectedCategories, pathname]);
-*/

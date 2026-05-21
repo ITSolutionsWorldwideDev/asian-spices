@@ -14,6 +14,8 @@ export interface Product {
   subcategory_id?: string;
   brand_id?: string;
 
+  category_slug?: string;
+
   country_of_origin?: string;
 
   discount_type?: string;

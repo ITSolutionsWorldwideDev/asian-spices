@@ -1,24 +1,31 @@
+// apps/web/components/layout/wishlist/WishList.tsx
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+
 import {
   Heart,
   Trash2,
   ShoppingCart,
   TrendingUp,
   Sparkles,
-  Star,
+  ArrowRight,
 } from "lucide-react";
+
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCartStore } from "@/store/useCartStore";
-import Link from "next/link";
-// import Nav from "@/components/ui/Nav";
-import EmptyWishList from "./EmptyWishList";
-import RedirectButtons from "./RedirectButtons";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
-// import Footer from "@/components/ui/Footer";
+
+import EmptyWishList from "./EmptyWishList";
+
+import { useSession } from "next-auth/react";
 
 export default function WishList() {
+  const { data: session } = useSession();
+
+  const isLoggedIn = !!session?.user;
+
   const { symbol, rate } = useCurrencyStore();
 
   const {
@@ -26,241 +33,281 @@ export default function WishList() {
     removeFromWishlist,
     clearWishlist,
   } = useWishlistStore();
+
   const { addToCart } = useCartStore();
-  console.log(wishlist);
-  const totalValue: number = wishlist.reduce(
+
+  const totalValue = wishlist.reduce(
     (acc, item) => acc + Number(item.price || 0),
     0,
   );
-
-  // const potentialSavings = wishlist.reduce((acc, item) => {
-  //   if (!item.oldPrice || !item.price) return acc;
-  //   return acc + (item.oldPrice - item.price);
-  // }, 0);
-
-  const itemsInWishlist = wishlist.length;
 
   if (wishlist.length === 0) {
     return <EmptyWishList />;
   }
 
   return (
-    <div className="">
-      {/* <div className="bg-black">
-        <Nav />
-      </div> */}
+    <section className="py-10">
+      <div className="container mx-auto px-4">
+        {/* =========================================================
+            BREADCRUMB
+        ========================================================= */}
 
-      <div className="bg-white  p-8">
-        <div className="container mx-auto">
-          <div className="p-4 sm:p-6">
-            {/* Breadcrumb */}
-            <div className="flex flex-wrap items-center gap-1 text-sm sm:text-base">
-              <Link href={"/"}>
-                <p className="text-[#6A7282]">Home</p>
-              </Link>
-              <p className="text-[#6A7282]"> / </p>
-              <p className="text-[#6A7282]">Wishlist</p>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Link href="/">Home</Link>
+
+          <span>/</span>
+
+          <span className="text-black font-medium">Wishlist</span>
+        </div>
+
+        {/* =========================================================
+            HEADER
+        ========================================================= */}
+
+        <div className="mt-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-4 flex-wrap">
+              <h1 className="text-4xl font-bold text-gray-900">
+                My Wishlist
+              </h1>
+
+              <div className="px-4 py-1 rounded-full bg-orange-500 text-white text-sm font-medium">
+                {wishlist.length} Items
+              </div>
             </div>
 
-            {/* Title */}
-            <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-gray-500 mt-3">
+              Save your favorite products for later.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={clearWishlist}
+              className="border border-red-200 text-red-500 hover:bg-red-50 transition px-5 py-3 rounded-xl font-medium flex items-center gap-2 cursor-pointer"
+            >
+              <Trash2 size={18} />
+              Clear Wishlist
+            </button>
+
+            <Link href="/">
+              <button className="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-xl font-semibold cursor-pointer">
+                Continue Shopping
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* =========================================================
+            STATS
+        ========================================================= */}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-10">
+          {/* ITEMS */}
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center">
+                <Heart className="text-orange-500" />
+              </div>
+
               <div>
-                <h1 className="font-bold text-3xl sm:text-5xl flex items-center gap-3">
-                  My Wishlist
-                  <span className="inline-block text-sm sm:text-base px-3 py-1 rounded-full bg-orange-500 text-white font-medium">
-                    {itemsInWishlist} items
-                  </span>
-                </h1>
-                <p className="text-gray-500 mt-2">
-                  Your favorite spices saved for later
-                </p>
-              </div>
+                <p className="text-sm text-gray-500">Wishlist Items</p>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={clearWishlist}
-                  className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  Clear All
-                </button>
-                <Link href={"/"}>
-                  <button className="px-6 py-2 bg-linear-to-r from-[#FF6900] to-[#F83701] text-white rounded-lg font-medium hover:opacity-90 transition-opacity">
-                    Continue Shopping
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Saved Items */}
-              <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#FFEDD4] rounded-xl flex items-center justify-center">
-                    <Heart size={24} className="text-orange-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Saved Items</p>
-                    <p className="text-3xl font-bold text-gray-900">
-                      {itemsInWishlist}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Value */}
-              <div className=" border border-[#E5E7EB] rounded-2xl p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#DCFCE7] rounded-xl flex items-center justify-center">
-                    <TrendingUp className="text-[#00A63E]" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Total Value</p>
-                    <p className="text-3xl font-bold text-gray-900">
-                      {symbol}
-                      {(rate * totalValue).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Potential Savings */}
-              <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#F3E8FF] rounded-xl flex items-center justify-center">
-                    <Sparkles className="text-[#9810FA]" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Potential Savings</p>
-                    <p className="text-3xl font-bold text-[#00A63E]">
-                      {/* ${potentialSavings.toFixed(2)} */}
-                    </p>
-                  </div>
-                </div>
+                <h3 className="text-3xl font-bold">
+                  {wishlist.length}
+                </h3>
               </div>
             </div>
           </div>
 
-          {/* Wishlist Items */}
-          <div className="mt-8 space-y-4 px-4 sm:px-6">
-            {wishlist.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col sm:flex-row gap-5">
-                  {/* IMAGE with Badge */}
-                  <div className="relative h-32 w-32 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    {/* {item.oldPrice && item.price && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md z-10">
-                        {item.off ||
-                          `${Math.round(
-                            ((item.oldPrice - item.price) / item.oldPrice) *
-                              100,
-                          )}% OFF`}
-                      </div>
-                    )} */}
+          {/* VALUE */}
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
+                <TrendingUp className="text-green-600" />
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Total Value</p>
+
+                <h3 className="text-3xl font-bold">
+                  {symbol}
+                  {(rate * totalValue).toFixed(2)}
+                </h3>
+              </div>
+            </div>
+          </div>
+
+          {/* SAVINGS */}
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center">
+                <Sparkles className="text-purple-600" />
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">
+                  Saved Favorites
+                </p>
+
+                <h3 className="text-3xl font-bold">
+                  {wishlist.length}
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================
+            PRODUCTS
+        ========================================================= */}
+
+        <div className="mt-10 space-y-5">
+          {wishlist.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm hover:shadow-xl transition"
+            >
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* IMAGE */}
+
+                <Link
+                  href={`/${item.category_slug}/${item.slug}`}
+                  className="shrink-0"
+                >
+                  <div className="relative w-full lg:w-36 h-36 overflow-hidden rounded-2xl bg-gray-100">
                     <Image
-                      src={`/assets/home/premium_collection/8a94a27bd306859ae9b600c037a4132590040eeb.jpg`}
+                      src={
+                        item.image ||
+                        "/images/placeholder.png"
+                      }
                       alt={item.name}
-                      width={128}
-                      height={128}
-                      className="object-cover h-full w-full"
+                      fill
+                      className="object-cover"
                     />
                   </div>
+                </Link>
 
-                  {/* RIGHT CONTENT */}
-                  <div className="flex flex-1 justify-between items-start gap-4">
-                    {/* DETAILS */}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
+                {/* CONTENT */}
 
-                      {item.price && (
-                        <div className="flex items-center space-x-1">
-                          <p className="font-bold text-2xl text-orange-500">
-                            {symbol}{(rate * item.price).toFixed(2)}
-                          </p>
-                          {/* {item.oldPrice && (
-                            <p className="text-sm text-gray-400 line-through">
-                              ${item.oldPrice.toFixed(2)}
-                            </p>
-                          )} */}
-                        </div>
-                      )}
+                <div className="flex-1 flex flex-col lg:flex-row justify-between gap-6">
+                  {/* LEFT */}
 
-                      {/* Rating */}
-                      {/* {item.rating && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < Math.floor(item.rating || 0)
-                                    ? "text-yellow-400 fill-yellow-400"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))} */}
+                  <div className="flex-1">
+                    <Link
+                      href={`/${item.category_slug}/${item.slug}`}
+                    >
+                      <h3 className="text-2xl font-bold text-gray-900 hover:text-orange-500 transition">
+                        {item.name}
+                      </h3>
+                    </Link>
+
+                    <div className="mt-4">
+                      <span className="text-3xl font-bold text-orange-500">
+                        {symbol}
+                        {(rate * item.price).toFixed(2)}
+                      </span>
                     </div>
-                    {/* {item.reviews && (
-                            <span className="text-sm text-gray-500">
-                              ({item.reviews})
-                            </span>
-                          )} */}
+                  </div>
 
-                    {/* {item.tag && (
-                            <span className="inline-block text-xs px-2 py-1 rounded-full border border-[#E5E7EB] text-black">
-                              {item.tag}
-                            </span>
-                          )} */}
+                  {/* ACTIONS */}
 
-                    {/* {item.weight && (
-                            <span className="inline-block text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                              {item.weight}
-                            </span>
-                          )} */}
+                  <div className="flex flex-col gap-3 min-w-[220px]">
+                    {/* ADD TO CART */}
 
-                    {/* PRICE & ACTIONS */}
-                    <div className="flex flex-col gap-2 min-w-37.5 relative">
-                      <button
-                        onClick={() => removeFromWishlist(item.id)}
-                        className="absolute z-10  right-0 -top-3 flex  p-1 border-[#E5E7EB] shadow-md text-black rounded-md bg-white "
-                        title="Remove from wishlist"
-                      >
-                        <Trash2 size={16} />
+                    <button
+                      onClick={() => {
+                        addToCart(
+                          {
+                            id: item.id,
+                            title: item.name,
+                            image: item.image,
+                            price: item.price,
+                            slug: item.slug,
+                            category_slug: item.category_slug,
+                          },
+                          isLoggedIn,
+                        );
+                      }}
+                      className="bg-orange-500 hover:bg-orange-600 transition text-white rounded-xl py-3 px-5 font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <ShoppingCart size={18} />
+
+                      Add To Cart
+                    </button>
+
+                    {/* VIEW */}
+
+                    <Link
+                      href={`/${item.category_slug}/${item.slug}`}
+                    >
+                      <button className="w-full border border-gray-300 hover:bg-gray-50 transition rounded-xl py-3 px-5 font-medium cursor-pointer">
+                        View Details
                       </button>
-                      <button
-                        onClick={() => {
-                          // add to cart + remove
-                          // addToCart(item);
-                          removeFromWishlist(item.id);
-                        }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#FF6900] text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
-                      >
-                        <ShoppingCart size={16} />
-                        Add to Cart
-                      </button>
+                    </Link>
 
-                      <Link href={"/product"}>
-                        <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer w-full">
-                          View Details
-                        </button>
-                      </Link>
-                    </div>
+                    {/* REMOVE */}
+
+                    <button
+                      onClick={() =>
+                        removeFromWishlist(
+                          item.id,
+                          isLoggedIn,
+                        )
+                      }
+                      className="border border-red-200 text-red-500 hover:bg-red-50 transition rounded-xl py-3 px-5 font-medium flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Trash2 size={18} />
+
+                      Remove
+                    </button>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* =========================================================
+            CTA
+        ========================================================= */}
+
+        <div className="mt-14 rounded-3xl border border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 p-10 text-center">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+              <Sparkles className="text-orange-500" />
+            </div>
           </div>
 
-          <RedirectButtons />
+          <h2 className="mt-5 text-3xl font-bold text-gray-900">
+            Ready to order your favorites?
+          </h2>
+
+          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
+            Add your saved products to cart and continue your
+            shopping experience.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link href="/">
+              <button className="border border-gray-300 bg-white hover:bg-gray-50 transition rounded-xl px-6 py-3 font-medium cursor-pointer">
+                Continue Shopping
+              </button>
+            </Link>
+
+            <Link href="/cart">
+              <button className="bg-orange-500 hover:bg-orange-600 transition text-white rounded-xl px-6 py-3 font-semibold flex items-center gap-2 cursor-pointer">
+                Go To Cart
+
+                <ArrowRight size={18} />
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
-
-      {/* <Footer /> */}
-    </div>
+    </section>
   );
 }

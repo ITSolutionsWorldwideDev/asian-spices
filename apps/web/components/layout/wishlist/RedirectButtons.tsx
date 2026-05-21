@@ -1,3 +1,5 @@
+// apps/web/components/layout/wishlist/RedirectButtons.tsx
+
 import React from "react";
 import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";

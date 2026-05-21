@@ -17,7 +17,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
   const observerRef = useRef<HTMLDivElement | null>(null);
 
-  const limit = 12; // must match backend
+  const limit = 12;
 
   const buildParams = (filters: any, page: number) => {
     const params = new URLSearchParams();
@@ -45,7 +45,6 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     setLoading(true);
 
     try {
-
       show("Loading Products...");
 
       const query = buildParams(filters, page);
@@ -55,7 +54,6 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
       const newProducts = data.data || [];
 
-      // setProducts((prev: any) => [...prev, ...newProducts]);
       setProducts((prev: any) => {
         const map = new Map();
 
@@ -100,7 +98,6 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     };
   }, [loading, hasMore, page]);
 
-  // 🔥 RESET WHEN FILTER CHANGES
   useEffect(() => {
     setProducts(initialProducts);
     setPage(2);
@@ -111,7 +108,6 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     <>
       <ProductCard products={products} />
 
-      {/* LOADER SENTINEL */}
       {hasMore && (
         <div
           ref={observerRef}
@@ -121,129 +117,9 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
         </div>
       )}
 
-      {/* 🔥 STOP MESSAGE */}
       {!hasMore && (
         <p className="text-center py-6 text-gray-500">No more products</p>
       )}
-      {/* <div id="load-more" className="h-10 flex justify-center items-center">
-        {loading && <span>Loading...</span>}
-      </div> */}
     </>
   );
 }
-
-/* const fetchMore = async () => {
-    if (loading || !hasMore) return; // 🔥 STOP CONDITIONS
-
-    setLoading(true);
-
-    const params = new URLSearchParams(filters);
-
-    
-    params.set("page", page.toString());
-
-    const res = await fetch(`/api/products?${params.toString()}`);
-    const data = await res.json();
-
-    const newProducts = data.data || [];
-
-    // 🔥 APPEND
-    setProducts((prev: any) => [...prev, ...newProducts]);
-
-    // 🔥 STOP LOGIC (CRITICAL)
-    if (newProducts.length < limit) {
-      setHasMore(false);
-    }
-
-    setPage((prev) => prev + 1);
-    setLoading(false);
-  }; */
-
-/* const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          !loading &&
-          hasMore
-        ) {
-          fetchMore();
-        }
-      },
-      {
-        threshold: 1.0,
-      }
-    ); */
-
-/* useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-
-      if (entry.isIntersecting && !loading) {
-        loadMore();
-      }
-    });
-
-    const el = document.getElementById("load-more");
-    if (el) observer.observe(el);
-
-    return () => observer.disconnect();
-  }, [page, loading]); */
-
-/* const loadMore = async () => {
-    setLoading(true);
-
-    const nextPage = page + 1;
-
-    
-
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        if (value.length) params.set(key, value.join(","));
-      } else if (value) {
-        params.set(key, String(value));
-      }
-    });
-
-    params.set("page", String(nextPage));
-
-    const res = await fetch(`/api/products?${params}`);
-    const data = await res.json();
-
-    setProducts((prev: any) => [...prev, ...data]);
-    setPage(nextPage);
-    setLoading(false);
-  }; */
-
-/* useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          loadMore();
-          break;
-        }
-      }
-    });
-
-    const el = document.getElementById("load-more");
-    if (el) observer.observe(el);
-
-    return () => observer.disconnect();
-  }, [page]); */
-
-/* const loadMore = async () => {
-    const nextPage = page + 1;
-
-    const params = new URLSearchParams({
-      ...filters,
-      page: String(nextPage),
-    });
-
-    const res = await fetch(`/api/products?${params}`);
-    const data = await res.json();
-
-    setProducts((prev: any) => [...prev, ...data]);
-    setPage(nextPage);
-  }; */
