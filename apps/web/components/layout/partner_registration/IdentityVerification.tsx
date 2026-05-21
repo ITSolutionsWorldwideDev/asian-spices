@@ -105,7 +105,7 @@ export default function IdentityVerification({
         setApiError("Please select a bank");
       }
     } finally {
-      hide(); 
+      hide();
     }
   };
 
@@ -143,7 +143,7 @@ export default function IdentityVerification({
       } catch (err) {
         console.error("poll error", err);
       } finally {
-        hide(); 
+        hide();
       }
     }, 3000);
   };
@@ -180,9 +180,16 @@ export default function IdentityVerification({
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
       if (!response.ok) {
         throw new Error("Submission failed");
       }
+
+      // save backend-generated ID
+      setFormData((prev: any) => ({
+        ...prev,
+        application_id: data.application_id,
+      }));
 
       // ✅ mark step complete
       setCompletedSteps((prev: number[]) => [
@@ -199,7 +206,7 @@ export default function IdentityVerification({
         setApiError("Please select a bank");
       }
     } finally {
-      hide(); 
+      hide();
     }
   };
 

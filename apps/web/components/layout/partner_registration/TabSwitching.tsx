@@ -10,9 +10,13 @@ import ContactDetails from "./ContactDetails";
 import IdentityVerification from "./IdentityVerification";
 import Confirmation from "./Confirmation";
 
+const generateApplicationId = () => {
+  const random = Math.floor(10000 + Math.random() * 90000);
+
+  return `APP-${random}`;
+};
 
 export default function TabSwitching() {
-  
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -26,7 +30,7 @@ export default function TabSwitching() {
     { id: 4, label: "Contact Details" },
     { id: 5, label: "Identity Verification" },
     { id: 6, label: "Confirmation" },
-  ]; 
+  ];
   const safeActiveStep = Math.min(Math.max(activeStep, 1), steps.length);
   const currentStep = steps[safeActiveStep - 1];
 
@@ -58,12 +62,35 @@ export default function TabSwitching() {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem(
+      "partner_registration",
+      JSON.stringify({
+        formData,
+        activeStep,
+        completedSteps,
+      }),
+    );
+  }, [formData, activeStep, completedSteps]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
     if (params.get("idin") === "success") {
       setCompletedSteps((prev) => [...new Set([...prev, 5])]);
       setActiveStep(6);
     }
+  }, []);
+
+  useEffect(() => {
+    setFormData((prev: any) => {
+      if (prev.application_id) return prev;
+
+      return {
+        ...prev,
+        application_id: generateApplicationId(),
+        submitted_at: new Date().toISOString(),
+      };
+    });
   }, []);
 
   const stepComponents = (

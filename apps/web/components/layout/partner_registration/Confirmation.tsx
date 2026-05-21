@@ -40,7 +40,33 @@ export default function Confirmation({ formData }: any) {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-700">
             <p className="font-semibold">✉ Confirmation Email Sent</p>
             <p className="mt-1">
-              A confirmation email has been sent to: {formData.business_email_address}
+              A confirmation email has been sent to:{" "}
+              {formData.business_email_address}
+            </p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+            <p className="text-sm text-blue-700 font-medium">
+              Your Application ID
+            </p>
+
+            <div className="mt-2 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-blue-900 tracking-wide">
+                {formData.application_id}
+              </h2>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(formData.application_id);
+                }}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Copy
+              </button>
+            </div>
+
+            <p className="text-xs text-blue-600 mt-2">
+              Use this ID to track your application status.
             </p>
           </div>
 
@@ -173,8 +199,22 @@ export default function Confirmation({ formData }: any) {
 
           {/* Footer Small Text */}
           <div className="text-center text-xs text-gray-400">
-            <p>Registration Reference: PR-78987142</p>
-            <p>Registration Date: 20 February 2026</p>
+            <p>
+              Registration Reference:{" "}
+              <span className="font-semibold text-gray-700">
+                {formData.application_id}
+              </span>
+            </p>
+
+            <p>
+              Registration Date:{" "}
+              {formData.submitted_at
+                ? new Date(formData.submitted_at).toLocaleDateString()
+                : "-"}
+            </p>
+
+            {/* <p>Registration Reference: PR-78987142</p>
+            <p>Registration Date: 20 February 2026</p> */}
           </div>
         </div>
       ) : (
