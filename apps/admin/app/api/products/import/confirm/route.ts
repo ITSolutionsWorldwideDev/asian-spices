@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
             row.Description || null,
             row["Health Benefits"] || null,
             Number(row.Price),
-            Number(row.Quantity),
+            Number(row.Quantity)|| 999999999,
             row["Discount Type"] || null,
             row["Discount Value"] ? Number(row["Discount Value"]) : null,
             row.Status === "Active" ? 1 : 0,

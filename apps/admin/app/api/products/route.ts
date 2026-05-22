@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
         body.description,
         body.health_benefits,
         body.price,
-        body.quantity,
+        999999999,//body.quantity,
         body.discount_type,
         body.discount_value,
         body.status ?? 1,

@@ -80,14 +80,6 @@ export function getThumb(url: string, size = 300) {
   return `${url}?w=${size}&h=${size}&fit=crop`;
 }
 
-// const generateSKU = (name: string, categoryId?: number) =>
-//   `SKU-${categoryId ?? "X"}-${name.slice(0, 5)}-${Date.now()
-//     .toString()
-//     .slice(-4)}`;
-
-// const generateItemCode = (brandId?: number) =>
-//   `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
-
 const getCodeFromSlug = (slug?: string) => {
   if (!slug) return "GEN";
 
@@ -104,11 +96,6 @@ const generateSlug = (text: string) =>
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
-
-/* const generateSKU = (name: string, categoryId?: number | null) =>
-  `SKU-${categoryId ?? "X"}-${name.slice(0, 5)}-${Date.now()
-    .toString()
-    .slice(-4)}`; */
 
 const generateSKU = (
   name: string,
@@ -140,9 +127,6 @@ const generateItemCode = (name: string, brandSlug?: string) => {
 
   return `IT-${brandCode}-${namePart}-${random}`;
 };
-
-// const generateItemCode = (brandId?: number | null) =>
-//   `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
 
 const Accordion = memo(function Accordion({
   title,
@@ -222,7 +206,7 @@ export default function ProductFormComponent({
       description: "",
       health_benefits: "",
       price: 0,
-      quantity: 0,
+      quantity: 999999999,
       discount_type: null,
       discount_value: 0,
       status: 1,
@@ -250,9 +234,6 @@ export default function ProductFormComponent({
   const discountValue = watch("discount_value") || 0;
   const promoDiscount = watch("promo_discount") || 0;
 
-  //   console.log("FORM VALUES watch === ", watch());
-  //   console.log("VALUES errors === ", errors);
-
   useEffect(() => {
     if (!name || slugTouched.current) return;
     setValue("slug", generateSlug(name));
@@ -269,14 +250,6 @@ export default function ProductFormComponent({
 
     setValue("sku", generateSKU(name, categorySlug, brandSlug));
   }, [name, categoryId, brandId]);
-
-  // useEffect(() => {
-  //   if (name) setValue("sku", generateSKU(name, categoryId));
-  // }, [name, categoryId]);
-
-  // useEffect(() => {
-  //   setValue("item_code", generateItemCode(brandId));
-  // }, [brandId]);
 
   useEffect(() => {
     if (!name) return;
@@ -298,10 +271,7 @@ export default function ProductFormComponent({
 
     const currentSub = watch("subcategory_id");
 
-    const exists = validSubcategories.some(
-      (s) => s.id === currentSub,
-      //   (s) => Number(s.id) === Number(currentSub),
-    );
+    const exists = validSubcategories.some((s) => s.id === currentSub);
 
     if (!exists) {
       setValue("subcategory_id", null);
@@ -323,8 +293,6 @@ export default function ProductFormComponent({
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // if (!mounted) return null;
 
   /* ------------------ Fetch Data ------------------ */
 
@@ -509,9 +477,6 @@ export default function ProductFormComponent({
       mode === "view"
         ? media.filter((item) => selectedMedia.includes(item.media_id))
         : media;
-
-    // console.log("selectedMedia === ", selectedMedia);
-    // console.log("itemsToRender === ", itemsToRender);
 
     return itemsToRender.map((item) => {
       const isSelected = selectedMedia.includes(item.media_id);
@@ -855,7 +820,7 @@ export default function ProductFormComponent({
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  {/* <div>
                     <label className="block mb-1 text-sm font-medium">
                       Quantity <span className="text-red-500">*</span>
                     </label>
@@ -874,7 +839,7 @@ export default function ProductFormComponent({
                         {errors.quantity.message as string}
                       </p>
                     )}
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="block mb-1 text-sm font-medium">
@@ -973,24 +938,6 @@ export default function ProductFormComponent({
                         {errors.discount_type.message as string}
                       </p>
                     )}
-
-                    {/* <Controller
-                      control={control}
-                      name="discount_type"
-                      render={({ field }) => (
-                        <Select
-                          options={discountOptions}
-                          value={discountOptions.find(
-                            (o) => o.value === field.value,
-                          )}
-                          onChange={(opt) =>
-                            field.onChange(opt ? opt.value : undefined)
-                          }
-                          placeholder="Select Discount Type"
-                          isDisabled={isView}
-                        />
-                      )}
-                    /> */}
                   </div>
 
                   <div>
@@ -1111,6 +1058,22 @@ export default function ProductFormComponent({
     </div>
   );
 }
+
+// const generateSKU = (name: string, categoryId?: number) =>
+//   `SKU-${categoryId ?? "X"}-${name.slice(0, 5)}-${Date.now()
+//     .toString()
+//     .slice(-4)}`;
+
+// const generateItemCode = (brandId?: number) =>
+//   `ITEM-${brandId ?? "X"}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+// useEffect(() => {
+//   if (name) setValue("sku", generateSKU(name, categoryId));
+// }, [name, categoryId]);
+
+// useEffect(() => {
+//   setValue("item_code", generateItemCode(brandId));
+// }, [brandId]);
 
 /* const mediaGrid = useMemo(() => {
     return media.map((item) => {

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
             row.Description || null,
             row["Health Benefits"] || null,
             row.Price,
-            row.Quantity || 0,
+            row.Quantity || 999999999,
             normalizeDiscount(row["Discount Type"]),
             row["Discount Value"] || null,
             parseStatus(row.Status),

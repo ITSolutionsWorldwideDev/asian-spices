@@ -101,7 +101,7 @@ export async function PUT(
         body.brand_id,
         body.description,
         body.price,
-        body.quantity,
+        999999999,//body.quantity,
         body.discount_type,
         body.discount_value,
         body.status ?? 1,

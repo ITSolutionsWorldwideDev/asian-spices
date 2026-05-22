@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       // const price = data?.price ?? 0;
       // const quantity = data?.quantity ?? 0;
       const price = data?.price ?? null;
-      const quantity = data?.quantity ?? null;
+      const quantity = data?.quantity ?? 999999999;
 
       await client.query(
         `

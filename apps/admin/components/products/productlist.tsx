@@ -121,11 +121,11 @@ export default function ProductListComponent() {
     sorter: (a: Product, b: Product) => a.price - b.price,
     render: (price: number) => `$${price.toLocaleString()}`,
   },
-  {
-    title: "Qty",
-    dataIndex: "quantity",
-    sorter: (a: Product, b: Product) => a.quantity - b.quantity,
-  },
+  // {
+  //   title: "Qty",
+  //   dataIndex: "quantity",
+  //   sorter: (a: Product, b: Product) => a.quantity - b.quantity,
+  // },
   {
     title: "Status",
     dataIndex: "status",

@@ -338,7 +338,7 @@ export default function OrderDetailPage() {
                       <th className="p-4 text-center">SKU</th>
                       <th className="p-4 text-center">Price</th>
                       <th className="p-4 text-center">Qty</th>
-                      <th className="p-4 text-center">Available</th>
+                      {/* <th className="p-4 text-center">Available</th> */}
                       <th className="p-4 text-right">Total</th>
                       <th className="p-4 text-center">Ordered</th>
                       {canEditAllocation && (
@@ -364,9 +364,9 @@ export default function OrderDetailPage() {
                           ${Number(item.price).toFixed(2)}
                         </td>
                         <td className="p-4 text-center">{item.quantity}</td>
-                        <td className="p-4 text-center">
+                        {/* <td className="p-4 text-center">
                           {item.available_stock ?? 0}
-                        </td>
+                        </td> */}
                         <td className="p-4 text-right font-medium">
                           ${(Number(item.price) * item.quantity).toFixed(2)}
                         </td>

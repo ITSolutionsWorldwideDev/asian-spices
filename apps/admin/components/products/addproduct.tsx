@@ -168,7 +168,7 @@ export default function AddProductComponent({
     description: "",
     health_benefits: "",
     price: 0,
-    quantity: 0,
+    quantity: 999999999,
     discount_type: "",
     discount_value: 0,
     status: 1,
@@ -840,7 +840,7 @@ export default function AddProductComponent({
             >
               <div className="p-4 border-t space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  {/* <div>
                     <label className="block mb-1 text-sm font-medium">
                       Quantity <span className="text-red-500">*</span>
                     </label>
@@ -863,7 +863,7 @@ export default function AddProductComponent({
                     {errors.quantity && (
                       <p className="text-red-600 text-sm">{errors.quantity}</p>
                     )}
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="block mb-1 text-sm font-medium">
