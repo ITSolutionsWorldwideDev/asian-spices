@@ -105,31 +105,3 @@ export default function ProvidersClient({
     </>
   );
 }
-/* "use client";
-
-export default function ProvidersClient({ providers }: any) {
-  return (
-    <div>
-      <h1 className="text-xl font-semibold mb-6">Shipping Providers</h1>
-
-      <table className="w-full border">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Slug</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {providers.map((p: any) => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{p.slug}</td>
-              <td>{p.is_active ? "Active" : "Disabled"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-} */

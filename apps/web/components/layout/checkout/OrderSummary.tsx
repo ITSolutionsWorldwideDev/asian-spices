@@ -3,32 +3,22 @@
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { CartItem, useCartStore } from "@/store/useCartStore";
-// import { SHIPPING_OPTIONS } from "@/components/ui/Checkout";
 
+import { CartItem } from "@/store/useCartStore";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { SHIPPING_OPTIONS, ShippingMethod, FREE_SHIPPING_THRESHOLD } from "@/lib/pricing";
-// interface Props {
-//   items: any[];
-//   shippingMethod: "standard" | "express" | "overnight";
-// }
 
 interface Props {
   items: CartItem[];
-  shippingMethod: ShippingMethod;
+  // shippingMethod: ShippingMethod;
+  shippingMethod: string;
   subtotal: number;
   tax: number;
   shipping: number;
   total: number;
+  shippingMethodName?: string;
+  deliveryDaysText?: string;
 }
-
-// export const SHIPPING_OPTIONS = {
-//   standard: { label: "Standard Shipping", price: 5.99 },
-//   express: { label: "Express Shipping", price: 12.99 },
-//   overnight: { label: "Overnight Shipping", price: 24.99 },
-// } as const;
-
-// export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
 export default function OrderSummary({
   items,
@@ -37,6 +27,8 @@ export default function OrderSummary({
   tax,
   shipping,
   total,
+  shippingMethodName = "Shipping",
+  deliveryDaysText,
 }: Props) {
   const { symbol, rate } = useCurrencyStore();
 
@@ -49,7 +41,7 @@ export default function OrderSummary({
     ? shippingMethod
     : "standard";
 
-  const shippingOption = SHIPPING_OPTIONS[safeMethod];
+  // const shippingOption = SHIPPING_OPTIONS[safeMethod];
   const amountForFreeShipping =
     subtotal < FREE_SHIPPING_THRESHOLD
       ? FREE_SHIPPING_THRESHOLD - subtotal
@@ -58,21 +50,7 @@ export default function OrderSummary({
   const hasFreeShipping = shipping === 0;
 
 
-  const shippingPrice = shippingOption?.price ?? 0;
-
-  // const subtotal = items.reduce(
-  //   (acc, item) => acc + item.price * item.quantity,
-  //   0,
-  // );
-
-  // const TAX_RATE = 0.08;
-
-  // const tax = subtotal * TAX_RATE;
-  // let total = subtotal + tax + shippingPrice;
-  // const itemInCart = cart.length;
-  // let deliverDiffer = total < 50 ? 50 - total : undefined;
-
-  // if (!deliverDiffer) total = total - shippingPrice;
+  // const shippingPrice = shippingOption?.price ?? 0;
 
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
@@ -88,9 +66,6 @@ export default function OrderSummary({
                 fill
                 className="object-cover"
               />
-              {/* <span className="absolute top-0 -right-1 bg-orange-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
-                {item.quantity}
-              </span> */}
             </div>
 
             <div className="flex-1">
@@ -99,11 +74,7 @@ export default function OrderSummary({
               </p>
               <p className="text-xs text-gray-500 space-x-0.5">{symbol}{item.price} x {item.quantity} = {symbol}
                       {(rate * (item.price * item.quantity)).toFixed(2)}</p>
-              {/* <p className="text-xs text-gray-500">{item.weight}</p> */}
-              {/* <p className="text-xs text-gray-500">Qty: </p> */}
             </div>
-
-            {/* <p className="text-sm font-medium">${item.price.toFixed(2)}</p> */}
           </div>
         ))}
       </div>
@@ -113,47 +84,34 @@ export default function OrderSummary({
           <span>Subtotal</span>
           <span>
             {symbol}
-            {/* {(rate * subtotal).toFixed(2)} */}
             {subtotal.toFixed(2)}
           </span>
         </div>
 
         {/* SHIPPING */}
-        <div className="flex justify-between mt-3">
+        {/* <div className="flex justify-between mt-3">
           <span>Shipping ({shippingOption.label})</span>
           <span className={hasFreeShipping ? "text-[#00A63E]" : ""}>
             {hasFreeShipping
               ? "FREE"
               : `${symbol}${(rate * shipping).toFixed(2)}`}
           </span>
+        </div> */}
+
+        {/* DYNAMIC SHIPPING LABEL */}
+        <div className="flex justify-between mt-3">
+          <span>{shippingMethodName}</span>
+          <span className={hasFreeShipping ? "text-[#00A63E]" : ""}>
+            {hasFreeShipping
+              ? "FREE"
+              : `${symbol}${shipping.toFixed(2)}`}
+          </span>
         </div>
-
-        {/* {!deliverDiffer && (
-          <>
-            <div className="flex justify-between mt-3">
-              <span>Shipping</span>
-              <span className="text-[#00A63E]">FREE</span>
-            </div>
-          </>
-        )}
-
-        {deliverDiffer && (
-          <>
-            <div className="flex justify-between mt-3">
-              <span>Shipping ({shippingOption.label})</span>
-              <span>
-                {symbol}
-                {shippingOption.price.toFixed(2)}
-              </span>
-            </div>
-          </>
-        )} */}
 
         <div className="flex justify-between mt-3">
           <span>Tax (8%)</span>
           <span>
             {symbol}
-            {/* {(rate * tax).toFixed(2)} */}
             {tax.toFixed(2)}
           </span>
         </div>
@@ -165,7 +123,6 @@ export default function OrderSummary({
         <span>Total</span>
         <span>
           {symbol}
-          {/* {(rate * total).toFixed(2)} */}
           {total.toFixed(2)}
         </span>
       </div>
@@ -220,47 +177,7 @@ export default function OrderSummary({
           </div>
         </>
       )}
-
-      {/* {deliverDiffer && (
-        <>
-          <div className=" px-5 py-4 rounded-xl mt-5">
-            <div className="text-[#F83600] flex items-center justify-center w-full">
-              <ShoppingCart className="mr-3" /> Add {symbol}
-              {deliverDiffer.toFixed()}&nbsp;more for free shipping
-            </div>
-          </div>
-
-          <div className="bg-linear-to-r from-[#FE8C00] to-[#F83600] px-5 py-4 rounded-xl mt-5">
-            <Link href="/">
-              <button className="cursor-pointer text-white flex items-center justify-center w-full">
-                Continue Shopping
-              </button>
-            </Link>
-          </div>
-        </>
-      )} */}
     </div>
   );
 }
 
-{
-  /* {savings > 0 && (
-              <div className="flex justify-between text-[#00A63E] mt-3">
-                <span>You Save</span>
-                <span>- ${savings.toFixed(2)}</span>
-              </div>
-            )} */
-}
-{
-  /* 
-      <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
-        <div className="flex justify-between text-gray-600">
-          <span>{items.label}</span>
-          <span>${items.value}</span>      
-        </div>
-      </div>
-      <div className="flex justify-between text-lg font-semibold mt-6">
-        <span>Total</span>
-        <span>${total.toFixed(2)}</span>
-      </div> */
-}

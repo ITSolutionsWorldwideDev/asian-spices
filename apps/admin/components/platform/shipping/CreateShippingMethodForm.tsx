@@ -3,14 +3,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowLeft } from "react-feather";
-import Link from "next/link";
-
-// type Props = {
-//   method?: any;
-//   providers: any[];
-//   onSubmit: (data: any) => Promise<void>;
-// };
 
 type Props = {
   method?: any;
@@ -98,14 +90,6 @@ export default function CreateShippingMethodForm({
               Configure shipping method and provider mapping
             </p>
           </div>
-
-          {/* <Link
-            href="/platform/shipping/methods"
-            className="flex items-center text-sm text-gray-600 hover:text-blue-600"
-          >
-            <ArrowLeft size={16} className="mr-2" />
-            Back
-          </Link> */}
         </div>
 
         {/* Name */}
@@ -204,52 +188,3 @@ export default function CreateShippingMethodForm({
     </div>
   );
 }
-
-/* "use client";
-
-import { useState } from "react";
-
-export default function CreateShippingMethodForm({ providers }: any) {
-  const [form, setForm] = useState({
-    name: "",
-    code: "",
-    provider_id: "",
-  });
-
-  const handleSubmit = async () => {
-    await fetch("/api/platform/shipping/methods", {
-      method: "POST",
-      body: JSON.stringify(form),
-    });
-
-    location.reload();
-  };
-
-  return (
-    <div className="space-y-3">
-      <input
-        placeholder="Name"
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-      />
-
-      <input
-        placeholder="Code"
-        onChange={(e) => setForm({ ...form, code: e.target.value })}
-      />
-
-      <select
-        onChange={(e) => setForm({ ...form, provider_id: e.target.value })}
-      >
-        <option>Select Provider</option>
-        {providers.map((p: any) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-      </select>
-
-      <button onClick={handleSubmit}>Create</button>
-    </div>
-  );
-}
- */

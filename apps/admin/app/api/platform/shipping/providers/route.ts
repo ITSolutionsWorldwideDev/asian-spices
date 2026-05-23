@@ -9,8 +9,6 @@ import { providerSchema } from "@/lib/validations/provider";
 import { validateProviderCredentials } from "@/lib/validations/validateProviderCredentials";
 import { normalizeCredentials } from "@/lib/utils/normalizeCredentials";
 
-// import { PROVIDER_CONFIGS } from "@/lib/shipping/providerConfigs";
-
 export async function POST(req: NextRequest) {
   const client = await pool.connect();
 
@@ -55,29 +53,19 @@ export async function POST(req: NextRequest) {
 
     await client.query(
       `
-      INSERT INTO shipping_provider_credentials (provider_id, metadata)
-      VALUES ($1, $2)
+      INSERT INTO shipping_provider_configs (provider_id, store_id, extra, is_active)
+      VALUES ($1, NULL, $2, $3)
       `,
-      [providerId, encrypted],
+      [providerId, encrypted, is_active],
     );
 
-    // ✅ store ALL credentials as rows (flexible design)
-    // if (credentials && typeof credentials === "object") {
-    //   for (const [key, value] of Object.entries(credentials)) {
-    //     await client.query(
-    //       `
-    //       INSERT INTO shipping_provider_credentials
-    //         (provider_id, api_key, api_secret)
-    //       VALUES ($1, $2, $3)
-    //       `,
-    //       [
-    //         providerId,
-    //         key, // field name (apiKey, email, password, etc)
-    //         encrypt(String(value)),
-    //       ]
-    //     );
-    //   }
-    // }
+    // await client.query(
+    //   `
+    //   INSERT INTO shipping_provider_credentials (provider_id, metadata)
+    //   VALUES ($1, $2)
+    //   `,
+    //   [providerId, encrypted],
+    // );
 
     await client.query("COMMIT");
 
@@ -122,7 +110,6 @@ export async function PUT(req: NextRequest) {
     await client.query("BEGIN");
 
     const body = await req.json();
-
     const parsed = providerSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -171,38 +158,23 @@ export async function PUT(req: NextRequest) {
       encrypted[key] = encrypt(value);
     }
 
+    // await client.query(
+    //   `
+    //   INSERT INTO shipping_provider_credentials (provider_id, metadata)
+    //   VALUES ($1, $2)
+    //   `,
+    //   [id, encrypted],
+    // );
+
     await client.query(
       `
-      INSERT INTO shipping_provider_credentials (provider_id, metadata)
-      VALUES ($1, $2)
+      INSERT INTO shipping_provider_configs (provider_id, store_id, extra, is_active, updated_at)
+      VALUES ($1, NULL, $2, $3, now())
+      ON CONFLICT (provider_id, store_id) 
+      DO UPDATE SET extra = EXCLUDED.extra, is_active = EXCLUDED.is_active, updated_at = now()
       `,
-      [id, encrypted],
+      [id, encrypted, is_active],
     );
-
-    // 🔥 replace all credentials (simple + safe approach)
-    // if (credentials && typeof credentials === "object") {
-    //   // delete old
-    //   await client.query(
-    //     `
-    //     DELETE FROM shipping_provider_credentials
-    //     WHERE provider_id = $1
-    //     `,
-    //     [id],
-    //   );
-
-    //   // insert new
-    //   for (const [key, value] of Object.entries(credentials)) {
-
-    //      await client.query(
-    //       `
-    //       INSERT INTO shipping_provider_credentials
-    //         (provider_id, api_key, api_secret)
-    //       VALUES ($1, $2, $3)
-    //       `,
-    //       [id, key, encrypt(String(value))],
-    //     );
-    //   }
-    // }
 
     await client.query("COMMIT");
 
@@ -219,113 +191,32 @@ export async function PUT(req: NextRequest) {
       { success: false, error: message },
       { status: 500 },
     );
-    
   } finally {
     client.release();
   }
 }
 
-/* import { NextRequest, NextResponse } from "next/server";
-import { pool } from "@acme/db";
-import { encrypt } from "@/lib/crypto";
+// 🔥 replace all credentials (simple + safe approach)
+// if (credentials && typeof credentials === "object") {
+//   // delete old
+//   await client.query(
+//     `
+//     DELETE FROM shipping_provider_credentials
+//     WHERE provider_id = $1
+//     `,
+//     [id],
+//   );
 
-export async function POST(req: NextRequest) {
+//   // insert new
+//   for (const [key, value] of Object.entries(credentials)) {
 
-  const client = await pool.connect();
-
-  try {
-    await client.query("BEGIN");
-    const { name, slug, is_active, apiKey, apiSecret } = await req.json();
-
-    const result = await client.query(
-      `
-      INSERT INTO shipping_providers (name, slug, is_active)
-      VALUES ($1, $2, $3)
-      RETURNING id
-      `,
-      [name, slug, is_active]
-    );
-
-    const providerId = result.rows[0].id;
-
-    // store encrypted credentials
-    if (apiKey || apiSecret) {
-      await client.query(
-        `
-        INSERT INTO shipping_provider_credentials (provider_id, api_key, api_secret)
-        VALUES
-          ($1, 'api_key', $2),
-          ($1, 'api_secret', $3)
-        `,
-        [
-          providerId,
-          encrypt(apiKey || ""),
-          encrypt(apiSecret || ""),
-        ]
-      );
-    }
-
-    await client.query("COMMIT");
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    await client.query("ROLLBACK");
-    console.error(err);
-    return NextResponse.json(
-      { success: false, error: "Failed to create provider" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(req: NextRequest) {
-
-  const client = await pool.connect();
-  try {
-    
-    await client.query("BEGIN");
-    const { id, name, slug, is_active, apiKey, apiSecret } =
-      await req.json();
-
-    await client.query(
-      `
-      UPDATE shipping_providers
-      SET name = $1, slug = $2, is_active = $3
-      WHERE id = $4
-      `,
-      [name, slug, is_active, id]
-    );
-
-    if (apiKey) {
-      await client.query(
-        `
-        UPDATE shipping_provider_credentials
-        SET api_secret = $1
-        WHERE provider_id = $2 AND api_key = 'api_key'
-        `,
-        [encrypt(apiKey), id]
-      );
-    }
-
-    if (apiSecret) {
-      await client.query(
-        `
-        UPDATE shipping_provider_credentials
-        SET api_secret = $1
-        WHERE provider_id = $2 AND api_key = 'api_secret'
-        `,
-        [encrypt(apiSecret), id]
-      );
-    }
-
-    await client.query("COMMIT");
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    await client.query("ROLLBACK");
-    return NextResponse.json(
-      { success: false },
-      { status: 500 }
-    );
-  }
-} */
+//      await client.query(
+//       `
+//       INSERT INTO shipping_provider_credentials
+//         (provider_id, api_key, api_secret)
+//       VALUES ($1, $2, $3)
+//       `,
+//       [id, key, encrypt(String(value))],
+//     );
+//   }
+// }

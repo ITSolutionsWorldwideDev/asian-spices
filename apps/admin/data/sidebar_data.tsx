@@ -49,6 +49,34 @@ export const SidebarData: SidebarItem[] = [
       // { label: "Invoices", link: "/invoice", icon: "file-invoice", submenu: false },
     ],
   },
+
+  {
+    label: "Packaging",
+    submenu: true,
+    submenuHdr: "Packaging",
+    submenuItems: [
+      {
+        label: "Stock",
+        link: "/packaging/stock",
+        icon: "gift",
+        submenu: false,
+      },
+      {
+        label: "Rules",
+        link: "/packaging/rules",
+        icon: "shield",
+        submenu: false,
+      },
+      {
+        label: "Adjustments",
+        link: "/packaging/adjustments",
+        icon: "archive",
+        submenu: false,
+      },
+    ],
+  },
+
+
   {
     label: "Content (CMS)",
     submenuHdr: "Content (CMS)",

@@ -32,23 +32,18 @@ export default function Cart() {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
 
-  // const { data: session } = useSession();
+  
   const router = useRouter();
 
-  const { subtotal, tax, shipping, total } = calculateTotals(
-    cart,
-    shippingMethod,
-  );
+  const currentShippingPrice = SHIPPING_OPTIONS[shippingMethod]?.price ?? 0;
 
-  // const subtotal = cart.reduce(
-  //   (acc, item) => acc + item.price * item.quantity,
-  //   0,
-  // );
+// Pass the raw numeric price into the calculation function
+const { subtotal, tax, shipping, total } = calculateTotals(
+  cart,
+  currentShippingPrice,
+);
 
-  // const TAX_RATE = 0.08;
 
-  // const tax = subtotal * TAX_RATE;
-  // const total = subtotal + tax; // shipping free, tax ignored for now
   const itemInCart = cart.length;
 
   const handleCheckout = () => {
@@ -196,6 +191,22 @@ export default function Cart() {
         {/* RIGHT - ORDER SUMMARY */}
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 h-fit">
           <h2 className="font-semibold mb-4">Order Summary</h2>
+          
+          {/* Optional Shipping Selector UI inside Cart */}
+          <div className="flex flex-col gap-2 mb-4">
+            <label className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Shipping Method</label>
+            <select
+              value={shippingMethod}
+              onChange={(e) => setShippingMethod(e.target.value as ShippingMethod)}
+              className="border p-2 rounded-xl text-sm bg-gray-50 outline-none cursor-pointer"
+            >
+              {Object.entries(SHIPPING_OPTIONS).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value.label} (+{symbol}{(rate * value.price).toFixed(2)})
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="space-y-2 text-sm py-5">
             <div className="flex justify-between mt-3">
@@ -211,6 +222,17 @@ export default function Cart() {
               <span>
                 {symbol}
                 {(rate * tax).toFixed(2)}
+              </span>
+            </div>
+            
+            <div className="flex justify-between mt-3">
+              <span>Estimated Shipping</span>
+              <span>
+                {shipping === 0 ? (
+                  <span className="text-green-600 font-medium">Free</span>
+                ) : (
+                  `${symbol}${(rate * shipping).toFixed(2)}`
+                )}
               </span>
             </div>
           </div>
@@ -253,55 +275,4 @@ export default function Cart() {
       </div>
     </div>
   );
-}
-
-/* const handleCheckout = () => {
-    if (!session) {
-      // 🔥 store intent
-      localStorage.setItem("checkout_redirect", "/checkout");
-
-      router.push("/login");
-      return;
-    }
-
-    router.push("/checkout");
-  };
-  
-  
-  // const savings = cart.reduce((acc, item) => {
-  //   if (!item.oldPrice) return acc;
-  //   return acc + (item.oldPrice - item.price) * item.quantity;
-  // }, 0);
-  
-  */
-
-{
-  /* {item.oldPrice && (
-                      <p className="text-sm text-gray-400 line-through">
-                        ${(item.oldPrice * item.quantity).toFixed(2)}
-                      </p>
-                    )} */
-}
-
-{
-  /* {savings > 0 && (
-              <div className="flex justify-between text-[#00A63E] mt-3">
-                <span>You Save</span>
-                <span>- ${savings.toFixed(2)}</span>
-              </div>
-            )} */
-}
-
-{
-  /* <div className="flex justify-between mt-3">
-              <span>Shipping</span>
-              <span className="text-[#00A63E]">FREE</span>
-            </div> */
-}
-
-{
-  /* <button className="cursor-pointer w-full mt-5 bg-linear-to-r from-[#FF6900] to-[#F83701] hover:bg-orange-600 text-white py-3 rounded-xl font-medium flex items-center justify-center">
-            <Link href="/checkout"> Proceed to Checkout </Link>
-            <ArrowRight className="text-white ml-4 size-[20]" />
-          </button> */
 }

@@ -4,7 +4,6 @@ import { CartItem } from "@/store/useCartStore";
 
 export const TAX_RATE = 0.08;
 export const FREE_SHIPPING_THRESHOLD = 50;
-
 export const BASE_CURRENCY = "EUR";
 
 export const SHIPPING_OPTIONS = {
@@ -17,7 +16,7 @@ export type ShippingMethod = keyof typeof SHIPPING_OPTIONS;
 
 export function calculateTotals(
   cart: CartItem[],
-  shippingMethod: ShippingMethod,
+  shippingCost: number,
 ) {
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -26,10 +25,7 @@ export function calculateTotals(
 
   const tax = subtotal * TAX_RATE;
 
-  const shipping =
-    subtotal >= FREE_SHIPPING_THRESHOLD
-      ? 0
-      : SHIPPING_OPTIONS[shippingMethod].price;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : shippingCost;
 
   const total = subtotal + tax + shipping;
 
@@ -47,12 +43,6 @@ export function convertPrice(
   if (!currency || currency === baseCurrency) {
     return amount;
   }
-
-  // console.log("currency ====", currency);
-  // console.log("baseCurrency ====", baseCurrency);
-  // console.log("amount ====", amount);
-  // console.log("rate ====", rate);
-
   return amount * rate;
 }
 
@@ -72,8 +62,6 @@ export function convertTotals(
   currency: string,
   baseCurrency: string = BASE_CURRENCY,
 ) {
-  // console.log("convertTotals currency ====", currency);
-  // console.log("convertTotals baseCurrency ====", baseCurrency);
   return {
     subtotal: convertPrice(totals.subtotal, rate, currency, baseCurrency),
     tax: convertPrice(totals.tax, rate, currency, baseCurrency),
@@ -82,6 +70,27 @@ export function convertTotals(
   };
 }
 
+
+// export function calculateTotals(
+//   cart: CartItem[],
+//   shippingMethod: ShippingMethod,
+// ) {
+//   const subtotal = cart.reduce(
+//     (acc, item) => acc + item.price * item.quantity,
+//     0,
+//   );
+
+//   const tax = subtotal * TAX_RATE;
+
+//   const shipping =
+//     subtotal >= FREE_SHIPPING_THRESHOLD
+//       ? 0
+//       : SHIPPING_OPTIONS[shippingMethod].price;
+
+//   const total = subtotal + tax + shipping;
+
+//   return { subtotal, tax, shipping, total };
+// }
 /* export const TAX_RATE = 0.08;
 
 export function calculateCartTotals(cart: CartItem[]) {

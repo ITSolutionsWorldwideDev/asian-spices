@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/utils/slugify";
 import { providerSchema } from "@/lib/validations/provider";
 import { PROVIDER_CONFIGS } from "@/lib/shipping/providerConfigs";
-// import { getProviderAdapter } from "@/lib/shipping/providerFactory";
 
 type Provider = {
   id?: string;
@@ -146,7 +145,23 @@ export default function ProviderForm({ provider }: { provider?: Provider }) {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error || "Something went wrong");
+        if (
+          data.error &&
+          typeof data.error === "object" &&
+          data.error.fieldErrors
+        ) {
+          // Map Zod errors directly to your field state errors
+          const formattedErrors: Record<string, string> = {};
+          for (const [key, value] of Object.entries(data.error.fieldErrors)) {
+            if (Array.isArray(value) && value.length > 0) {
+              formattedErrors[key] = value[0];
+            }
+          }
+          setErrors(formattedErrors);
+          setError("Please fix validation issues below.");
+        } else {
+          setError(data.error || "Something went wrong");
+        }
         return;
       }
 
@@ -281,225 +296,4 @@ export default function ProviderForm({ provider }: { provider?: Provider }) {
       </button>
     </div>
   );
-}
-
-/* const [form, setForm] = useState({
-    name: provider?.name || "",
-    slug: provider?.slug || "",
-    is_active: provider?.is_active ?? true,
-
-    // credentials
-    credentials: {},
-    // apiKey: "",
-    // apiSecret: "",
-  }); */
-
-// useEffect(() => {
-//   setTestResult(null);
-// }, [form.apiKey, form.apiSecret, form.slug]);
-
-/* const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    setErrors({});
-
-    // ✅ VALIDATION
-    const result = providerSchema.safeParse(form);
-
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((err) => {
-        const field = err.path[0] as string;
-        if (field) fieldErrors[field] = err.message;
-      });
-
-      setErrors(fieldErrors);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/platform/shipping/providers", {
-        method: provider?.id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: provider?.id,
-          ...form,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        setError(data.error || "Something went wrong");
-        return;
-      }
-
-      router.push("/platform/shipping/providers");
-    } catch (err) {
-      setError("Failed to save provider");
-    } finally {
-      setLoading(false);
-    }
-  }; */
-
-/* const handleTestConnection = async () => {
-    setTesting(true);
-    setTestResult(null);
-
-    try {
-      const res = await fetch(
-        "/api/platform/shipping/providers/test-connection",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            slug: form.slug,
-            apiKey: form.apiKey,
-            apiSecret: form.apiSecret,
-          }),
-        },
-      );
-
-      const data = await res.json();
-
-      if (!data.success) {
-        setTestResult({
-          success: false,
-          message: data.error || "Connection failed",
-        });
-      } else {
-        setTestResult({
-          success: true,
-          message: "Connection successful ✅",
-        });
-      }
-    } catch (err) {
-      setTestResult({
-        success: false,
-        message: "Network error while testing connection",
-      });
-    } finally {
-      setTesting(false);
-    }
-  }; */
-{
-  /* <div className="border-t pt-4">
-        <h3 className="font-medium mb-2">API Credentials</h3>
-
-        <div className="grid grid-cols-1 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              API Key<span className="text-red-500 ml-1">*</span>
-            </label>
-
-            <input
-              placeholder="API Key"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-              value={form.apiKey}
-              onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
-            />
-            {errors.apiKey && (
-              <p className="text-red-500 text-xs">{errors.apiKey}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email<span className="text-red-500 ml-1">*</span>
-            </label>
-
-            <input
-              placeholder="Account Email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Password<span className="text-red-500 ml-1">*</span>
-            </label>
-
-            <input
-              type="password"
-              placeholder="Account Password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              API Secret<span className="text-red-500 ml-1">*</span>
-            </label>
-
-            <input
-              placeholder="API Secret"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-              value={form.apiSecret}
-              onChange={(e) => setForm({ ...form, apiSecret: e.target.value })}
-            />
-            {errors.apiSecret && (
-              <p className="text-red-500 text-xs">{errors.apiSecret}</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 mt-2">
-        <button
-          type="button"
-          onClick={handleTestConnection}
-          disabled={
-            testing ||
-            !form.apiKey ||
-            !form.email ||
-            !form.password ||
-            !form.slug
-          }
-          // disabled={testing || !form.apiKey || !form.apiSecret || !form.slug}
-          className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-50 disabled:opacity-50"
-        >
-          {testing ? "Testing..." : "Test Connection"}
-        </button>
-
-        {testResult?.success && (
-          <span className="text-green-600 text-xs">✔ Verified</span>
-        )}
-
-        {testResult && (
-          <span
-            className={`text-sm ${
-              testResult.success ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {testResult.message}
-          </span>
-        )}
-      </div> */
-}
-
-{
-  /* {testResult?.success && (
-          <span className="text-green-600 text-xs">✔ Verified</span>
-        )} */
-}
-{
-  /* {testResult && (
-          <span
-            className={`text-sm ${
-              testResult.success ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {testResult.message}
-          </span>
-        )} */
 }

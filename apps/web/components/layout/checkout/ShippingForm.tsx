@@ -5,16 +5,27 @@ import { useLoaderStore } from "@/store/useLoaderStore";
 import { ChevronRight } from "lucide-react";
 
 import { useEffect, useState } from "react";
+
+export interface ShippingOption {
+  id: string;
+  name: string;
+  code: string;
+  price: number;
+  minDays: number;
+  maxDays: number;
+}
+
 interface Props {
   data: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
-  shippingMethod: "standard" | "express" | "overnight";
-  setShippingMethod: (value: any) => void;
+  shippingMethod: string; //shippingMethod: "standard" | "express" | "overnight";
+  setShippingMethod: (value: string) => void; //setShippingMethod: (value: any) => void;
   errors: Record<string, string>;
 
   addresses: any[];
   selectedAddress: any;
   setSelectedAddress: (val: any) => void;
+  onShippingOptionsFetched?: (options: ShippingOption[]) => void;
 }
 
 type Country = {
@@ -32,16 +43,19 @@ export default function ShippingForm({
   addresses,
   selectedAddress,
   setSelectedAddress,
+  onShippingOptionsFetched,
 }: Props) {
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const { show, hide } = useLoaderStore();
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
       ...prev,
       [field]: value,
     }));
   };
-
-  const [countries, setCountries] = useState<Country[]>([]);
-  const { show, hide } = useLoaderStore();
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -59,6 +73,56 @@ export default function ShippingForm({
 
     fetchCountries();
   }, []);
+
+  // Fetch dynamic available routes whenever target destination alters
+  useEffect(() => {
+    const fetchShippingRates = async () => {
+      if (!data.country) {
+        setShippingOptions([]);
+        return;
+      }
+
+      try {
+        setLoadingOptions(true);
+        const queryParams = new URLSearchParams({
+          country: data.country,
+          city: data.city || "",
+          weight: "0", // Map your state variables here if weight metrics matter
+        });
+
+        const res = await fetch(
+          `/api/checkout/shipping-options?${queryParams.toString()}`,
+        );
+        const result = await res.json();
+
+        if (result.success) {
+          const options: ShippingOption[] = result.options;
+          setShippingOptions(options);
+
+          if (onShippingOptionsFetched) {
+            onShippingOptionsFetched(options);
+          }
+
+          // Automatically select the first option if the current selection is no longer valid or unset
+          const validCurrentSelection = options.some(
+            (opt) => opt.id === shippingMethod,
+          );
+          if (!validCurrentSelection && options?.length > 0 && options[0]) {
+            setShippingMethod(options[0].id);
+          } else if (options.length === 0) {
+            setShippingMethod("");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load shipping paths:", err);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    // Minor debounce layout could be inserted here if desired for fast typing input components
+    fetchShippingRates();
+  }, [data.country, data.city]);
 
   return (
     <div className="  flex justify-center ">
@@ -303,7 +367,53 @@ export default function ShippingForm({
 
         <h2 className="text-xl font-semibold mb-4">Delivery</h2>
 
-        <div className="space-y-4">
+        {loadingOptions ? (
+          <p className="text-sm text-gray-500 animate-pulse">
+            Calculating available shipping routes...
+          </p>
+        ) : shippingOptions.length === 0 ? (
+          <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+            Please enter a valid country and city to see available delivery
+            methods.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {shippingOptions.map((option) => (
+              <label
+                key={option.id}
+                className={`flex items-center justify-between border rounded-xl p-4 cursor-pointer transition-all ${
+                  shippingMethod === option.id
+                    ? "border-orange-500 bg-orange-50/50"
+                    : "border-[#E5E7EB] hover:border-gray-300"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="shipping"
+                    value={option.id}
+                    checked={shippingMethod === option.id}
+                    onChange={() => setShippingMethod(option.id)}
+                    className="accent-orange-500"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900">{option.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {option.minDays === option.maxDays
+                        ? `${option.minDays} business day${option.minDays > 1 ? "s" : ""}`
+                        : `${option.minDays}-${option.maxDays} business days`}
+                    </p>
+                  </div>
+                </div>
+                <span className="font-semibold text-gray-900">
+                  {option.price === 0 ? "Free" : `$${option.price.toFixed(2)}`}
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        {/* <div className="space-y-4">
           <label className="flex items-center justify-between border border-[#E5E7EB] rounded-xl p-4 cursor-pointer">
             <div className="flex items-center gap-3">
               <input
@@ -356,7 +466,7 @@ export default function ShippingForm({
             </div>
             <span className="font-medium">$24.99</span>
           </label>
-        </div>
+        </div> */}
       </div>
     </div>
   );

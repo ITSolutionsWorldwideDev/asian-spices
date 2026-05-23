@@ -17,7 +17,7 @@ import { useSession } from "next-auth/react";
 import { checkoutSchema } from "@/lib/validation/checkout";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { calculateTotals, convertTotals } from "@/lib/pricing";
-import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
+// import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
 
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 
@@ -55,16 +55,55 @@ export default function Checkout() {
   }, [session]);
 
   const { show, hide } = useLoaderStore();
-
   const { cart, clearCart } = useCartStore();
+  const { rate, selectedCurrency } = useCurrencyStore();
+
   const [addresses, setAddresses] = useState<any[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
-
-  const [shippingMethod, setShippingMethod] =
-    useState<ShippingMethod>("standard");
-
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // 1. Core Dynamic Shipping States
+  const [shippingMethod, setShippingMethod] = useState<string>("");
+  const [availableShippingOptions, setAvailableShippingOptions] = useState<
+    any[]
+  >([]);
+
+  // const [shippingMethod, setShippingMethod] =
+  //   useState<ShippingMethod>("standard");
+
+  const [formData, setFormData] = useState<CheckoutData>({
+    email: "",
+    phone: "",
+
+    firstName: "",
+    lastName: "",
+    address: "",
+    appartment: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "NL",
+
+    latitude: 0,
+    longitude: 0,
+
+    cardNumber: "",
+    expiry: "",
+  });
+
+  // 2. Dynamic Price Calculations Block
+  // Find the database price matching the currently selected method ID
+  const selectedOption = availableShippingOptions.find(
+    (opt: any) => String(opt.id) === String(shippingMethod),
+  );
+  const currentShippingPrice = selectedOption ? selectedOption.price : 0;
+
+  // 3. Update your totals calculation line to pass the price instead of the ID:
+  const totals = calculateTotals(cart, currentShippingPrice);
+  const convertedTotals = convertTotals(totals, rate, selectedCurrency);
+
+  // const totals = calculateTotals(cart, shippingMethod);
 
   useEffect(() => {
     const loadAddresses = async () => {
@@ -105,30 +144,7 @@ export default function Checkout() {
     loadAddresses();
   }, [session]);
 
-  const [formData, setFormData] = useState<CheckoutData>({
-    email: "",
-    phone: "",
-
-    firstName: "",
-    lastName: "",
-    address: "",
-    appartment: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "NL",
-
-    latitude: 0,
-    longitude: 0,
-
-    cardNumber: "",
-    expiry: "",
-  });
   const isFormValid = checkoutSchema.safeParse(formData).success;
-
-  const totals = calculateTotals(cart, shippingMethod);
-  const { rate, selectedCurrency } = useCurrencyStore();
-  const convertedTotals = convertTotals(totals, rate, selectedCurrency);
 
   const placeOrder = async (method: "paynl" | "paypal") => {
     // Validate form
@@ -330,6 +346,12 @@ export default function Checkout() {
     }
   };
 
+  const deliveryDaysString = selectedOption
+    ? selectedOption.minDays === selectedOption.maxDays
+      ? `Delivery in ${selectedOption.minDays} business day${selectedOption.minDays > 1 ? "s" : ""}`
+      : `Delivery in ${selectedOption.minDays}-${selectedOption.maxDays} business days`
+    : "";
+
   return (
     <div>
       <div className="bg-black">
@@ -379,12 +401,13 @@ export default function Checkout() {
               addresses={addresses}
               selectedAddress={selectedAddress}
               setSelectedAddress={setSelectedAddress}
+              onShippingOptionsFetched={(options) =>
+                setAvailableShippingOptions(options)
+              }
             />
             <PaymentForm placeOrder={placeOrder} disabled={!isFormValid} />
           </div>
-          {/* <OrderSummary items={cart} shippingMethod={shippingMethod} /> */}
-          {/* {convertedTotals.total} === {convertedTotals.subtotal} ===={" "}
-          {convertedTotals.tax} */}
+
           <OrderSummary
             items={cart}
             shippingMethod={shippingMethod}
@@ -392,6 +415,10 @@ export default function Checkout() {
             tax={convertedTotals.tax}
             shipping={convertedTotals.shipping}
             total={convertedTotals.total}
+            shippingMethodName={
+              selectedOption ? selectedOption.name : "Shipping"
+            }
+            deliveryDaysText={deliveryDaysString}
           />
         </div>
       </div>
