@@ -34,6 +34,7 @@ export type AssignPackagingInput = {
 };
 
 export type PackagingSelectionInput = {
+  storeId: string;
   totalWeightKg: number;
 
   lengthCm: number;
@@ -134,6 +135,21 @@ export const createPackagingType = async (
 //    UPDATE PACKAGING TYPE
 // =========================================================
 
+const ALLOWED_TYPE_FIELDS = new Set([
+  "sku",
+  "name",
+  "package_type",
+  "description",
+  "length_cm",
+  "width_cm",
+  "height_cm",
+  "empty_weight_kg",
+  "max_weight_kg",
+  "material",
+  "color",
+  "is_fragile",
+]);
+
 export const updatePackagingType = async (
   client: PoolClient,
   packagingTypeId: string,
@@ -141,14 +157,22 @@ export const updatePackagingType = async (
 ) => {
   const fields: string[] = [];
   const values: any[] = [];
-
   let index = 1;
 
-  Object.entries(updates).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) continue;
+
+    // Strict lookup defense against parameter/key injection
+    if (!ALLOWED_TYPE_FIELDS.has(key)) {
+      throw new Error(`Invalid or restricted update column key: ${key}`);
+    }
+
     fields.push(`${key} = $${index}`);
     values.push(value);
     index++;
-  });
+  }
+
+  if (fields.length === 0) return null;
 
   values.push(packagingTypeId);
 
@@ -158,9 +182,7 @@ export const updatePackagingType = async (
     SET
       ${fields.join(", ")},
       updated_at = NOW()
-
     WHERE id = $${index}
-
     RETURNING *
   `,
     values,
@@ -433,8 +455,7 @@ export const autoSelectPackaging = async (
 ) => {
   const { rows } = await client.query(
     `
-      SELECT
-        *
+      SELECT pt.*, pr.priority
 
       FROM packaging_rules pr
 
@@ -443,51 +464,53 @@ export const autoSelectPackaging = async (
 
       WHERE pr.is_active = true
 
+        AND (pr.store_id = $1 OR pr.store_id IS NULL)
+
         AND (
           pr.min_weight_kg IS NULL
-          OR $1 >= pr.min_weight_kg
+          OR $2 >= pr.min_weight_kg
         )
 
         AND (
           pr.max_weight_kg IS NULL
-          OR $1 <= pr.max_weight_kg
+          OR $2 <= pr.max_weight_kg
         )
 
         AND (
           pr.min_length_cm IS NULL
-          OR $2 >= pr.min_length_cm
+          OR $3 >= pr.min_length_cm
         )
 
         AND (
           pr.max_length_cm IS NULL
-          OR $2 <= pr.max_length_cm
+          OR $3 <= pr.max_length_cm
         )
 
         AND (
           pr.min_width_cm IS NULL
-          OR $3 >= pr.min_width_cm
+          OR $4 >= pr.min_width_cm
         )
 
         AND (
           pr.max_width_cm IS NULL
-          OR $3 <= pr.max_width_cm
+          OR $4 <= pr.max_width_cm
         )
 
         AND (
           pr.min_height_cm IS NULL
-          OR $4 >= pr.min_height_cm
+          OR $5 >= pr.min_height_cm
         )
 
         AND (
           pr.max_height_cm IS NULL
-          OR $4 <= pr.max_height_cm
+          OR $5 <= pr.max_height_cm
         )
 
       ORDER BY pr.priority ASC
 
       LIMIT 1
     `,
-    [input.totalWeightKg, input.lengthCm, input.widthCm, input.heightCm],
+    [input.storeId, input.totalWeightKg, input.lengthCm, input.widthCm, input.heightCm],
   );
 
   return rows[0] || null;
@@ -652,17 +675,13 @@ export const getPackagingMovements = async (
 
   if (storeId) {
     conditions.push(`pim.store_id = $${index}`);
-
     values.push(storeId);
-
     index++;
   }
 
   if (packagingTypeId) {
     conditions.push(`pim.packaging_type_id = $${index}`);
-
     values.push(packagingTypeId);
-
     index++;
   }
 

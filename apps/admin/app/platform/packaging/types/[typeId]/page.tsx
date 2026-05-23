@@ -1,9 +1,12 @@
 // apps/admin/app/platform/packaging/types/[typeId]/page.tsx
 
 import { pool } from "@acme/db";
+import { notFound } from "next/navigation";
 
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import PackagingTypeForm from "../new/PackagingTypeForm";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function EditPackagingTypePage({
   params,
@@ -17,6 +20,10 @@ export default async function EditPackagingTypePage({
   const { typeId } =
     await params;
 
+  if (!UUID_REGEX.test(typeId)) {
+    return notFound(); 
+  }
+
   const { rows } = await pool.query(
     `
     SELECT *
@@ -26,13 +33,18 @@ export default async function EditPackagingTypePage({
     [typeId],
   );
 
-  if (!rows.length) {
-    return (
-      <p className="p-6 text-red-500">
-        Packaging type not found
-      </p>
-    );
+  const packagingType = rows[0];
+  if (!packagingType) {
+    return notFound();
   }
+
+  // if (!rows.length) {
+  //   return (
+  //     <p className="p-6 text-red-500">
+  //       Packaging type not found
+  //     </p>
+  //   );
+  // }
 
   return (
     <div className="page-wrapper">

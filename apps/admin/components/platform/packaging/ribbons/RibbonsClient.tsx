@@ -87,7 +87,7 @@ export default function RibbonsClient({
                           {
                             ribbon.width_mm
                           }{" "}
-                          cm
+                          mm
                         </td>
 
                         <td>
