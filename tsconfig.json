@@ -7,6 +7,7 @@
     { "path": "packages/types" },
     { "path": "packages/auth" },
     { "path": "packages/order-routing" },
+    { "path": "packages/packaging-service" },
     { "path": "packages/payments" },
     { "path": "packages/idin" }
   ],
@@ -21,7 +22,8 @@
       "@acme/types": ["packages/types"],
       "@acme/ui": ["packages/ui"],
       "@repo/ui": ["packages/ui/src/index.ts"],
-      "@acme/order-routing": ["packages/order-routing/index.ts"]
+      "@acme/order-routing": ["packages/order-routing/index.ts"],
+      "@acme/packaging-service": ["packages/packaging-service/index.ts"]
     }
   }
   // "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]

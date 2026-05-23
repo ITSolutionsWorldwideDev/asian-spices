@@ -19,66 +19,42 @@ const PLATFORM_MENU = [
         link: "/platform/dashboard",
         submenu: false,
       },
+    ],
+  },
+
+  {
+    label: "System Activity",
+    submenu: true,
+    submenuHdr: "Activity",
+    submenuItems: [
+      {
+        label: "Orders",
+        icon: "receipt",
+        link: "/platform/orders",
+        submenu: false,
+      },
+    ],
+  },
+
+  {
+    label: "Partner Stores",
+    submenu: true,
+    submenuHdr: "Partner Stores",
+    submenuItems: [
       {
         label: "Partners",
         icon: "building-store",
         link: "/platform/partners",
+        submenu: false,
       },
       {
         label: "Stores",
         icon: "building-store",
         link: "/platform/stores",
+        submenu: false,
       },
-      {
-        label: "Users & Roles",
-        icon: "users",
-        link: "/platform/users",
-      },
-      {
-        label: "Billing",
-        icon: "credit-card",
-        link: "/platform/billing",
-      },
-      {
-        label: "Settings",
-        icon: "settings-cog",
-        link: "/platform/settings",
-      },
-      {
-        label: "Currencies",
-        icon: "currency-euro",
-        link: "/platform/currencies",
-      },
-      {
-        label: "Currency Rates",
-        icon: "exchange",
-        link: "/platform/currency-rates",
-      },
-      {
-        label: "Orders",
-        icon: "receipt",
-        link: "/platform/orders",
-      },
-      {
-        label: "Shipping",
-        icon: "truck",
-        link: "/platform/shipping/providers",
-      },
-      {
-        label: "Shipping Methods",
-        icon: "truck",
-        link: "/platform/shipping/methods",
-      },
-
-      
     ],
   },
-
-  // {
-  //   label: "Dashboard",
-  //   icon: "layout-grid",
-  //   link: "/platform/dashboard",
-  // },
 
   {
     label: "Inventory",
@@ -121,12 +97,119 @@ const PLATFORM_MENU = [
         submenu: false,
       },
       { label: "All Recipes", link: "/recipes", icon: "box", submenu: false },
-      { label: "Recipe Tags", link: "/recipe-tags", icon: "box", submenu: false },
+      {
+        label: "Recipe Tags",
+        link: "/recipe-tags",
+        icon: "box",
+        submenu: false,
+      },
       { label: "Analytics", link: "/analytics", icon: "box", submenu: false },
       {
         label: "Create Receipe",
         link: "/recipes/new",
         icon: "table-plus",
+        submenu: false,
+      },
+    ],
+  },
+
+  {
+    label: "Shipping",
+    submenu: true,
+    submenuHdr: "Shipping",
+    submenuItems: [
+      {
+        label: "Shipping",
+        link: "/platform/shipping/providers",
+        icon: "truck",
+        submenu: false,
+      },
+      {
+        label: "Shipping Methods",
+        link: "/platform/shipping/methods",
+        icon: "tag",
+        submenu: false,
+      },
+    ],
+  },
+
+  {
+    label: "Packaging",
+    submenu: true,
+    submenuHdr: "Packaging",
+    submenuItems: [
+      {
+        label: "Types",
+        link: "/platform/packaging/types",
+        icon: "gift",
+        submenu: false,
+      },
+      {
+        label: "Ribbons",
+        link: "/platform/packaging/ribbons",
+        icon: "shield",
+        submenu: false,
+      },
+      {
+        label: "Addons",
+        link: "/platform/packaging/addons",
+        icon: "archive",
+        submenu: false,
+      },
+      {
+        label: "Inventory",
+        link: "/platform/packaging/inventory",
+        icon: "package",
+        submenu: false,
+      },
+      {
+        label: "Rules",
+        link: "/platform/packaging/rules",
+        icon: "archive",
+        submenu: false,
+      },
+      {
+        label: "Orders",
+        link: "/platform/packaging/orders",
+        icon: "receipt",
+        submenu: false,
+      },
+    ],
+  },
+  {
+    label: "Configuration",
+    submenu: true,
+    submenuHdr: "Configuration",
+    submenuItems: [
+      {
+        label: "Currencies",
+        icon: "currency-euro",
+        link: "/platform/currencies",
+        submenu: false,
+      },
+      {
+        label: "Currency Rates",
+        icon: "exchange",
+        link: "/platform/currency-rates",
+        submenu: false,
+      },
+
+      {
+        label: "Billing",
+        icon: "credit-card",
+        link: "/platform/billing",
+        submenu: false,
+      },
+      {
+        label: "Users & Roles",
+        icon: "users",
+        link: "/platform/users",
+        submenu: false,
+      },
+      {
+        label: "Settings",
+        icon: "settings-cog",
+        link: "/platform/settings",
         submenu: false,
       },
     ],
@@ -170,7 +253,7 @@ export default function PlatformSidebar() {
 
   return (
     <div
-      className={`sidebar ${toggle ? "" : "active"} ${expandMenus ? "expand-menu" : ""}`}
+      className={`sidebar pb-28 ${toggle ? "" : "active"} ${expandMenus ? "expand-menu" : ""}`}
       onMouseOver={expandMenuOpen}
       onMouseLeave={expandMenuClose}
       id="sidebar"
@@ -183,26 +266,10 @@ export default function PlatformSidebar() {
           <ChevronsLeft />
         </button>
       </div>
-      {/* <PerfectScrollbar>
-        <div className="sidebar-inner slimscroll">
-          <div id="sidebar-menu" className="sidebar-menu">
-            <ul>
-              {PLATFORM_MENU.map((item) => (
-                <li key={item.link} className={pathname.startsWith(item.link) ? "active" : ""}>
-                  <Link href={item.link}>
-                    <i className={`ti ti-${item.icon} me-2`} />
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </PerfectScrollbar> */}
       <PerfectScrollbar>
         <div className="sidebar-inner slimscroll">
           <div id="sidebar-menu" className="sidebar-menu">
-            <ul>
+            <ul className="pb-8">
               {PLATFORM_MENU.map((mainItem, idx) => (
                 <li key={idx} className="submenu-open">
                   <h6 className="submenu-hdr">{mainItem.submenuHdr}</h6>
@@ -230,3 +297,20 @@ export default function PlatformSidebar() {
     </div>
   );
 }
+
+/* <PerfectScrollbar>
+        <div className="sidebar-inner slimscroll">
+          <div id="sidebar-menu" className="sidebar-menu">
+            <ul>
+              {PLATFORM_MENU.map((item) => (
+                <li key={item.link} className={pathname.startsWith(item.link) ? "active" : ""}>
+                  <Link href={item.link}>
+                    <i className={`ti ti-${item.icon} me-2`} />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </PerfectScrollbar> */

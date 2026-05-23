@@ -28,12 +28,6 @@ export default async function EditProviderPage({
   // ✅ Use service (includes decrypted credentials)
   const provider = await getProviderCredentials(slug);
 
-  console.log('provider  ==== ',provider);
-
-  // if (!provider) {
-  //   return <p>Provider not found</p>;
-  // }
-
   return (
     <div className="page-wrapper">
       <div className="content">
