@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import OrderFilterBar from "@/components/orders/FilterBar";
 import { useToast } from "@repo/ui";
@@ -17,7 +17,7 @@ export default function AdminOrdersPage() {
 
   const limit = 10;
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -28,16 +28,21 @@ export default function AdminOrdersPage() {
       });
 
       const res = await fetch(`/api/platform/orders?${params}`);
+
+      if (!res.ok)
+        throw new Error("Server parameters returned processing error");
+
       const data = await res.json();
 
       setOrders(data.orders);
-      setTotal(data.total);
+      setOrders(data.orders || []);
+      setTotal(data.total || 0);
     } catch {
       showToast("error", "Failed to load products");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters, showToast]);
 
   useEffect(() => {
     fetchOrders();
@@ -48,7 +53,20 @@ export default function AdminOrdersPage() {
   return (
     <div className="page-wrapper">
       <div className="content p-6">
-        <h1 className="text-2xl font-bold mb-4">Orders</h1>
+        {/* <h1 className="text-2xl font-bold mb-4">Orders</h1> */}
+
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            System Order Registry
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Monitor cross-store routing events and process stuck order manual
+            interventions.
+          </p>
+        </div>
+        <div className="bg-gray-100 px-4 py-2 rounded-lg border text-sm font-medium">
+          Total Tracks: <span className="text-blue-600">{total}</span>
+        </div>
 
         {/* ✅ FILTER BAR */}
         <OrderFilterBar
@@ -63,10 +81,115 @@ export default function AdminOrdersPage() {
         <div className="card-body">
           <div className="overflow-x-auto">
             {loading ? (
-              <p className="text-center py-6">Loading...</p>
+              <div className="flex items-center justify-center py-24 space-x-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black" />
+                <p className="text-gray-500 font-medium">
+                  Fetching registry balances...
+                </p>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="text-center py-24 text-gray-400">
+                No system tracking records match the active criteria.
+              </div>
             ) : (
               <div className="bg-white rounded shadow overflow-hidden">
-                <table className="w-full">
+
+                <table className="w-full text-left border-collapse">
+              <thead className="bg-gray-50 border-b text-xs font-semibold uppercase text-gray-600 tracking-wider">
+                <tr>
+                  <th className="p-4">Order String ID</th>
+                  <th className="p-4">Routing State</th>
+                  <th className="p-4">Payment</th>
+                  <th className="p-4">Assigned Node</th>
+                  <th className="p-4 text-center">Bounces</th>
+                  <th className="p-4">Ingested Date</th>
+                  <th className="p-4"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y text-sm text-gray-700">
+                {orders.map((o) => {
+                  // Operational warning condition for orders bouncing across stores repeatedly without successful dispatch
+                  const isStuck = o.order_status === "processing" && Number(o.rejection_count) >= 3;
+                  
+                  return (
+                    <tr key={o.id} className={`hover:bg-gray-50 transition ${isStuck ? "bg-amber-50/60 hover:bg-amber-50" : ""}`}>
+                      <td className="p-4 font-mono font-bold text-gray-900">{o.order_number}</td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                          o.order_status === "rejected" ? "bg-red-50 text-red-700 border-red-200" :
+                          o.order_status === "processing" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                          o.order_status === "shipped" ? "bg-green-50 text-green-700 border-green-200" :
+                          "bg-gray-50 text-gray-700 border-gray-200"
+                        }`}>
+                          {o.order_status}
+                        </span>
+                        {isStuck && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-600 text-white animate-pulse">
+                            STUCK IN LOOP
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className={`text-xs font-semibold ${o.payment_status === "paid" ? "text-green-600" : "text-gray-400"}`}>
+                          {o.payment_status}
+                          {/* // .toUpperCase() */}
+                        </span>
+                      </td>
+                      <td className="p-4 font-medium text-gray-600">{o.store_name || "— (Unallocated)"}</td>
+                      <td className="p-4 text-center">
+                        <span className={`font-semibold px-2 py-0.5 rounded ${Number(o.rejection_count) > 0 ? "bg-red-50 text-red-600 font-bold" : "text-gray-400"}`}>
+                          {o.rejection_count}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-500">{new Date(o.created_at).toLocaleDateString()}</td>
+                      <td className="p-4 text-right">
+                        <Link href={`./orders/${o.id}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+                          Inspect Asset →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+                
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ✅ PAGINATION ACTIONS */}
+      <div className="flex justify-between items-center pt-2">
+        <button
+          disabled={page === 1 || loading}
+          onClick={() => setPage((p) => p - 1)}
+          className="px-4 py-2 border rounded-lg shadow-sm text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Previous Page
+        </button>
+        <span className="text-sm text-gray-600 font-medium">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          disabled={page === totalPages || loading}
+          onClick={() => setPage((p) => p + 1)}
+          className="px-4 py-2 border rounded-lg shadow-sm text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Next Page
+        </button>
+      </div>
+
+        
+
+
+
+      </div>
+    </div>
+  );
+}
+
+/* 
+<table className="w-full">
                   <thead className="bg-gray-100 text-xs uppercase">
                     <tr>
                       <th className="p-3 text-left">Order</th>
@@ -121,13 +244,10 @@ export default function AdminOrdersPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
-          </div>
-        </div>
+*/
 
-        {/* ✅ PAGINATION */}
-        <div className="flex justify-between items-center mt-4">
+{/* ✅ PAGINATION */}
+/*         <div className="flex justify-between items-center mt-4">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
@@ -147,145 +267,4 @@ export default function AdminOrdersPage() {
           >
             Next
           </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-/* 
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import FilterBar from "./FilterBar";
-import { useToast } from "@repo/ui";
-
-export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetch("/api/platform/orders")
-      .then((res) => res.json())
-      .then((data) => setOrders(data.orders));
-  }, []);
-
-  const columns = [
-  {
-    title: "Product",
-    dataIndex: "name",
-    render: (text: string, record: Product) => (
-      <Link href={`products/${record.id}`} className="text-blue-600 hover:underline">
-        {text}
-      </Link>
-    ),
-    sorter: (a: Product, b: Product) => a.name.localeCompare(b.name),
-  },
-  {
-    title: "Category",
-    dataIndex: "category",
-    sorter: (a: Product, b: Product) => a.category.localeCompare(b.category),
-  },
-  {
-    title: "Brand",
-    dataIndex: "brand",
-    sorter: (a: Product, b: Product) => a.brand.localeCompare(b.brand),
-  },
-  {
-    title: "Price",
-    dataIndex: "price",
-    sorter: (a: Product, b: Product) => a.price - b.price,
-    render: (price: number) => `$${price.toLocaleString()}`,
-  },
-  {
-    title: "Qty",
-    dataIndex: "quantity",
-    sorter: (a: Product, b: Product) => a.quantity - b.quantity,
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    render: (s: number) => (
-      <span className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${s ? "bg-green-600" : "bg-red-600"}`}>
-        {s ? "Active" : "Inactive"}
-      </span>
-    ),
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    render: (_: any, record: Product) => (
-      <div className="flex gap-2">
-        <Link href={`products/${record.id}`} className="p-2 hover:text-blue-600">
-          <Eye size={16} />
-        </Link>
-        <Link href={`products/${record.id}/edit`} className="p-2 hover:text-yellow-600">
-          <Edit size={16} />
-        </Link>
-        <button
-          onClick={() => {
-            setSelectedId(record.id);
-            setShowDeleteModal(true);
-          }}
-          className="p-2 text-red-500 hover:text-red-700"
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
-    ),
-  },
-];
-
-  return (
-    <div className="page-wrapper">
-      <div className="content">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Orders</h1>
-
-            <div className="card-body">
-              <div className="overflow-x-auto">
-                {loading ? (
-                  <p className="text-center py-6">Loading...</p>
-                ) : (
-                  <Table
-                    columns={columns}
-                    dataSource={products}
-                    rowKey="id"
-                  />
-                )}
-              </div>
-            </div>
-
-          <table className="w-full table-auto bg-white rounded shadow">
-            <thead>
-              <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b">
-                <th className="p-4 ">Order</th>
-                <th className="p-4 ">Status</th>
-                <th className="p-4 ">Store</th>
-                <th className="p-4 ">Rejections</th>
-                <th className="p-4 "></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {orders.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-6 py-2">{c.order_number}</td>
-                  <td className="px-6 py-2">{c.order_status}</td>
-                  <td className="px-6 py-2">{c.store_name || "-"}</td>
-                  <td className="px-6 py-2">{c.rejection_count}</td>
-                  <td className="px-6 py-2">
-                    <Link
-                      href={`/admin/orders/${c.id}`}
-                      className="text-blue-600"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-} */
+        </div> */

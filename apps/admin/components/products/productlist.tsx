@@ -52,7 +52,7 @@ export default function ProductListComponent() {
       setLoading(true);
 
       const params = new URLSearchParams(
-        Object.entries(filters).filter(([_, v]) => v) as any
+        Object.entries(filters).filter(([_, v]) => v) as any,
       );
 
       const res = await fetch(`/api/products?${params.toString()}`);
@@ -90,75 +90,86 @@ export default function ProductListComponent() {
   };
 
   const columns = [
-  // {
-  //   title: "SKU",
-  //   dataIndex: "sku",
-  //   sorter: (a: Product, b: Product) => a.sku.localeCompare(b.sku),
-  // },
-  {
-    title: "Product",
-    dataIndex: "name",
-    render: (text: string, record: Product) => (
-      <Link href={`products/${record.id}`} className="text-blue-600 hover:underline">
-        {text}
-      </Link>
-    ),
-    sorter: (a: Product, b: Product) => a.name.localeCompare(b.name),
-  },
-  {
-    title: "Category",
-    dataIndex: "category",
-    sorter: (a: Product, b: Product) => a.category.localeCompare(b.category),
-  },
-  {
-    title: "Brand",
-    dataIndex: "brand",
-    sorter: (a: Product, b: Product) => a.brand.localeCompare(b.brand),
-  },
-  {
-    title: "Price",
-    dataIndex: "price",
-    sorter: (a: Product, b: Product) => a.price - b.price,
-    render: (price: number) => `$${price.toLocaleString()}`,
-  },
-  // {
-  //   title: "Qty",
-  //   dataIndex: "quantity",
-  //   sorter: (a: Product, b: Product) => a.quantity - b.quantity,
-  // },
-  {
-    title: "Status",
-    dataIndex: "status",
-    render: (s: number) => (
-      <span className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${s ? "bg-green-600" : "bg-red-600"}`}>
-        {s ? "Active" : "Inactive"}
-      </span>
-    ),
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    render: (_: any, record: Product) => (
-      <div className="flex gap-2">
-        <Link href={`products/${record.id}`} className="p-2 hover:text-blue-600">
-          <Eye size={16} />
-        </Link>
-        <Link href={`products/${record.id}/edit`} className="p-2 hover:text-yellow-600">
-          <Edit size={16} />
-        </Link>
-        <button
-          onClick={() => {
-            setSelectedId(record.id);
-            setShowDeleteModal(true);
-          }}
-          className="p-2 text-red-500 hover:text-red-700"
+    // {
+    //   title: "SKU",
+    //   dataIndex: "sku",
+    //   sorter: (a: Product, b: Product) => a.sku.localeCompare(b.sku),
+    // },
+    {
+      title: "Product",
+      dataIndex: "name",
+      render: (text: string, record: Product) => (
+        <Link
+          href={`products/${record.id}`}
+          className="text-blue-600 hover:underline"
         >
-          <Trash2 size={16} />
-        </button>
-      </div>
-    ),
-  },
-];
+          {text}
+        </Link>
+      ),
+      sorter: (a: Product, b: Product) => a.name.localeCompare(b.name),
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      sorter: (a: Product, b: Product) => a.category.localeCompare(b.category),
+    },
+    {
+      title: "Brand",
+      dataIndex: "brand",
+      sorter: (a: Product, b: Product) => a.brand.localeCompare(b.brand),
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      sorter: (a: Product, b: Product) => a.price - b.price,
+      render: (price: number) => `$${price.toLocaleString()}`,
+    },
+    // {
+    //   title: "Qty",
+    //   dataIndex: "quantity",
+    //   sorter: (a: Product, b: Product) => a.quantity - b.quantity,
+    // },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (s: number) => (
+        <span
+          className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${s ? "bg-green-600" : "bg-red-600"}`}
+        >
+          {s ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      render: (_: any, record: Product) => (
+        <div className="flex gap-2">
+          <Link
+            href={`products/${record.id}`}
+            className="p-2 hover:text-blue-600"
+          >
+            <Eye size={16} />
+          </Link>
+          <Link
+            href={`products/${record.id}/edit`}
+            className="p-2 hover:text-yellow-600"
+          >
+            <Edit size={16} />
+          </Link>
+          <button
+            onClick={() => {
+              setSelectedId(record.id);
+              setShowDeleteModal(true);
+            }}
+            className="p-2 text-red-500 hover:text-red-700"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -200,13 +211,12 @@ export default function ProductListComponent() {
             <div className="card-body">
               <div className="overflow-x-auto">
                 {loading ? (
-                  <p className="text-center py-6">Loading...</p>
+                  <div className="flex items-center justify-center py-24 space-x-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black" />
+                    <p className="text-gray-500 font-medium">Loading...</p>
+                  </div>
                 ) : (
-                  <Table
-                    columns={columns}
-                    dataSource={products}
-                    rowKey="id"
-                  />
+                  <Table columns={columns} dataSource={products} rowKey="id" />
                 )}
               </div>
             </div>
@@ -259,10 +269,7 @@ export default function ProductListComponent() {
   );
 }
 
-
-
-
-  /* const columns = [
+/* const columns = [
     {
       title: "SKU",
       dataIndex: "sku",

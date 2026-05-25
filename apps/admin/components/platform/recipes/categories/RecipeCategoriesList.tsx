@@ -159,7 +159,6 @@ export default function RecipeCategoriesList() {
       let res;
 
       if (isEditMode) {
-
         res = await fetch(`/api/recipe-categories/${formData.id}`, {
           //   method: isEditMode ? "PUT" : "POST",
           method: "PUT",
@@ -170,9 +169,7 @@ export default function RecipeCategoriesList() {
             isEditMode ? { id: formData.id, ...payload } : payload,
           ),
         });
-
       } else {
-
         res = await fetch("/api/recipe-categories", {
           //   method: isEditMode ? "PUT" : "POST",
           method: "POST",
@@ -181,7 +178,6 @@ export default function RecipeCategoriesList() {
           },
           body: JSON.stringify(payload),
         });
-
       }
 
       const data = await res.json(); // ✅ IMPORTANT: always read response
@@ -337,7 +333,10 @@ export default function RecipeCategoriesList() {
 
             <div className="card-body">
               {loading ? (
-                <p className="text-center py-10">Loading...</p>
+                <div className="flex items-center justify-center py-24 space-x-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black" />
+                  <p className="text-gray-500 font-medium">Loading...</p>
+                </div>
               ) : (
                 <Table columns={columns} dataSource={categories} rowKey="id" />
               )}

@@ -366,6 +366,9 @@ export const assignNextStore = async (client: any, orderId: string) => {
     orderId,
     order.shipping_country,
   );
+  
+
+  console.log(' assignNextStore fullStores ==== ',fullStores);
 
   // filter open stores only
   const openStores = [];
@@ -377,6 +380,8 @@ export const assignNextStore = async (client: any, orderId: string) => {
       openStores.push(store);
     }
   }
+
+  console.log(' assignNextStore openStores ==== ',openStores);
 
   if (openStores.length > 0) {
     const sorted = sortStores(

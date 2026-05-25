@@ -22,11 +22,11 @@ export default function ProvidersClient({
       }
       if (action.type === "status") {
         return state.map((p: any) =>
-          p.id === action.id ? { ...p, is_active: action.status } : p
+          p.id === action.id ? { ...p, is_active: action.status } : p,
         );
       }
       return state;
-    }
+    },
   );
 
   return (
@@ -35,12 +35,13 @@ export default function ProvidersClient({
       <div className="page-header flex justify-between items-center mb-4">
         <div>
           <h4 className="text-lg font-semibold">Shipping Providers</h4>
-          <h6 className="text-gray-500">
-            Manage global shipping integrations
-          </h6>
+          <h6 className="text-gray-500">Manage global shipping integrations</h6>
         </div>
 
-        <Link href="/platform/shipping/providers/new" className="btn btn-primary">
+        <Link
+          href="/platform/shipping/providers/new"
+          className="btn btn-primary"
+        >
           Add Provider
         </Link>
       </div>
@@ -48,7 +49,12 @@ export default function ProvidersClient({
       {/* EMPTY / LOADING */}
       {loading ? (
         <div className="card">
-          <div className="card-body p-3 text-center py-6">Loading...</div>
+          <div className="card-body p-3 text-center py-6">
+            <div className="flex items-center justify-center py-24 space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black" />
+              <p className="text-gray-500 font-medium">Loading...</p>
+            </div>
+          </div>
         </div>
       ) : optimisticProviders.length === 0 ? (
         <div className="card">
@@ -91,9 +97,7 @@ export default function ProvidersClient({
                 key={i}
                 href={`?page=${i + 1}`}
                 className={`px-3 py-1 rounded ${
-                  page === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200"
+                  page === i + 1 ? "bg-blue-600 text-white" : "bg-gray-200"
                 }`}
               >
                 {i + 1}
