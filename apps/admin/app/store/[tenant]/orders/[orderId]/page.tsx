@@ -246,7 +246,7 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           shipmentId: order.shipment_id,
-          orderId
+          orderId,
         }),
       });
 
@@ -264,6 +264,25 @@ export default function OrderDetailPage() {
       showToast("error", err.message);
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  const handleRefreshTracking = async () => {
+    try {
+      const res = await fetch("/api/shipping/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Current Status: ${data.statusName}`);
+        // router.refresh(); // Hot reload Server Components
+      } else {
+        alert(`Tracking issue: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -610,9 +629,35 @@ export default function OrderDetailPage() {
                 Generate PDF Shipping Label
               </button>
             )}
+
+            {isBooked && (
+              <button
+                onClick={handleRefreshTracking}
+                disabled={loading}
+                className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground text-sm font-medium rounded disabled:opacity-50 inline-flex items-center gap-1.5 transition"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"
+                  />
+                </svg>
+                {loading ? "Syncing..." : "Refresh Tracking"}
+              </button>
+            )}
+
             {hasLabel && (
               <a
-                href={order?.shipping_label || (order as any).label_url || undefined}
+                href={
+                  order?.shipping_label || (order as any).label_url || undefined
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="block text-center text-xs font-bold text-blue-600 underline hover:text-blue-800 transition pt-2"

@@ -83,9 +83,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log('confirm-booking // order shipping_paid === ',order.shipping_paid);
-
-    if (order.shipping_paid) {
+    if (order.shipping_paid === true || order.shipping_paid === "true") {
       return NextResponse.json(
         { success: false, error: "Freight allocations records already locked" },
         { status: 400 },
@@ -95,30 +93,40 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 3. Update shipment status
     // -----------------------------
+
+    const rawResponse = shipment.raw_response || {};
+    const paymentUrl = rawResponse?.shipment?.url || null;
+
     await client.query(
       `
       UPDATE shipments
       SET
+        status = 'booked',
         updated_at = NOW()
       WHERE id = $1
       `,
       [shipment.id],
-    );
+    );;
 
     // -----------------------------
     // 4. Update order (IMPORTANT)
     // -----------------------------
-    await client.query(
+    
+    const updateResult = await client.query(
       `
       UPDATE store_orders
       SET
         shipping_paid = true,
         shipping_status = 'booked',
+        payment_url = COALESCE($1, payment_url),
         updated_at = NOW()
-      WHERE id = $1 AND store_id = $2
+      WHERE id = $2
+      RETURNING id, shipping_paid, shipping_status
       `,
-      [orderId, storeId],
+      [paymentUrl, orderId],
     );
+
+    console.log('confirm-booking // Database Row Affected Verification:', updateResult.rowCount);
 
     await client.query("COMMIT");
 
@@ -129,6 +137,7 @@ export async function POST(req: NextRequest) {
         orderId,
         shipping_status: "booked",
         shipping_paid: true,
+        paymentUrl,
       },
     });
   } catch (err: any) {

@@ -13,11 +13,6 @@ export async function POST(req: NextRequest) {
 
     const { orderId } = await req.json();
 
-    // const shipmentRes = await pool.query(
-    //   `SELECT * FROM shipments WHERE order_id = $1`,
-    //   [orderId],
-    // );
-
     const shipmentRes = await pool.query(
       `SELECT * FROM shipments WHERE order_id = $1 AND store_id = $2`,
       [orderId, storeId],
@@ -68,7 +63,7 @@ export async function POST(req: NextRequest) {
       `
       UPDATE store_orders
       SET 
-        shipping_label = $1,
+        shipping_label = $1,label_url = $1,
         fulfillment_status = 'shipped',
         updated_at = NOW()
       WHERE id = $2

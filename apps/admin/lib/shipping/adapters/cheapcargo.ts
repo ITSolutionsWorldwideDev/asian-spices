@@ -61,20 +61,25 @@ export class CheapCargoAdapter implements ShippingAdapter {
     return md5(this.creds.password);
   } */
 
-/**
+  /**
    * ⏱ Helper to compute standardized 2-hour server time-blocks
    * Aligned completely to local system timezone parameters
    */
 
   private getStandardizedTimestamp(useUTC = false): string {
     const now = new Date();
-    
+
     const hour = useUTC ? now.getUTCHours() : now.getHours();
     const roundedHour = Math.floor(hour / 2) * 2;
 
     const YYYY = useUTC ? now.getUTCFullYear() : now.getFullYear();
-    const MM = String((useUTC ? now.getUTCMonth() : now.getMonth()) + 1).padStart(2, "0");
-    const DD = String(useUTC ? now.getUTCDate() : now.getDate()).padStart(2, "0");
+    const MM = String(
+      (useUTC ? now.getUTCMonth() : now.getMonth()) + 1,
+    ).padStart(2, "0");
+    const DD = String(useUTC ? now.getUTCDate() : now.getDate()).padStart(
+      2,
+      "0",
+    );
     const HH = String(roundedHour).padStart(2, "0");
 
     return `${YYYY}${MM}${DD}${HH}`;
@@ -87,7 +92,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
   private getPasswordHash() {
     // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
-    const timestamp = this.getStandardizedTimestamp(false); 
+    const timestamp = this.getStandardizedTimestamp(false);
     return md5(this.creds.password);
   }
 
@@ -176,8 +181,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
               zipcode: input.from.postal_code || "1000AA",
               city: input.from.city || "Amsterdam",
               country: input.from.country || "NL",
-              phone: input.from.phone ||"+31612345678",
-              email: input.from.email ||"sender@example.com",
+              phone: input.from.phone || "+31612345678",
+              email: input.from.email || "sender@example.com",
               type: "business",
             },
             receiver: {
@@ -219,12 +224,24 @@ export class CheapCargoAdapter implements ShippingAdapter {
         currency_code: store_addressRes.currency_code,
     */
 
-        console.log("Submitting stringified payload data mapping to CheapCargo:", JSON.stringify(payload, null, 2));
+    console.log(
+      "Submitting stringified payload data mapping to CheapCargo:",
+      JSON.stringify(payload, null, 2),
+    );
 
     console.log("createShipment API payload === ", payload);
-    console.log("createShipment API payload shipments === ", payload?.shipments?.shipment);
-    console.log("createShipment sender zipcode === ", payload?.shipments?.shipment[0]?.sender.zipcode);
-    console.log("createShipment receiver zipcode === ", payload?.shipments?.shipment[0]?.receiver.zipcode);
+    console.log(
+      "createShipment API payload shipments === ",
+      payload?.shipments?.shipment,
+    );
+    console.log(
+      "createShipment sender zipcode === ",
+      payload?.shipments?.shipment[0]?.sender.zipcode,
+    );
+    console.log(
+      "createShipment receiver zipcode === ",
+      payload?.shipments?.shipment[0]?.receiver.zipcode,
+    );
     console.log("createShipment API URL === ", `${BASE_URL}/createShipment`);
 
     const res = await fetch(`${BASE_URL}/createShipment`, {
@@ -299,7 +316,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
     const payload = {
       shipments: {
         authentication: this.getAuthenticationToken(),
-        version: "1.9",
+        version: "2.1",
         user: {
           email: this.creds.email,
           password: this.getPasswordHash(),
@@ -318,6 +335,26 @@ export class CheapCargoAdapter implements ShippingAdapter {
       body: JSON.stringify(payload),
     });
 
+    const data = await res.json();
+    console.log(
+      "CheapCargo trackShipment raw response:",
+      JSON.stringify(data, null, 2),
+    );
+
+    if (data?.shipments?.status === "error") {
+      throw new Error(
+        `CheapCargo tracking failed: ${JSON.stringify(data.shipments.error)}`,
+      );
+    }
+
+    const trackingInfo = data?.shipments?.status?.[0];
+
+    return {
+      statusName: trackingInfo?.statusName || "Unknown",
+      StatusCode: trackingInfo?.StatusCode || "0",
+      raw: data,
+    };
+
     return res.json();
   }
 
@@ -325,6 +362,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 GENERATE LABEL
   // ======================================================
   async generateLabel(orderNumber: string): Promise<LabelResult> {
+    const staticPasswordHash = md5(this.creds.password);
+
     const payload = {
       labels: {
         authentication: this.getAuthenticationToken(),
@@ -335,7 +374,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
         },
         label: [
           {
-            orderNumber,
+            orderNumber: orderNumber,
             type: "pdf",
           },
         ],
@@ -350,12 +389,27 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const data = await res.json();
 
-    console.log("data?.labels?.label === ", data);
+    // 🔥 ENHANCED LOGGING: Stringifies the nested error array returned from the gateway
+    console.log(
+      "CheapCargo raw getLabel payload stringified response:",
+      JSON.stringify(data, null, 2),
+    );
 
-    const url = data?.labels?.label?.[0]?.file || data?.labels?.label?.[0]?.url;
+    // Handle errors using any root wrapper variant safely
+    if (data?.labels?.status === "error") {
+      const errorDetails = JSON.stringify(data?.labels?.error || data, null, 2);
+      throw new Error(
+        `CheapCargo label creation rejected by gateway: ${errorDetails}`,
+      );
+    }
+
+    const labelObject = data?.labels?.label?.[0];
+    const url = labelObject?.url || labelObject?.file;
 
     if (!url) {
-      throw new Error("Label not generated");
+      throw new Error(
+        "Label data verified but download target URL location returned empty",
+      );
     }
 
     return { url };
