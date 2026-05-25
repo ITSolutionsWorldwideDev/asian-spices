@@ -38,10 +38,8 @@ export async function GET(
         o.tax_amount,
         o.discount_amount,
         o.shipping_amount,
-        c.company_name AS customer_name,
-        c.email AS customer_email,
-        c.city AS customer_city,
-        c.postcode AS customer_postcode,
+        o.shipping_city as customer_city,
+        o.shipping_postal_code as customer_postcode,
         o.weight,
         o.length,
         o.width,
@@ -50,17 +48,28 @@ export async function GET(
         o.tracking_number,
         o.shipping_label,
         o.shipping_provider,
-        o.shipped_at
+        o.shipped_at,
+        COALESCE(o.order_type, 'B2C') as order_type,
+        o.current_store_id
       FROM store_orders o
-      LEFT JOIN store_customers c ON c.id = o.customer_id
-      WHERE o.id = $1 AND o.store_id = $2
+      WHERE o.id = $1 AND (o.current_store_id = $2 OR o.store_id = $2)
       `,
       [orderId, storeId],
     );
 
-    if (!orderResult.rows.length) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    //   c.company_name AS customer_name,
+    //   c.email AS customer_email,
+    // LEFT JOIN store_customers c ON c.id = o.customer_id
+
+    // if (!orderResult.rows.length) {
+    //   return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    // }
+
+    if (!orderResult.rowCount) {
+      return NextResponse.json({ error: "Order context not found or access denied" }, { status: 404 });
     }
+
+    const orderData = orderResult.rows[0];
 
     // 🔹 Fetch Items
     const itemsResult = await pool.query(
@@ -71,8 +80,8 @@ export async function GET(
         sp.id AS product_id,
         sp.name,
         sp.sku,  
-        oi.fulfilled_quantity,
-        sp.quantity as available_stock,
+        COALESCE(oi.fulfilled_quantity, 0) as fulfilled_quantity,
+        COALESCE(sp.quantity, 0) as available_stock,
         oi.price
       FROM store_order_items oi
       LEFT JOIN store_products sp ON sp.id = oi.product_id
@@ -81,12 +90,24 @@ export async function GET(
       [orderId],
     );
 
-    return NextResponse.json({
-      order: {
-        ...orderResult.rows[0],
-        items: itemsResult.rows,
-      },
-    });
+    const orderDetails = {
+      ...orderData,
+      items: itemsResult.rows.map(item => ({
+        ...item,
+        price: Number(item.price),
+        // Instantiate the local state mutable control mapping defaulted to 0 or current allocation
+        fulfilled_quantity: item.fulfilled_quantity || 0 
+      }))
+    };
+
+    return NextResponse.json({ order: orderDetails });
+
+    // return NextResponse.json({
+    //   order: {
+    //     ...orderResult.rows[0],
+    //     items: itemsResult.rows,
+    //   },
+    // });
   } catch (error) {
     console.error("Order detail fetch failed:", error);
     return NextResponse.json(

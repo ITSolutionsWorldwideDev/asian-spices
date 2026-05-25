@@ -1,11 +1,14 @@
-// /app/api/orders-queue/route.ts (GET)
+// apps/admin/app/api/orders-queue/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
+
 export async function GET(req: NextRequest) {
   try {
+
+    
     const { searchParams } = req.nextUrl;
 
     const store = await getCurrentStoreAPI(req);
@@ -18,67 +21,65 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const search = searchParams.get("search");
-    const customer = searchParams.get("customer");
-    const product = searchParams.get("product");
-    const status = searchParams.get("status");
-    const sort = searchParams.get("sort");
+
+    const search = searchParams.get("search") || "";
+    const product = searchParams.get("product") || "";
+    const sort = searchParams.get("sort") || "";
 
     const values: any[] = [storeId];
-    
-    let where = `WHERE o.order_status IN ('pending','processing') AND o.payment_status = 'paid' AND (o.store_id = $1 OR o.current_store_id = $1)`;
+    // 💡 Strict Queue Rule: Must match current store, status must be 'processing' (pending store choice)
+    let whereConditions = ["(o.store_id = $1 OR o.current_store_id = $1)", " o.payment_status = 'paid' ", "o.order_status = 'pending'"];
 
-    if (search) {
-      values.push(`%${search}%`);
-      where += ` AND (
-        o.order_number ILIKE $${values.length}
-        OR c.company_name ILIKE $${values.length}
-      )`;
+  
+    // 🔍 Reference ID Filter
+    if (search.trim()) {
+      values.push(`%${search.trim()}%`);
+      whereConditions.push(`o.order_number ILIKE $${values.length}`);
     }
 
-    if (product) {
-      values.push(`%${product}%`);
-      where += ` AND sp.name ILIKE $${values.length}`;
+    // 📦 Product Filtering
+    if (product.trim()) {
+      values.push(`%${product.trim()}%`);
+      whereConditions.push(`
+        EXISTS (
+          SELECT 1 FROM store_order_items oi
+          JOIN store_products p ON p.id = oi.product_id
+          WHERE oi.order_id = o.id AND p.name ILIKE $${values.length}
+        )
+      `);
     }
 
-    if (status) {
-      values.push(status);
-      // where += ` AND o.payment_status = $${values.length}`;
-      where += ` AND o.order_status = $${values.length}`;
-    }
+    const whereClause = `WHERE ${whereConditions.join(" AND ")}`;
 
-    let orderBy = "ORDER BY o.created_at DESC";
-    if (sort === "date_asc") orderBy = "ORDER BY o.created_at ASC";
-    if (sort === "total_desc") orderBy = "ORDER BY o.total_amount DESC";
-    if (sort === "total_asc") orderBy = "ORDER BY o.total_amount ASC";
+    // Sort Queue Order: Prioritize by oldest first so stores hit their fulfillment SLAs
+    let orderBy = `ORDER BY o.created_at ASC`; 
+    if (sort === "date_desc") orderBy = `ORDER BY o.created_at DESC`;
+    if (sort === "total_desc") orderBy = `ORDER BY o.total_amount DESC`;
+    if (sort === "total_asc") orderBy = `ORDER BY o.total_amount ASC`;
 
-    const query = `
-      SELECT
-        o.id AS order_id,
+    const dataQuery = `
+      SELECT 
+        o.id as order_id,
         o.order_number,
-        o.created_at AS order_date,
-        o.order_status,
-        o.payment_status AS status,
+        o.created_at as order_date,
         o.total_amount,
-        c.company_name AS customer_name,
-        COUNT(DISTINCT oi.id) AS items_count
+        o.payment_status,
+        o.order_status,
+        o.shipping_city as city,
+        (SELECT COALESCE(SUM(quantity), 0) FROM store_order_items WHERE order_id = o.id) as items_count
       FROM store_orders o
-      LEFT JOIN store_customers c ON c.id = o.customer_id
-      LEFT JOIN store_order_items oi ON oi.order_id = o.id
-      LEFT JOIN store_products sp ON sp.id = oi.product_id
-      ${where}
-      GROUP BY o.id, c.company_name
+      ${whereClause}
       ${orderBy}
     `;
 
-    const result = await pool.query(query, values);
+    // console.log('dataQuery === ',dataQuery);
+    // console.log('values === ',values);
 
-    return NextResponse.json({ items: result.rows });
-  } catch (error) {
-    console.error("Orders listing fetch failed:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch orders listing" },
-      { status: 500 },
-    );
+    const { rows } = await pool.query(dataQuery, values);
+
+    return NextResponse.json({ items: rows });
+  } catch (error: any) {
+    console.error("STORE PARTNER QUEUE AGGREGATION ERROR:", error);
+    return NextResponse.json({ error: "Failed to gather partner store pending allocation feeds" }, { status: 500 });
   }
 }

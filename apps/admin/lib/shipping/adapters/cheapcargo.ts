@@ -21,7 +21,7 @@ const BASE_URL = "https://www.cheapcargo.com/api";
 export class CheapCargoAdapter implements ShippingAdapter {
   constructor(private creds: Credentials) {}
 
-  private getAuthenticationToken() {
+  /* private getAuthenticationToken() {
     const now = new Date();
 
     // ⏱ Round hour to nearest 2-hour block
@@ -59,6 +59,36 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const timestamp = `${YYYY}${MM}${DD}${HH}`;
     return md5(this.creds.password);
+  } */
+
+/**
+   * ⏱ Helper to compute standardized 2-hour server time-blocks
+   * Aligned completely to local system timezone parameters
+   */
+
+  private getStandardizedTimestamp(useUTC = false): string {
+    const now = new Date();
+    
+    const hour = useUTC ? now.getUTCHours() : now.getHours();
+    const roundedHour = Math.floor(hour / 2) * 2;
+
+    const YYYY = useUTC ? now.getUTCFullYear() : now.getFullYear();
+    const MM = String((useUTC ? now.getUTCMonth() : now.getMonth()) + 1).padStart(2, "0");
+    const DD = String(useUTC ? now.getUTCDate() : now.getDate()).padStart(2, "0");
+    const HH = String(roundedHour).padStart(2, "0");
+
+    return `${YYYY}${MM}${DD}${HH}`;
+  }
+
+  private getAuthenticationToken() {
+    const timestamp = this.getStandardizedTimestamp(false); // Matches your key setup criteria
+    return md5(this.creds.apiKey + timestamp);
+  }
+
+  private getPasswordHash() {
+    // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
+    const timestamp = this.getStandardizedTimestamp(false); 
+    return md5(this.creds.password);
   }
 
   // ======================================================
@@ -71,7 +101,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
         version: "2.0",
         user: {
           email: this.creds.email,
-          password: "34dbe7e451f2d0b166a292ce0021599d", //this.getPasswordHash(),
+          password: this.getPasswordHash(), // "34dbe7e451f2d0b166a292ce0021599d", //
         },
         shipment: [
           {
@@ -139,8 +169,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
             "@id": input.orderId,
             "@orderBy": "price",
             sender: {
-              companyName: input.from.name || "My Company",
-              contactPerson: "Store Owner",
+              companyName: input.from.name || "Store Vendor Instance",
+              contactPerson: "Store Administrator",
               street: input.from.street || "Hoofdstraat",
               number: input.from.number || "123",
               zipcode: input.from.postal_code || "1000AA",
@@ -151,7 +181,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
               type: "business",
             },
             receiver: {
-              companyName: input.to.companyName || "Customer Corp",
+              companyName: input.to.companyName || "Private Customer Consignee",
               contactPerson: input.to.contactPerson || "Jane Receiver",
               street: input.to.street || "Kerkstraat",
               number: input.to.number || "456",
@@ -189,7 +219,12 @@ export class CheapCargoAdapter implements ShippingAdapter {
         currency_code: store_addressRes.currency_code,
     */
 
+        console.log("Submitting stringified payload data mapping to CheapCargo:", JSON.stringify(payload, null, 2));
+
     console.log("createShipment API payload === ", payload);
+    console.log("createShipment API payload shipments === ", payload?.shipments?.shipment);
+    console.log("createShipment sender zipcode === ", payload?.shipments?.shipment[0]?.sender.zipcode);
+    console.log("createShipment receiver zipcode === ", payload?.shipments?.shipment[0]?.receiver.zipcode);
     console.log("createShipment API URL === ", `${BASE_URL}/createShipment`);
 
     const res = await fetch(`${BASE_URL}/createShipment`, {

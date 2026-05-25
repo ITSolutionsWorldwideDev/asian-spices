@@ -2,15 +2,25 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 import { getShippingProvider } from "@/lib/shipping/providerFactory";
 
 export async function POST(req: NextRequest) {
   try {
+
+    const store = await getCurrentStoreAPI(req);
+    const storeId = store.id;
+
     const { orderId } = await req.json();
 
+    // const shipmentRes = await pool.query(
+    //   `SELECT * FROM shipments WHERE order_id = $1`,
+    //   [orderId],
+    // );
+
     const shipmentRes = await pool.query(
-      `SELECT * FROM shipments WHERE order_id = $1`,
-      [orderId],
+      `SELECT * FROM shipments WHERE order_id = $1 AND store_id = $2`,
+      [orderId, storeId],
     );
 
     const shipment = shipmentRes.rows[0];

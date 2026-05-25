@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log('confirm-booking // storeId === ',storeId);
+
     await client.query("BEGIN");
 
     // -----------------------------
@@ -36,6 +38,8 @@ export async function POST(req: NextRequest) {
 
     const shipment = shipmentRes.rows[0];
 
+    console.log('confirm-booking // shipment === ',shipment);
+
     if (!shipment) {
       return NextResponse.json(
         { success: false, error: "Shipment not found" },
@@ -46,7 +50,22 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 2. Optional: prevent double booking
     // -----------------------------
+
     const orderCheck = await client.query(
+      `
+      SELECT o.shipping_paid, o.shipping_status
+      FROM store_orders o
+      INNER JOIN order_item_allocations oia ON oia.order_id = o.id
+      WHERE o.id = $1 AND oia.store_id = $2
+      `,
+      [orderId, storeId],
+    );
+
+    const order = orderCheck.rows[0];
+
+    console.log('confirm-booking // order === ',order);
+
+    /* const orderCheck = await client.query(
       `
       SELECT shipping_paid, shipping_status
       FROM store_orders
@@ -55,18 +74,20 @@ export async function POST(req: NextRequest) {
       [orderId, storeId],
     );
 
-    const order = orderCheck.rows[0];
+    const order = orderCheck.rows[0]; */
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: "Order not found" },
+        { success: false, error: "Order record missing allocation paths" },
         { status: 404 },
       );
     }
 
+    console.log('confirm-booking // order shipping_paid === ',order.shipping_paid);
+
     if (order.shipping_paid) {
       return NextResponse.json(
-        { success: false, error: "Shipment already booked" },
+        { success: false, error: "Freight allocations records already locked" },
         { status: 400 },
       );
     }

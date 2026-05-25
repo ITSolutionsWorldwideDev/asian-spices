@@ -25,9 +25,10 @@ export async function GET(
     // console.log('orderId === ',orderId);
 
     // 🔹 Fetch Order
-    const orderResult = await pool.query(
+    /* const orderResult = await pool.query(
       `
       SELECT
+        o.id,
         o.id AS order_id,
         o.order_number,
         o.created_at AS order_date,
@@ -70,29 +71,96 @@ export async function GET(
       WHERE o.id = $1 AND o.store_id = $2
       `,
       [orderId, storeId],
+    ); */
+
+    const orderResult = await pool.query(
+      `
+      SELECT DISTINCT
+        o.id, -- Frontend expects 'id' directly for field locking evaluations
+        o.id AS order_id,
+        o.order_number,
+        o.created_at AS order_date,
+        o.payment_status AS status,
+        o.total_amount,
+        o.subtotal,
+        o.tax_amount,
+        o.discount_amount,
+        o.shipping_amount,
+        c.company_name AS customer_name,
+        c.email AS customer_email,
+        c.city AS customer_city,
+        c.postcode AS customer_postcode,
+        o.weight,
+        o.length,
+        o.width,
+        o.height,
+        o.boxes,
+        o.fulfillment_status,
+        o.order_status,
+        o.payment_status,
+        o.payment_method,
+        o.transaction_id,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.shipped_at,
+        o.shipping_status,
+        o.shipping_paid,
+        o.payment_url,
+        s.id AS shipment_id,
+        s.external_shipment_id,
+        s.label_url,
+        s.tracking_url
+      FROM store_orders o
+      LEFT JOIN store_customers c ON c.id = o.customer_id
+      LEFT JOIN shipments s ON s.order_id = o.id
+      INNER JOIN order_item_allocations oia ON oia.order_id = o.id
+      WHERE o.id = $1 AND oia.store_id = $2
+      `,
+      [orderId, storeId],
     );
 
     if (!orderResult.rows.length) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json({ error: "Order allocation context not found for this store" }, { status: 404 });
     }
 
     // 🔹 Fetch Items
+    // const itemsResult = await pool.query(
+    //   `
+    //   SELECT
+    //     oi.id AS order_item_id,
+    //     oi.quantity,
+    //     sp.id AS product_id,
+    //     sp.name,
+    //     sp.sku,  
+    //     oi.fulfilled_quantity,
+    //     sp.quantity as available_stock,
+    //     oi.price
+    //   FROM store_order_items oi
+    //   LEFT JOIN store_products sp ON sp.id = oi.product_id
+    //   WHERE oi.order_id = $1
+    //   `,
+    //   [orderId],
+    // );
+
     const itemsResult = await pool.query(
       `
       SELECT
         oi.id AS order_item_id,
-        oi.quantity,
+        oia.id AS allocation_id,
+        oia.allocated_quantity AS quantity, -- The partner store only fulfills what was allocated to them
+        COALESCE(oia.fulfilled_quantity, 0) AS fulfilled_quantity,
         sp.id AS product_id,
         sp.name,
         sp.sku,  
-        oi.fulfilled_quantity,
-        sp.quantity as available_stock,
+        sp.quantity AS available_stock,
         oi.price
       FROM store_order_items oi
+      INNER JOIN order_item_allocations oia ON oia.order_item_id = oi.id
       LEFT JOIN store_products sp ON sp.id = oi.product_id
-      WHERE oi.order_id = $1
+      WHERE oi.order_id = $1 AND oia.store_id = $2
       `,
-      [orderId],
+      [orderId, storeId],
     );
 
     return NextResponse.json({
