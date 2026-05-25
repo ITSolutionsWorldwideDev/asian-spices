@@ -124,6 +124,7 @@ export default function Checkout() {
 
           setFormData((prev) => ({
             ...prev,
+            phone: defaultAddr.phone || "",
             firstName: defaultAddr.first_name || "",
             lastName: defaultAddr.last_name || "",
             address: defaultAddr.address_line1 || "",

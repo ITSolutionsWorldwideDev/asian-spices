@@ -67,6 +67,4 @@ export default function PaynlReturnHandler({
   }
 
   return <CheckoutStatus orderId={orderId} />;
-
-//   return null;
 }

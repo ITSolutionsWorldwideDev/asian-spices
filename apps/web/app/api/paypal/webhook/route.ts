@@ -1,6 +1,7 @@
 // apps/web/app/api/paypal/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { assignNextStore, logOrderEvent, ORDER_EVENTS } from "@acme/order-routing";
 
 // PayPal Webhook verification endpoint
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -12,15 +13,14 @@ const PAYPAL_API =
     : "https://api-m.sandbox.paypal.com";
 
 
-// const PAYPAL_API = process.env.NODE_ENV === "production"
-//   ? "https://api-m.paypal.com"
-//   : "https://api-m.sandbox.paypal.com";
-
 // Verify PayPal webhook signature
 async function verifyPayPalWebhook(req: NextRequest, body: any) {
+
   const transmissionId = req.headers.get("paypal-transmission-id");
   const timestamp = req.headers.get("paypal-transmission-time");
-  const webhookId = process.env.PAYPAL_WEBHOOK_ID; // Set your webhook ID in env
+
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+  
   const signature = req.headers.get("paypal-transmission-sig");
   const certUrl = req.headers.get("paypal-cert-url");
   const authAlgo = req.headers.get("paypal-auth-algo");
@@ -70,6 +70,57 @@ export async function POST(req: NextRequest) {
 
     // 2️⃣ Only handle completed payments
     if (body.event_type === "CHECKOUT.ORDER.APPROVED" || body.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+
+      // In a capture webhook event context, the resource contains the tokenized parent tracking key values
+      const paypalOrderId = body.resource.supplementary_data?.related_ids?.order_id || body.resource.parent_payment || body.resource.id;
+      
+      if (!paypalOrderId) {
+        console.error("Could not parse explicit payment mapping parameters from webhook body resource wrapper layout.");
+        return NextResponse.json({ success: true }); // Acknowledge to prevent infinite retries
+      }
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        // Fetch target row using the unique tracking reference key token
+        const orderRes = await client.query(
+          `SELECT id, payment_status FROM store_orders WHERE transaction_id = $1 AND payment_method = 'paypal'`,
+          [paypalOrderId]
+        );
+
+        if (orderRes.rows.length && orderRes.rows[0].payment_status !== "paid") {
+          const orderId = orderRes.rows[0].id;
+
+          // Update order state safely to processing status rows
+          await client.query(
+            `UPDATE store_orders
+             SET payment_status = 'paid', order_status = 'pending', updated_at = NOW()
+             WHERE id = $1`,
+            [orderId]
+          );
+
+          await logOrderEvent(client, {
+            orderId: orderId,
+            eventType: ORDER_EVENTS.ASSIGNED,
+            message: "PayPal Webhook asynchronous settlement verified. Initiating routing engine triggers.",
+            metadata: { webhook_event_id: body.id },
+          });
+
+          // ⚡ EXECUTE ASYNCHRONOUS ENGINE HANDOFF ⚡
+          await assignNextStore(client, orderId);
+          console.log(`Webhook fallback process successfully routed Order #${orderId} out to store networks.`);
+        }
+
+        await client.query("COMMIT");
+      } catch (txError) {
+        await client.query("ROLLBACK");
+        throw txError;
+      } finally {
+        client.release();
+      }
+
+      /* 
       const orderId = body.resource.id; // PayPal Order ID (stored as transaction_id)
 
       // 3️⃣ Update order in DB
@@ -79,8 +130,8 @@ export async function POST(req: NextRequest) {
          WHERE transaction_id = $1 AND payment_method = 'paypal'`,
         [orderId]
       );
-
-      console.log(`Order ${orderId} marked as paid/completed`);
+      */
+      console.log(`Order ${paypalOrderId} marked as paid/completed`);
     }
 
     return NextResponse.json({ success: true });

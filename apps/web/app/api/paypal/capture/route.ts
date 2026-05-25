@@ -2,17 +2,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { assignNextStore, logOrderEvent, ORDER_EVENTS } from "@acme/order-routing";
 
 
 const PAYPAL_API =
   process.env.PAYPAL_ENV === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
-
-// const PAYPAL_API =
-//   process.env.NODE_ENV === "production"
-//     ? "https://api-m.paypal.com"
-//     : "https://api-m.sandbox.paypal.com";
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET!;
@@ -30,12 +26,11 @@ async function getAccessToken() {
     body: "grant_type=client_credentials",
   });
 
-  const data = await res.json();
-
   if (!res.ok) {
     throw new Error("Failed to get PayPal access token");
   }
 
+  const data = await res.json();
   return data.access_token as string;
 }
 
@@ -99,20 +94,59 @@ export async function POST(req: NextRequest) {
 
     const status = captureData?.status;
 
-    // 5️⃣ Update DB only if CAPTURE COMPLETED
+    // 3️⃣ Update Database and trigger Store Routing only if COMPLETED
     if (status === "COMPLETED") {
-      await pool.query(
-        `
-        UPDATE store_orders
-        SET payment_status = 'paid',
-            order_status = 'completed',
-            transaction_id = $1,
-            updated_at = NOW()
-        WHERE id = $2 AND payment_method = 'paypal'
-        `,
-        [paypalOrderId, orderId]
-      );
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        // Set state to 'pending' to protect the shipping pipeline state integrity
+        const updateResult: any = await client.query(
+          `UPDATE store_orders
+           SET payment_status = 'paid',
+               order_status = 'pending', 
+               transaction_id = $1,
+               updated_at = NOW()
+           WHERE id = $2 AND payment_method = 'paypal' AND payment_status != 'paid'
+           RETURNING id`,
+          [paypalOrderId, orderId]
+        );
+
+        if (updateResult?.rowCount > 0) {
+          // Log payment collection completion event
+          await logOrderEvent(client, {
+            orderId: orderId,
+            eventType: ORDER_EVENTS.ASSIGNED,
+            message: `PayPal capture successful. Captured Reference ID: ${captureId}. Order created and routing started`,
+            metadata: { captureId },
+          });
+
+          // ⚡ RUN CRITICAL STORE SELECTION PIPELINE ⚡
+          console.log(`Executing decentralized routing for Order ID: ${orderId}`);
+          await assignNextStore(client, orderId);
+        }
+
+        await client.query("COMMIT");
+      } catch (txError) {
+        await client.query("ROLLBACK");
+        throw txError; // Bubbles up to outer catch block handler
+      } finally {
+        client.release();
+      }
     }
+    // if (status === "COMPLETED") {
+    //   await pool.query(
+    //     `
+    //     UPDATE store_orders
+    //     SET payment_status = 'paid',
+    //         order_status = 'completed',
+    //         transaction_id = $1,
+    //         updated_at = NOW()
+    //     WHERE id = $2 AND payment_method = 'paypal'
+    //     `,
+    //     [paypalOrderId, orderId]
+    //   );
+    // }
 
     return NextResponse.json({
       success: true,

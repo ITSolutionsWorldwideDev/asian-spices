@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const { rows } = await client.query(
       `
-      SELECT a.*,c.first_name,c.last_name
+      SELECT a.*,c.first_name,c.last_name,c.phone
       FROM store_customer_addresses a
       JOIN store_customers c ON c.id = a.customer_id
       WHERE c.user_id = $1

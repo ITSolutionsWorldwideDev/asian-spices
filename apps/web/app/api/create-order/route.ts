@@ -23,29 +23,15 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const {
-      customer,
-      shippingAddress,
-      cartItems,
-      pricing,
-    } = body;
+    const { customer, shippingAddress, cartItems, pricing } = body;
 
     if (!cartItems?.length) {
-      return errorResponse(
-        "Cart is empty",
-        "EMPTY_CART",
-      );
+      return errorResponse("Cart is empty", "EMPTY_CART");
     }
 
-    const email = userId
-      ? userEmail
-      : customer.email;
+    const email = userId ? userEmail : customer.email;
 
-    const {
-      latitude,
-      longitude,
-      country,
-    } = shippingAddress;
+    const { latitude, longitude, country } = shippingAddress;
 
     if (!latitude || !longitude) {
       return errorResponse(
@@ -148,14 +134,9 @@ export async function POST(req: NextRequest) {
       if (userCheck.rowCount === 0) {
         const bcrypt = require("bcryptjs");
 
-        const tempPassword = Math.random()
-          .toString(36)
-          .slice(-8);
+        const tempPassword = Math.random().toString(36).slice(-8);
 
-        const hash = await bcrypt.hash(
-          tempPassword,
-          10,
-        );
+        const hash = await bcrypt.hash(tempPassword, 10);
 
         const newUser = await client.query(
           `
@@ -233,7 +214,7 @@ export async function POST(req: NextRequest) {
     // 3️⃣ VALIDATE PRODUCTS EXIST
     // ====================================================
 
-    const productIds = cartItems.map(
+    /* const productIds = cartItems.map(
       (item: any) => item.id,
     );
 
@@ -264,7 +245,7 @@ export async function POST(req: NextRequest) {
         "No stores available for your location.",
         "NO_STORE_AVAILABLE",
       );
-    }
+    } */
 
     // ====================================================
     // 4️⃣ CREATE ORDER
@@ -352,7 +333,7 @@ export async function POST(req: NextRequest) {
 
     for (const item of cartItems) {
       // lowest available price
-      const availableProducts =
+      /* const availableProducts =
         productCatalog.rows
           .filter(
             (p: any) =>
@@ -371,7 +352,7 @@ export async function POST(req: NextRequest) {
       }
 
       const selectedProduct =
-        availableProducts[0];
+        availableProducts[0]; */
 
       await client.query(
         `
@@ -390,7 +371,8 @@ export async function POST(req: NextRequest) {
           order_id,
           item.id,
           item.quantity,
-          Number(selectedProduct.price),
+          // Number(selectedProduct.price),
+          Number(item.price),
         ],
       );
     }
@@ -399,13 +381,13 @@ export async function POST(req: NextRequest) {
     // 6️⃣ ROUTE ORDER
     // ====================================================
 
-    await assignNextStore(client, order_id);
+    // await assignNextStore(client, order_id);
 
     // ====================================================
     // 7️⃣ EVENT LOG
     // ====================================================
 
-    await logOrderEvent(client, {
+    /* await logOrderEvent(client, {
       orderId: order_id,
       eventType: ORDER_EVENTS.ASSIGNED,
       message:
@@ -414,14 +396,31 @@ export async function POST(req: NextRequest) {
         customer_id,
         item_count: cartItems.length,
       },
+    }); */
+
+    await logOrderEvent(client, {
+      orderId: order_id,
+      eventType: ORDER_EVENTS.CREATED,
+      message:
+        "Order authorization records generated. Awaiting confirmation of client transaction settlement.",
+      metadata: { item_count: cartItems.length },
     });
 
     await client.query("COMMIT");
+
+    return NextResponse.json({
+      success: true,
+      orderId: order_id,
+      orderNumber: order.order_number,
+      routingStatus: "unrouted",
+      orderStatus: "pending",
+    });
 
     // ====================================================
     // 8️⃣ FETCH FINAL ROUTED ORDER
     // ====================================================
 
+    /* 
     const finalOrder = await client.query(
       `
       SELECT
@@ -457,21 +456,16 @@ export async function POST(req: NextRequest) {
 
       orderStatus:
         finalOrder.rows[0].order_status,
-    });
+    }); */
   } catch (error: any) {
     await client.query("ROLLBACK");
 
-    console.error(
-      "Create order error:",
-      error,
-    );
+    console.error("Create order error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error:
-          error.message ||
-          "Order creation failed",
+        error: error.message || "Order creation failed",
       },
       { status: 500 },
     );
@@ -484,11 +478,7 @@ export async function POST(req: NextRequest) {
 // ERROR RESPONSE
 // ====================================================
 
-const errorResponse = (
-  message: string,
-  code: string,
-  status = 400,
-) => {
+const errorResponse = (message: string, code: string, status = 400) => {
   return NextResponse.json(
     {
       success: false,

@@ -15,11 +15,6 @@ const PAYPAL_API =
   process.env.PAYPAL_ENV === "production"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
-    
-// const PAYPAL_API =
-//   process.env.NODE_ENV === "production"
-//     ? "https://api-m.paypal.com"
-//     : "https://api-m.sandbox.paypal.com";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +37,19 @@ export async function POST(req: NextRequest) {
 
     const order = orderRes.rows[0];
 
+    //  Guard against price tampering
+    if (Math.abs(Number(order.total_amount) - Number(amount)) > 0.01) {
+      return NextResponse.json({ error: "Amount mismatch detected" }, { status: 400 });
+    }
+
+    if (order.payment_status === "paid") {
+      return NextResponse.json({ error: "Order already completed" }, { status: 400 });
+    }
+    
+    // ====================================================
+    // PAY.NL GATEWAY INTEGRATION
+    // ====================================================
+
     if (paymentMethod === "paynl") {
       // 1. CREATE ORDER
       const orderResponse = await fetch("https://connect.pay.nl/v1/orders", {
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest) {
           serviceId: PAYNL_SERVICE_ID,
           amount: {
             // value: amount.toFixed(2),
-            value: Math.round(amount * 100), // ✅ integer in cents
+            value: Math.round(Number(amount) * 100), // ✅ integer in cents
             currency: "EUR",
           },
           description: `Order ${order.order_number}`,
@@ -72,11 +80,17 @@ export async function POST(req: NextRequest) {
       const orderData = await orderResponse.json();
 
       if (!orderResponse.ok) {
-        console.error("Pay.nl error:", orderData);
-        throw new Error("Pay.nl request failed");
+        console.error("Pay.nl execution setup failure:", orderData);
+        return NextResponse.json({ error: "Payment gateway validation failed" }, { status: 502 });
       }
 
       const paynlOrderId = orderData.id;
+      
+      // const redirectUrl = orderData.links?.checkout || orderData.links?.redirect;
+
+      // if (!redirectUrl) {
+      //   return NextResponse.json({ error: "Gateway failed to return redirect destination" }, { status: 502 });
+      // }
 
       // 2. CREATE PAYMENT
       const paymentResponse = await fetch(
@@ -143,10 +157,14 @@ export async function POST(req: NextRequest) {
 
       const { approveLink, orderData } = await createPayPalOrder(
         order.order_number,
-        amount,
+        Number(amount),
         returnUrl,
         cancelUrl,
       );
+
+      if (!approveLink) {
+        return NextResponse.json({ error: "PayPal routing initialization failed" }, { status: 502 });
+      }
 
       // Save PayPal order ID as transaction_id
       await pool.query(
@@ -166,8 +184,8 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   } catch (err) {
-    console.error("Create payment error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("Create payment execution exception error:", err);
+    return NextResponse.json({ error: "Internal payment handler failure" }, { status: 500 });
   }
 }
 
@@ -188,6 +206,8 @@ async function createPayPalOrder(
     },
     body: "grant_type=client_credentials",
   });
+
+  if (!tokenRes.ok) throw new Error("Failed to acquire authorized PayPal payload token.");
 
   const tokenData = await tokenRes.json();
   const accessToken = tokenData.access_token;

@@ -2,14 +2,15 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import RetryPaymentButton from "@/components/ui/RetryPaymentButton";
 import OrderTimeline from "@/components/ui/OrderTimeline";
+import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
+
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { useCartStore } from "@/store/useCartStore";
-import OrderSummaryReadOnly from "../layout/checkout/OrderSummaryReadOnly";
 
 interface Order {
   id: string;
@@ -20,19 +21,22 @@ interface Order {
   shipping_amount: number;
   total_amount: number;
 
-  payment_status: "pending" | "paid" | "failed";
   order_status: string;
+  payment_status: "pending" | "paid" | "failed";
   payment_method: string;
   transaction_id: string;
 
-  shipping_method: "standard" | "express" | "overnight";
   cart_items: any[];
   customer_email: string;
+  shipping_method: "standard" | "express" | "overnight";
 }
 
 export default function CheckoutStatus({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isInitialFetch = useRef(true);
+
   const { show, hide } = useLoaderStore();
   const { clearCart } = useCartStore();
 
@@ -45,7 +49,7 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         const res = await fetch(`/api/get-order?orderId=${orderId}`);
         const data = await res.json();
 
-        if (data.success) {
+        if (data.success && data.order) {
           setOrder(data.order);
 
           // ✅ STOP polling when payment is done
@@ -56,8 +60,10 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
-        hide();
+        if (isInitialFetch.current) {
+          setLoading(false);
+          hide();
+        }
       }
     };
 
@@ -76,11 +82,22 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   }, [order]);
 
   if (loading) {
-    return <p className="text-center mt-10">Checking payment status...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center p-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mb-4" />
+        <p className="text-gray-600 font-medium">
+          Loading your order status details...
+        </p>
+      </div>
+    );
   }
 
   if (!order) {
-    return <p className="text-center text-red-500">Order not found</p>;
+    return (
+      <p className="text-center text-red-500 font-medium">
+        Order tracking details not found.
+      </p>
+    );
   }
 
   // =========================
@@ -103,11 +120,6 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
           shipping={order.shipping_amount}
           total={order.total_amount}
         />
-
-        {/* <OrderSummaryReadOnly
-          items={order.cart_items}
-          shippingMethod={order.shipping_method}
-        /> */}
       </div>
     );
   }
@@ -115,23 +127,21 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   if (order.payment_status === "failed") {
     return (
       <div className="bg-red-50 border p-6 rounded">
-        <h2 className="text-red-700 text-xl font-bold mb-2">❌ Payment Failed</h2>
+        <h2 className="text-red-700 text-xl font-bold mb-2">
+          ❌ Payment Failed
+        </h2>
+        <p className="text-red-700 mb-4">
+          Your processing transaction authorization request was declined.
+        </p>
 
         <OrderTimeline status={order.payment_status} />
-
-        <RetryPaymentButton
-          orderId={order.id}
-          amount={order.total_amount}
-          email={order.customer_email || ""}
-        />
-        {/* <p>Your payment was not completed.</p>
-
-        <Link
-          href="/checkout"
-          className="text-blue-600 underline mt-4 inline-block"
-        >
-          Try Again
-        </Link> */}
+        <div className="mt-4">
+          <RetryPaymentButton
+            orderId={order.id}
+            amount={order.total_amount}
+            email={order.customer_email || ""}
+          />
+        </div>
       </div>
     );
   }
@@ -139,7 +149,10 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
   // default = pending
   return (
     <div className="bg-yellow-50 border p-6 rounded">
-      <h2 className="text-yellow-700 text-xl font-bold">⏳ Payment Pending</h2>
+      <h2 className="text-yellow-700 text-xl font-bold flex items-center gap-2">
+        ⏳ Awaiting Settlement Authorization
+      </h2>
+      {/* Payment Pending */}
 
       <p>
         We are waiting for confirmation from{" "}
@@ -148,20 +161,13 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
         </strong>
         .
       </p>
-
-      {/* <p>
-        We are waiting for confirmation from{" "}
-        <strong>Pay.nl</strong>.
-      </p> */}
-
-      <p className="text-sm mt-2 text-gray-600 mb-2">
-        This page will update automatically.
+      <p className="text-xs mt-1 text-gray-500">
+        This interface updates automatically as soon as confirmation resolves.
       </p>
 
-      {/* <OrderSummaryReadOnly
-        items={order.cart_items}
-        shippingMethod={order.shipping_method}
-      /> */}
+      {/* <p className="text-sm mt-2 text-gray-600 mb-2">
+        This page will update automatically.
+      </p> */}
 
       <OrderSummaryReadOnly
         items={order.cart_items}
@@ -176,36 +182,3 @@ export default function CheckoutStatus({ orderId }: { orderId: string }) {
     </div>
   );
 }
-
-/* useEffect(() => {
-    if (order?.payment_status === "paid") {
-      clearCart();
-    }
-  }, [order?.payment_status]); */
-
-/* useEffect(() => {
-    let interval: NodeJS.Timeout;
-    const fetchOrder = async () => {
-      try {
-        show("Checkout Status...");
-        const res = await fetch(`/api/get-order?orderId=${orderId}`);
-        const data = await res.json();
-
-        if (data.success) {
-          setOrder(data.order);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-        hide();
-      }
-    };
-
-    fetchOrder();
-
-    // 🔥 polling for Pay.nl webhook updates
-    interval = setInterval(fetchOrder, 5000);
-
-    return () => clearInterval(interval);
-  }, [orderId]); */

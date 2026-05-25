@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { assignNextStore } from "@acme/order-routing";
 
 const PAYNL_API_TOKEN = process.env.PAYNL_API_TOKEN;
 
@@ -65,15 +66,52 @@ export async function POST(req: NextRequest) {
       paymentStatus = "failed";
     }
 
-    // if (status === "paid") paymentStatus = "paid";
-    // else if (["failed", "cancelled", "expired"].includes(status))
-    //   paymentStatus = "failed";
-    // else paymentStatus = "pending";
-
     // =========================
     // IDEMPOTENT UPDATE
     // =========================
-    await client.query(
+
+    if (paymentStatus === "paid") {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        const result: any = await client.query(
+          ` UPDATE store_orders
+            SET payment_status = 'paid',       
+                transaction_id = COALESCE($1, transaction_id),
+                order_status = 'pending',
+                updated_at = NOW()
+            WHERE id = $2 AND payment_status != 'paid'
+            RETURNING id, order_number`,
+          [transactionId, reference], // transaction_id = $1
+        );
+
+        if (result.rowCount > 0) {
+          const confirmedOrder = result.rows[0];
+
+          // ⚡ INVOKE CORRESPONDING DECENTRALIZED ASSIGNMENT SYSTEM HERE TOO ⚡
+          await assignNextStore(client, confirmedOrder.id);
+        }
+
+        if (paymentStatus === "paid") {
+          const confirmedOrder = result.rows[0];
+          console.log(
+            `Order ${confirmedOrder.order_number} paid. Handing off to the decentralized fulfillment engine...`,
+          );
+          // invokeFulfillmentRouter(confirmedOrder.id);
+        }
+
+        await client.query("COMMIT");
+      } catch (txError) {
+        await client.query("ROLLBACK");
+        throw txError;
+      } finally {
+        client.release();
+      }
+    }
+
+    /* 
+    const result = await client.query(
       `
       UPDATE store_orders
       SET payment_status = $1,
@@ -81,71 +119,36 @@ export async function POST(req: NextRequest) {
           updated_at = NOW()
       WHERE id = $3
         AND payment_status != 'paid'
+      RETURNING id, order_number
       `,
       [paymentStatus, transactionId, reference],
     );
 
+    if (result.rowCount === 0) {
+      // Return 200 to prevent gateway retries if the order was already processed or doesn't match
+      return new Response("Order already processed or not found", { status: 200 });
+    } 
+
+    //  TRIGGER MULTI-STORE ROUTING SUBROUTINE HERE IF PAID!
+    if (paymentStatus === "paid") {
+      const confirmedOrder = result.rows[0];
+      console.log(`Order ${confirmedOrder.order_number} paid. Handing off to the decentralized fulfillment engine...`);
+      // invokeFulfillmentRouter(confirmedOrder.id);
+    }
+    */
     // console.log(`Order ${reference} → ${paymentStatus}`);
 
-    return NextResponse.json({ success: true });
+    // return NextResponse.json({ success: true });
+    return new Response("TRUE", { status: 200 });
   } catch (err) {
-    console.error("Webhook error:", err);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error(
+      "Pay.nl asynchronous server processing webhook catch block error:",
+      err,
+    );
+    return new Response("Internal Server Error", { status: 500 });
+    // console.error("Webhook error:", err);
+    // return NextResponse.json({ success: false }, { status: 500 });
   } finally {
     client.release();
   }
 }
-
-/* 
-
-
-    const orderId = body?.orderId || body?.order?.id;
-
-    if (!orderId) {
-      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
-    }
-
-    // 🔥 Fetch latest order status from Pay.nl
-    const res = await fetch(
-      `https://connect.pay.nl/v1/orders/${orderId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${PAYNL_API_TOKEN}`,
-        },
-      },
-    );
-*/
-
-// Security: verify signature first
-/* const signature = req.headers.get("x-paynl-signature");
-    if (!signature || signature !== process.env.PAYNL_WEBHOOK_SECRET) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
-    } */
-
-// const body = await req.json();
-
-/**
- * Example payload from Pay.nl (simplified)
- * {
- *   orderId: "uuid-of-your-order",
- *   transactionId: "paynl-transaction-id",
- *   status: "paid" | "pending" | "failed"
- * }
- */
-// const { orderId, transactionId, status } = body;
-/* const bodyText = await req.text();
-    const params = new URLSearchParams(bodyText);
-
-    const transactionId = params.get("txid");
-    const statusCode = params.get("status");
-    const orderId = params.get("reference");
-
-    if (!orderId || !transactionId || !statusCode) {
-      return NextResponse.json(
-        { success: false, error: "Missing fields" },
-        { status: 400 },
-      );
-    } */

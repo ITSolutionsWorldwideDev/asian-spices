@@ -24,9 +24,9 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const sort = searchParams.get("sort");
 
-    const values: any[] = [storeId]; 
-    // let where = `WHERE o.store_id IS NULL`;// o.store_id = $1
-    let where = `WHERE o.order_status = 'pending' AND o.payment_status = 'paid' AND o.store_id = $1`;
+    const values: any[] = [storeId];
+    
+    let where = `WHERE o.order_status IN ('pending','processing') AND o.payment_status = 'paid' AND (o.store_id = $1 OR o.current_store_id = $1)`;
 
     if (search) {
       values.push(`%${search}%`);
@@ -71,12 +71,9 @@ export async function GET(req: NextRequest) {
       ${orderBy}
     `;
 
-    // console.log('query === ',query);
-
     const result = await pool.query(query, values);
 
     return NextResponse.json({ items: result.rows });
-    
   } catch (error) {
     console.error("Orders listing fetch failed:", error);
     return NextResponse.json(

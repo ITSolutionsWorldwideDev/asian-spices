@@ -109,7 +109,7 @@ export default function OrderSummary({
         </div>
 
         <div className="flex justify-between mt-3">
-          <span>Tax (8%)</span>
+          <span>Tax (21%)</span>
           <span>
             {symbol}
             {tax.toFixed(2)}
@@ -146,10 +146,11 @@ export default function OrderSummary({
             id="promo-code"
             type="text"
             placeholder="Enter code"
+            readOnly
             className="w-full sm:flex-1 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
 
-          <button className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <button disabled className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
             Apply
           </button>
         </div>

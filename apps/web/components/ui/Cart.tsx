@@ -218,7 +218,7 @@ const { subtotal, tax, shipping, total } = calculateTotals(
             </div>
 
             <div className="flex justify-between mt-3">
-              <span>Tax (8%)</span>
+              <span>Tax (21%)</span>
               <span>
                 {symbol}
                 {(rate * tax).toFixed(2)}

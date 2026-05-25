@@ -2,7 +2,7 @@
 
 import { CartItem } from "@/store/useCartStore";
 
-export const TAX_RATE = 0.08;
+export const TAX_RATE = 0.21;
 export const FREE_SHIPPING_THRESHOLD = 50;
 export const BASE_CURRENCY = "EUR";
 

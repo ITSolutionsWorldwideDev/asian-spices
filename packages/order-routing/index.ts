@@ -18,6 +18,7 @@ type StoreWithDistance = StoreCandidate & {
 /* ================= CONSTANTS ================= */
 
 export const ORDER_EVENTS = {
+  // INITIALIZED: "INITIALIZED",
   CREATED: "created",
   ASSIGNED: "assigned",
   REJECTED: "rejected",
@@ -145,6 +146,7 @@ export const sortStores = (
 /* ================= ASSIGN DEFAULT ================= */
 
 export const assignDefaultStore = async (client: any, orderId: string) => {
+  console.log("assignDefaultStore DEFAULT_STORE_ID ===== ", DEFAULT_STORE_ID);
   if (!DEFAULT_STORE_ID) {
     throw new AppError(
       "Default store not configured",
@@ -394,7 +396,11 @@ export const assignNextStore = async (client: any, orderId: string) => {
 
     const tried = attempts.map((a: any) => a.store_id);
 
+    console.log("assignNextStore tried ===== ", tried);
+
     const nextStore = sorted.find((s) => !tried.includes(s.store_id));
+
+    console.log("assignNextStore nextStore ===== ", nextStore);
 
     if (!nextStore) {
       return assignDefaultStore(client, orderId);

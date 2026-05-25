@@ -972,7 +972,8 @@ export default function ProductFormComponent({
                       {...register("promo_code")}
                       placeholder="e.g. SAVE10"
                       className="w-full rounded border px-3 py-2 text-sm"
-                      disabled={isView}
+                      disabled
+                      // disabled={isView}
                     />
                     {errors.promo_code && (
                       <p className="text-sm text-red-600 mt-1">
