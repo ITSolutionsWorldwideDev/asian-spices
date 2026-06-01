@@ -10,10 +10,19 @@ import { useLoaderStore } from "@/store/useLoaderStore";
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
-
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Pagination State Variables
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [paginationMeta, setPaginationMeta] = useState({
+    totalPages: 1,
+    totalRecords: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+
   const { show, hide } = useLoaderStore();
+  const recordsPerPage = 5;
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -21,7 +30,7 @@ export default function OrdersPage() {
         show("Loading Orders...");
 
         // 1️⃣ Fetch orders
-        const res = await fetch("/api/account/orders");
+        const res = await fetch(`/api/account/orders?page=${currentPage}&limit=${recordsPerPage}`);
         const data = await res.json();
 
         if (!data?.orders) {
@@ -29,7 +38,17 @@ export default function OrdersPage() {
           return;
         }
 
-        // 2️⃣ Check pending payments (proper async handling)
+        setOrders(data.orders);
+        if (data.pagination) {
+          setPaginationMeta({
+            totalPages: data.pagination.totalPages,
+            totalRecords: data.pagination.totalRecords,
+            hasNextPage: data.pagination.hasNextPage,
+            hasPrevPage: data.pagination.hasPrevPage
+          });
+        }
+
+        /* // 2️⃣ Check pending payments (proper async handling)
         await Promise.all(
           data.orders.map(async (order: any) => {
             if (order.payment_status === "pending") {
@@ -48,9 +67,9 @@ export default function OrdersPage() {
 
         // 3️⃣ Refetch updated orders (IMPORTANT)
         const updatedRes = await fetch("/api/account/orders");
-        const updatedData = await updatedRes.json();
+        const updatedData = await updatedRes.json(); */
 
-        setOrders(updatedData.orders || []);
+        // setOrders(updatedData.orders || []);
       } catch (err) {
         console.error("Failed to load orders:", err);
         setOrders([]);
@@ -60,11 +79,16 @@ export default function OrdersPage() {
     };
 
     loadOrders();
-  }, []);
+  }, [currentPage]);
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-6">Order History</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl font-bold">Order History</h1>
+        <span className="text-sm text-gray-500 font-medium">
+          Total Orders: {paginationMeta.totalRecords}
+        </span>
+      </div>
 
       {orders.length === 0 ? (
         <p className="text-gray-500">No orders found.</p>
@@ -84,69 +108,32 @@ export default function OrdersPage() {
         </div>
       )}
 
-      <OrderDrawer order={selected} onClose={() => setSelected(null)} />
-    </div>
-  );
-}
-/* <div className="grid gap-4">
-          {orders.map((order: any) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onView={setSelected}
-            />
-          ))}
-        </div> */
-/* "use client";
+      {/* 🔹 INTERACTIVE PAGINATION CONTROLS BAR */}
+      {paginationMeta.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t pt-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={!paginationMeta.hasPrevPage}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition"
+          >
+            ← Previous
+          </button>
+          
+          <span className="text-sm font-medium text-gray-700">
+            Page {currentPage} of {paginationMeta.totalPages}
+          </span>
 
-import { useEffect, useState } from "react";
-import OrderCard from "@/components/layout/account/orders/OrderCard";
-import OrderDrawer from "@/components/layout/account/orders/OrderDrawer";
-
-export default function OrdersPage() {
-  const [orders, setOrders] = useState([]);
-  const [selected, setSelected] = useState<any>(null);
-
-  // useEffect(() => {
-  //   fetch("/api/account/orders")
-  //     .then((res) => res.json())
-  //     .then((data) => setOrders(data.orders));
-  // }, []);
-
-  useEffect(() => {
-    const loadOrders = async () => {
-      const res = await fetch("/api/account/orders");
-      const data = await res.json();
-
-      setOrders(data.orders);
-
-      // 🔥 verify pending payments
-      data.orders.forEach(async (order: any) => {
-        if (order.payment_status === "pending") {
-          await fetch("/api/paynl/check-status", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: order.id }),
-          });
-        }
-      });
-    };
-
-    loadOrders();
-  }, []);
-
-  return (
-    <div>
-      <h1 className="text-xl font-bold mb-6">Order History</h1>
-
-      <div className="grid gap-4">
-        {orders.map((o: any) => (
-          <OrderCard key={o.id} order={o} onView={setSelected} />
-        ))}
-      </div>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, paginationMeta.totalPages))}
+            disabled={!paginationMeta.hasNextPage}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition"
+          >
+            Next →
+          </button>
+        </div>
+      )}
 
       <OrderDrawer order={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
- */

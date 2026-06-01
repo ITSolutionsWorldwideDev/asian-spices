@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
-// import { CartItem } from "@/store/useCartStore";
 import { SHIPPING_OPTIONS, ShippingMethod } from "@/lib/pricing";
 
 interface Props {
