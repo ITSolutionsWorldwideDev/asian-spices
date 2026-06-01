@@ -29,6 +29,7 @@ type OrderItem = {
 
 type OrderDetail = {
   id: string;
+  store_id?: string;
   order_number: string;
   order_date: string;
   order_status: string;
@@ -60,6 +61,19 @@ type OrderDetail = {
   items: OrderItem[];
 };
 
+type PackagingInventoryItem = {
+  id: string;
+  packaging_type_id: string;
+  quantity_available: number;
+  name: string;
+  sku: string;
+  package_type: string;
+  length_cm: number;
+  width_cm: number;
+  height_cm: number;
+  empty_weight_kg: string | number;
+};
+
 export default function OrderDetailPage() {
   const { tenant, orderId } = useParams();
   const { showToast } = useToast();
@@ -71,6 +85,12 @@ export default function OrderDetailPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [provider, setProvider] = useState("cheapcargo");
+
+  // 🚀 Packaging Registry States
+  const [packagingOptions, setPackagingOptions] = useState<
+    PackagingInventoryItem[]
+  >([]);
+  const [selectedPackagingId, setSelectedPackagingId] = useState("");
 
   const [shipping, setShipping] = useState({
     weight: "",
@@ -108,6 +128,22 @@ export default function OrderDetailPage() {
     }
   }, [orderId, fetchOrder]);
 
+  // 🚀 Fetch Packaging Options when Order details are resolved
+  useEffect(() => {
+    const fetchPackagingData = async () => {
+      try {
+        const res = await fetch(`/api/store/packaging`);
+        if (!res.ok) throw new Error("Failed packing options request");
+        const data = await res.json();
+        setPackagingOptions(data.inventory || []);
+      } catch (err) {
+        console.error("Error drawing integration stock:", err);
+      }
+    };
+
+    fetchPackagingData();
+  }, [order]);
+
   useEffect(() => {
     const fetchMethods = async () => {
       if (!order || order.payment_status !== "paid") return;
@@ -125,6 +161,43 @@ export default function OrderDetailPage() {
     };
     fetchMethods();
   }, [order]);
+
+  // 🚀 Handle Auto-populating Fields from Packaging Selections
+  const handlePackagingChange = (packagingTypeId: string) => {
+    setSelectedPackagingId(packagingTypeId);
+    const box = packagingOptions.find(
+      (p) =>
+        p.packaging_type_id === packagingTypeId || p.id === packagingTypeId,
+    );
+
+    if (box) {
+      // Calculate estimated contents weight if available, or start with container floor weight
+      const containerTareWeight = Number(box.empty_weight_kg || 0);
+
+      setShipping({
+        boxes: "1",
+        length: Math.round(Number(box.length_cm || 0)).toString(),
+        width: Math.round(Number(box.width_cm || 0)).toString(),
+        height: Math.round(Number(box.height_cm || 0)).toString(),
+        weight:
+          containerTareWeight > 0 ? containerTareWeight.toFixed(2) : "0.10", // Fallback floor constraint
+      });
+      if (typeof showToast === "function") {
+        showToast(
+          "success",
+          `Applied dimension constraints from preset: ${box.name}`,
+        );
+      }
+    } else {
+      setShipping({
+        weight: "",
+        length: "",
+        width: "",
+        height: "",
+        boxes: "1",
+      });
+    }
+  };
 
   const updateLineFulfillQty = (itemId: string, value: string) => {
     if (!order) return;
@@ -201,6 +274,7 @@ export default function OrderDetailPage() {
       const payload = {
         orderId,
         shippingMethodId,
+        packagingTypeId: selectedPackagingId || null,
         parcel: {
           weight: normalizeNumber(shipping.weight),
           length: normalizeNumber(shipping.length) || 10,
@@ -529,8 +603,8 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Breakdown Calculations Dashboard Block Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {/* Logistics Shipping Metadata Matrix */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          //  Logistics Shipping Metadata Matrix
           <div className="md:col-span-2 bg-white border p-5 rounded-xl shadow-sm space-y-4">
             <div className="flex items-center gap-2 border-b pb-2 text-gray-700 font-bold text-sm">
               <Printer size={16} />{" "}
@@ -596,7 +670,7 @@ export default function OrderDetailPage() {
                 ))}
               </select>
             </div>
-            {/* Contextual Action Shipping Flow State Buttons */}
+           // Contextual Action Shipping Flow State Buttons 
             {!hasShipment && (
               <button
                 onClick={handleShip}
@@ -619,8 +693,7 @@ export default function OrderDetailPage() {
                   : "Confirm Final Manifest Pickup with Courier"}
               </button>
             )}
-            {/* isBooked == {isBooked}
-            == hasLabel == {hasLabel} */}
+            
             {isBooked && !hasLabel && (
               <button
                 onClick={handleGenerateLabel}
@@ -653,6 +726,225 @@ export default function OrderDetailPage() {
               </button>
             )}
 
+            {hasLabel && (
+              <a
+                href={
+                  order?.shipping_label || (order as any).label_url || undefined
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="block text-center text-xs font-bold text-blue-600 underline hover:text-blue-800 transition pt-2"
+              >
+                Open Printable Air Waybill (PDF) ↗
+              </a>
+            )}
+          </div>*/}
+
+        {/* Freight and Logistics Control */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          <div className="md:col-span-2 bg-white border p-5 rounded-xl shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b pb-2 text-gray-700 font-bold text-sm">
+              <Printer size={16} />{" "}
+              <span>Waybills & Freight Packaging Variables</span>
+            </div>
+
+            {/* 🚀 INTEGRATED PACKAGING SELECTION MODULE DROP-DOWN */}
+            <div className="text-xs">
+              <label className="block text-gray-500 font-medium mb-1">
+                Select Active Box Variant from Stock Inventory Template
+              </label>
+              <select
+                value={selectedPackagingId}
+                onChange={(e) => handlePackagingChange(e.target.value)}
+                disabled={hasShipment}
+                className="w-full p-2 border rounded-lg focus:outline-none bg-white font-medium text-gray-700 disabled:bg-gray-50"
+              >
+                <option value="">
+                  -- Manual Dimension Configuration (No Template Chosen) --
+                </option>
+                {packagingOptions &&
+                  packagingOptions.map((box) => {
+                    // Parse string decimals smoothly to prevent rendering errors
+                    const l = Math.round(Number(box.length_cm || 0));
+                    const w = Math.round(Number(box.width_cm || 0));
+                    const h = Math.round(Number(box.height_cm || 0));
+                    const availableStock =
+                      box.quantity_available !== undefined
+                        ? box.quantity_available
+                        : 0;
+
+                    // Fallback target identifier validation
+                    const targetValue = box.packaging_type_id || box.id;
+
+                    return (
+                      <option key={box.id || targetValue} value={targetValue}>
+                        {box.name || "Unnamed Variant"} ({box.sku || "N/A"}) —{" "}
+                        {l}x{w}x{h} cm [Avail: {availableStock}]
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
+
+            {/* Dimensional Form Variables Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.weight}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, weight: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Length (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.length}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, length: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Width (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.width}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, width: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Height (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.height}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, height: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Boxes Count
+                </label>
+                <input
+                  type="number"
+                  value={shipping.boxes}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, boxes: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Logistics Core Engine
+                </label>
+                <select
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:outline-none bg-white"
+                >
+                  <option value="cheapcargo">CheapCargo Ruleset</option>
+                  <option value="dhl">DHL Priority Express</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Active Rate Method Node
+                </label>
+                <select
+                  value={shippingMethodId}
+                  onChange={(e) => setShippingMethodId(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:outline-none bg-white"
+                >
+                  <option value="">
+                    Select Shipping Courier Pipeline Target...
+                  </option>
+                  {methods.map((m: any) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Conditional Action Dispatch Interfaces */}
+            {!hasShipment && (
+              <button
+                onClick={handleShip}
+                disabled={
+                  shippingLoading || !shipping.weight || !shipping.length
+                }
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white text-xs font-bold rounded-lg transition"
+              >
+                {shippingLoading
+                  ? "Creating Manifest..."
+                  : "Initialize Courier Waybill Package Instance"}
+              </button>
+            )}
+            {hasShipment && !isBooked && (
+              <button
+                onClick={handleConfirmBooking}
+                disabled={bookingLoading}
+                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition"
+              >
+                {bookingLoading
+                  ? "Finalizing Booking Details..."
+                  : "Confirm Final Manifest Pickup with Courier"}
+              </button>
+            )}
+            {isBooked && !hasLabel && (
+              <button
+                onClick={handleGenerateLabel}
+                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition"
+              >
+                Generate PDF Shipping Label
+              </button>
+            )}
+            {isBooked && (
+              <button
+                onClick={handleRefreshTracking}
+                disabled={loading}
+                className="px-4 py-2 border text-sm font-medium rounded inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 transition"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"
+                  />
+                </svg>
+                {loading ? "Syncing..." : "Refresh Tracking"}
+              </button>
+            )}
             {hasLabel && (
               <a
                 href={

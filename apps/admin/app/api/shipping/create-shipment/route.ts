@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const store = await getCurrentStoreAPI(req);
     const storeId = store.id;
 
-    const { orderId, shippingMethodId, parcel } = await req.json();
+    const { orderId, shippingMethodId, packagingTypeId, parcel } = await req.json();
 
     if (!orderId || !shippingMethodId) {
       return NextResponse.json(
@@ -28,18 +28,6 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // Get order (store-scoped)
     // -----------------------------
-    /* const orderRes = await client.query(
-      `
-      SELECT 
-        o.*,
-        COALESCE(json_agg(oi.*) FILTER (WHERE oi.id IS NOT NULL), '[]') AS items
-      FROM store_orders o
-      LEFT JOIN store_order_items oi ON oi.order_id = o.id
-      WHERE o.id = $1 AND o.store_id = $2
-      GROUP BY o.id
-      `,
-      [orderId, storeId],
-    ); */
 
     const orderRes = await client.query(
       `
@@ -85,9 +73,6 @@ export async function POST(req: NextRequest) {
     );
 
     const method = methodRes.rows[0];
-
-    // console.log('method ==== ',method);
-
     if (!method) {
       throw new Error("Shipping method not found");
     }
@@ -208,8 +193,8 @@ export async function POST(req: NextRequest) {
       `
       INSERT INTO shipments
         (order_id, store_id, provider_id, shipping_method_id,
-         external_shipment_id, tracking_number, label_url, tracking_url,raw_response)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         external_shipment_id, tracking_number, label_url, tracking_url,raw_response,packaging_type_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *
       `,
       [
@@ -222,6 +207,7 @@ export async function POST(req: NextRequest) {
         labelUrl,
         shipmentResult.trackingUrl || null,
         JSON.stringify(shipmentResult.raw || {}),
+        packagingTypeId || null,
       ],
     );
 
@@ -229,17 +215,17 @@ export async function POST(req: NextRequest) {
     // 🔄 Update order
     // -----------------------------
 
-    const orderData = shipmentResult.raw?.shipment?.order?.[0];
-    const details = orderData?.details;
-
-    const shippingStatus = details?.status || "new";
-    const shippingPaid = orderData?.paid || false;
-    const paymentUrl = shipmentResult.raw?.shipment?.url || null;
-
     const isBooked =
       shipmentResult.raw?.shipment?.order?.[0]?.details?.status === "booked";
 
     if (isBooked) {
+
+      const orderData = shipmentResult.raw?.shipment?.order?.[0];
+      const details = orderData?.details;
+      const shippingStatus = details?.status || "new";
+      const shippingPaid = orderData?.paid || false;
+      const paymentUrl = shipmentResult.raw?.shipment?.url || null;
+
       await client.query(
         `
           UPDATE store_orders
@@ -259,6 +245,33 @@ export async function POST(req: NextRequest) {
           orderId,
         ],
       );
+
+      // Decrement the store packaging inventory if a fixed template was used
+      if (packagingTypeId) {
+        const totalBoxesUsed = parseInt(parcel.boxes, 10) || 1;
+        
+        const inventoryUpdateRes = await client.query(
+          `
+          UPDATE store_packaging_inventory
+          SET quantity_available = GREATEST(0, quantity_available - $1),
+              updated_at = NOW()
+          WHERE store_id = $2 AND (packaging_type_id = $3 OR id = $3)
+          `,
+          [totalBoxesUsed, storeId, packagingTypeId]
+        );
+
+        if (inventoryUpdateRes.rowCount === 0) {
+          // If no specific store inventory row existed yet, dynamically initialize it as depleted
+          await client.query(
+            `
+            INSERT INTO store_packaging_inventory (store_id, packaging_type_id, quantity_available, minimum_threshold)
+            VALUES ($1, $2, 0, 10)
+            ON CONFLICT (store_id, packaging_type_id) DO NOTHING
+            `,
+            [storeId, packagingTypeId]
+          );
+        }
+      }
     }
 
     await client.query("COMMIT");

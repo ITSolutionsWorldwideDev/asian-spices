@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,18 +15,28 @@ export async function POST(req: NextRequest) {
       min_order_amount,
       max_order_amount,
       priority,
-      store_id,
     } = body;
 
-    if (!store_id) {
+    const store = await getCurrentStoreAPI(req);
+
+    if (!store?.id) {
+      return NextResponse.json({ error: "Store not found" }, { status: 401 });
+    }
+    const storeId = store.id;
+
+    if (!name || !packaging_type_id) {
       return NextResponse.json(
         {
           success: false,
-          error: "Tenant isolated branch target scope missing.",
+          error: "Required context target parameters are missing.",
         },
         { status: 400 },
       );
     }
+
+    // Explicitly parse and normalize numerical elements before DB integration injection execution
+    const validatedPriority = parseInt(String(priority), 10);
+    const parsedPriority = isNaN(validatedPriority) ? 10 : validatedPriority;
 
     const res = await pool.query(
       `
@@ -40,11 +51,15 @@ export async function POST(req: NextRequest) {
         name,
         packaging_type_id,
         Number(min_weight_kg) || 0,
-        max_weight_kg === "" ? null : Number(max_weight_kg),
+        max_weight_kg === "" || max_weight_kg === null
+          ? null
+          : Number(max_weight_kg),
         Number(min_order_amount) || 0,
-        max_order_amount === "" ? null : Number(max_order_amount),
-        parseInt(priority, 10) || 0,
-        store_id,
+        max_order_amount === "" || max_order_amount === null
+          ? null
+          : Number(max_order_amount),
+        parsedPriority,
+        storeId,
       ],
     );
 
@@ -61,9 +76,15 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const store_id = searchParams.get("store_id");
 
-    if (!id || !store_id) {
+    const store = await getCurrentStoreAPI(req);
+
+    if (!store?.id) {
+      return NextResponse.json({ error: "Store not found" }, { status: 401 });
+    }
+    const storeId = store.id;
+
+    if (!id) {
       return NextResponse.json(
         {
           success: false,
@@ -76,7 +97,7 @@ export async function DELETE(req: NextRequest) {
     // Verify ownership security parameters scope layout limits
     const result = await pool.query(
       "DELETE FROM packaging_rules WHERE id = $1 AND store_id = $2 RETURNING id",
-      [id, store_id],
+      [id, storeId],
     );
 
     if (result.rows.length === 0) {
