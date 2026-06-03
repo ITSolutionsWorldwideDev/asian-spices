@@ -311,11 +311,11 @@ export default function ProductFormComponent({
       .then(setCountries);
 
     // 👇 UPDATE THIS LINE TO EXTRACT THE ARRAY SAFELY 👇
-    fetch("/api/media")
+    /* fetch("/api/media")
       .then((r) => r.json())
       .then((d) => {
-        // console.log("Raw API Response structure (d) === ", d);
-        // console.log("Target paginated media array (d.media) === ", d.media);
+        console.log("Raw API Response structure (d) === ", d);
+        console.log("Target paginated media array (d.media) === ", d.media);
 
         // 🚀 Update: Extracts from d.media to align with your API pagination wrapper
         const mediaArray = d.media || d.items || d.data || d;
@@ -324,11 +324,33 @@ export default function ProductFormComponent({
       })
       .catch((err) =>
         console.error("Error setting media state grid array:", err),
-      );
-    // fetch("/api/media")
-    //   .then((r) => r.json())
-    //   .then(setMedia);
+      );*/
   }, []);
+
+  // 1. Add pagination state managers near your top declarations
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 12; // Aligned with your backend default limit parameter
+
+  // 🚀 Dedicated Media fetching hook responding directly to page state changes
+  useEffect(() => {
+    fetch(`/api/media?page=${page}&limit=${limit}`)
+      .then((r) => r.json())
+      .then((d) => {
+        console.log("Raw API Response structure (d) === ", d);
+        console.log("Target paginated media array (d.media) === ", d.media);
+
+        const mediaArray = d.media || d.items || d.data || d;
+        setMedia(Array.isArray(mediaArray) ? mediaArray : []);
+
+        if (d.pagination) {
+          setTotalPages(d.pagination.totalPages || 1);
+        }
+      })
+      .catch((err) =>
+        console.error("Error setting media state grid array:", err),
+      );
+  }, [page]); // Re-fetches whenever the user changes the page
 
   /* ---------------- Options ---------------- */
 
@@ -1101,6 +1123,36 @@ export default function ProductFormComponent({
                 {/* mounted=== {mounted} */}
                 {mediaGrid}
               </div>
+
+              {/* 🚀 PAGINATION FOOTER CONTROL PANEL */}
+              {mode !== "view" && totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-100 mt-6 pt-4 text-sm">
+                  <span className="text-gray-500">
+                    Page <strong>{page}</strong> of{" "}
+                    <strong>{totalPages}</strong>
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={page === 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 border border-gray-200 rounded text-gray-700 font-medium bg-white hover:bg-gray-50 disabled:opacity-50 transition"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      disabled={page === totalPages}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      className="px-3 py-1.5 border border-gray-200 rounded text-gray-700 font-medium bg-white hover:bg-gray-50 disabled:opacity-50 transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {selectedMedia.length === 0 && (
                 <p className="mt-4 text-sm text-gray-500">
