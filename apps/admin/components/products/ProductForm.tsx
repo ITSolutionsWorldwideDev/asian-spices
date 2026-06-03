@@ -309,22 +309,6 @@ export default function ProductFormComponent({
     fetch("/api/countries")
       .then((r) => r.json())
       .then(setCountries);
-
-    // 👇 UPDATE THIS LINE TO EXTRACT THE ARRAY SAFELY 👇
-    /* fetch("/api/media")
-      .then((r) => r.json())
-      .then((d) => {
-        console.log("Raw API Response structure (d) === ", d);
-        console.log("Target paginated media array (d.media) === ", d.media);
-
-        // 🚀 Update: Extracts from d.media to align with your API pagination wrapper
-        const mediaArray = d.media || d.items || d.data || d;
-
-        setMedia(Array.isArray(mediaArray) ? mediaArray : []);
-      })
-      .catch((err) =>
-        console.error("Error setting media state grid array:", err),
-      );*/
   }, []);
 
   // 1. Add pagination state managers near your top declarations
@@ -337,20 +321,50 @@ export default function ProductFormComponent({
     fetch(`/api/media?page=${page}&limit=${limit}`)
       .then((r) => r.json())
       .then((d) => {
-        console.log("Raw API Response structure (d) === ", d);
-        console.log("Target paginated media array (d.media) === ", d.media);
-
         const mediaArray = d.media || d.items || d.data || d;
-        setMedia(Array.isArray(mediaArray) ? mediaArray : []);
+        const fetchedMedia: MediaItem[] = Array.isArray(mediaArray)
+          ? mediaArray
+          : [];
 
         if (d.pagination) {
           setTotalPages(d.pagination.totalPages || 1);
         }
+
+        // 🔥 SORTING & PREPENDING LOGIC:
+        // Separate fetched items into selected and unselected categories
+        const selectedInPayload = fetchedMedia.filter((item) =>
+          selectedMedia.includes(item.media_id),
+        );
+        const unselectedInPayload = fetchedMedia.filter(
+          (item) => !selectedMedia.includes(item.media_id),
+        );
+
+        // Put selected items first, followed by the rest of the page items
+        let orderedMedia = [...selectedInPayload, ...unselectedInPayload];
+
+        // 💡 EDGE CASE GUARD: If we are on page 1, double-check if any selected items
+        // are missing from the current page payload (e.g., they were chosen from a deeper page).
+        if (page === 1 && selectedMedia.length > 0) {
+          const missingSelectedIds = selectedMedia.filter(
+            (id) => !orderedMedia.some((item) => item.media_id === id),
+          );
+
+          if (missingSelectedIds.length > 0) {
+            // Fetch the individual profiles of those missing assets so they don't look broken
+            // Alternatively, if your project allows it, pass selectedMedia to your API to handle this server-side.
+            console.warn(
+              "Some selected media items live on subsequent pagination windows:",
+              missingSelectedIds,
+            );
+          }
+        }
+
+        setMedia(orderedMedia);
       })
       .catch((err) =>
         console.error("Error setting media state grid array:", err),
       );
-  }, [page]); // Re-fetches whenever the user changes the page
+  }, [page, selectedMedia]); // Added selectedMedia to lookups to re-order accurately on load
 
   /* ---------------- Options ---------------- */
 
@@ -564,56 +578,6 @@ export default function ProductFormComponent({
       );
     });
   }, [media, selectedMedia, primaryMedia, mode]);
-
-  /* const mediaGrid = useMemo(() => {
-    // If in view mode, only show selected media
-    const itemsToRender =
-      mode === "view"
-        ? media.filter((item) => selectedMedia.includes(item.media_id))
-        : media;
-
-    return itemsToRender.map((item) => {
-      const isSelected = selectedMedia.includes(item.media_id);
-      const isPrimary = primaryMedia === item.media_id;
-
-      return (
-        <div
-          key={item.media_id}
-          onClick={() => {
-            if (mode === "edit" || mode === "create") {
-              setSelectedMedia((prev) =>
-                isSelected
-                  ? prev.filter((id) => id !== item.media_id)
-                  : [...prev, item.media_id],
-              );
-              if (!primaryMedia) setPrimaryMedia(item.media_id);
-            }
-          }}
-          className={`relative cursor-pointer rounded border bg-white p-1 transition ${
-            isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
-          }`}
-        >
-          <Image
-            src={getThumb(item.file_url, 200)}
-            alt={item.file_name}
-            width={200}
-            height={200}
-            className="rounded object-cover"
-          />
-
-          {isPrimary && (
-            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
-              Primary
-            </span>
-          )}
-
-          {isSelected && (mode === "edit" || mode === "create") && (
-            <div className="absolute inset-0 rounded bg-blue-500/10" />
-          )}
-        </div>
-      );
-    });
-  }, [media, selectedMedia, primaryMedia, mode]); */
 
   const safeNumber = (val: any) => {
     const n = Number(val);
@@ -1185,3 +1149,72 @@ export default function ProductFormComponent({
     </div>
   );
 }
+
+
+
+
+    // 👇 UPDATE THIS LINE TO EXTRACT THE ARRAY SAFELY 👇
+    /* fetch("/api/media")
+      .then((r) => r.json())
+      .then((d) => {
+        console.log("Raw API Response structure (d) === ", d);
+        console.log("Target paginated media array (d.media) === ", d.media);
+
+        // 🚀 Update: Extracts from d.media to align with your API pagination wrapper
+        const mediaArray = d.media || d.items || d.data || d;
+
+        setMedia(Array.isArray(mediaArray) ? mediaArray : []);
+      })
+      .catch((err) =>
+        console.error("Error setting media state grid array:", err),
+      );*/
+      
+  /* const mediaGrid = useMemo(() => {
+    // If in view mode, only show selected media
+    const itemsToRender =
+      mode === "view"
+        ? media.filter((item) => selectedMedia.includes(item.media_id))
+        : media;
+
+    return itemsToRender.map((item) => {
+      const isSelected = selectedMedia.includes(item.media_id);
+      const isPrimary = primaryMedia === item.media_id;
+
+      return (
+        <div
+          key={item.media_id}
+          onClick={() => {
+            if (mode === "edit" || mode === "create") {
+              setSelectedMedia((prev) =>
+                isSelected
+                  ? prev.filter((id) => id !== item.media_id)
+                  : [...prev, item.media_id],
+              );
+              if (!primaryMedia) setPrimaryMedia(item.media_id);
+            }
+          }}
+          className={`relative cursor-pointer rounded border bg-white p-1 transition ${
+            isSelected ? "ring-2 ring-blue-500" : "hover:shadow-md"
+          }`}
+        >
+          <Image
+            src={getThumb(item.file_url, 200)}
+            alt={item.file_name}
+            width={200}
+            height={200}
+            className="rounded object-cover"
+          />
+
+          {isPrimary && (
+            <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
+              Primary
+            </span>
+          )}
+
+          {isSelected && (mode === "edit" || mode === "create") && (
+            <div className="absolute inset-0 rounded bg-blue-500/10" />
+          )}
+        </div>
+      );
+    });
+  }, [media, selectedMedia, primaryMedia, mode]); */

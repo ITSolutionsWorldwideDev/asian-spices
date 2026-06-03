@@ -602,144 +602,6 @@ export default function OrderDetailPage() {
           </table>
         </div>
 
-        {/* Breakdown Calculations Dashboard Block Layout */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          //  Logistics Shipping Metadata Matrix
-          <div className="md:col-span-2 bg-white border p-5 rounded-xl shadow-sm space-y-4">
-            <div className="flex items-center gap-2 border-b pb-2 text-gray-700 font-bold text-sm">
-              <Printer size={16} />{" "}
-              <span>Waybills & Freight Configuration Variables</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Total Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  value={shipping.weight}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, weight: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Boxes Count
-                </label>
-                <input
-                  type="number"
-                  value={shipping.boxes}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, boxes: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Logistics Core Engine
-                </label>
-                <select
-                  value={provider}
-                  onChange={(e) => setProvider(e.target.value)}
-                  className="w-full p-2 border rounded-lg focus:outline-none bg-white"
-                >
-                  <option value="cheapcargo">CheapCargo Ruleset</option>
-                  <option value="dhl">DHL Priority Express</option>
-                </select>
-              </div>
-            </div>
-            <div className="text-xs">
-              <label className="block text-gray-500 font-medium mb-1">
-                Active Rate Method Node
-              </label>
-              <select
-                value={shippingMethodId}
-                onChange={(e) => setShippingMethodId(e.target.value)}
-                className="w-full p-2 border rounded-lg focus:outline-none bg-white"
-              >
-                <option value="">
-                  Select Shipping Courier Pipeline Target...
-                </option>
-                {methods.map((m: any) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-           // Contextual Action Shipping Flow State Buttons 
-            {!hasShipment && (
-              <button
-                onClick={handleShip}
-                disabled={shippingLoading || !shipping.weight}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
-              >
-                {shippingLoading
-                  ? "Creating Manifest..."
-                  : "Initialize Courier Waybill Package Instance"}
-              </button>
-            )}
-            {hasShipment && !isBooked && (
-              <button
-                onClick={handleConfirmBooking}
-                disabled={bookingLoading}
-                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
-              >
-                {bookingLoading
-                  ? "Finalizing Booking Details..."
-                  : "Confirm Final Manifest Pickup with Courier"}
-              </button>
-            )}
-            
-            {isBooked && !hasLabel && (
-              <button
-                onClick={handleGenerateLabel}
-                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
-              >
-                Generate PDF Shipping Label
-              </button>
-            )}
-
-            {isBooked && (
-              <button
-                onClick={handleRefreshTracking}
-                disabled={loading}
-                className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground text-sm font-medium rounded disabled:opacity-50 inline-flex items-center gap-1.5 transition"
-              >
-                <svg
-                  className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"
-                  />
-                </svg>
-                {loading ? "Syncing..." : "Refresh Tracking"}
-              </button>
-            )}
-
-            {hasLabel && (
-              <a
-                href={
-                  order?.shipping_label || (order as any).label_url || undefined
-                }
-                target="_blank"
-                rel="noreferrer"
-                className="block text-center text-xs font-bold text-blue-600 underline hover:text-blue-800 transition pt-2"
-              >
-                Open Printable Air Waybill (PDF) ↗
-              </a>
-            )}
-          </div>*/}
-
         {/* Freight and Logistics Control */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <div className="md:col-span-2 bg-white border p-5 rounded-xl shadow-sm space-y-4">
@@ -978,7 +840,7 @@ export default function OrderDetailPage() {
               <span>${total.toFixed(2)}</span>
             </div>
 
-            {order.tracking_number && (
+            {/* {order.tracking_number && ( */}
               <div className="pt-4 border-t border-dashed mt-4 space-y-2 text-center bg-gray-50 rounded-lg p-3">
                 <span className="block text-xs font-mono font-bold text-gray-600 tracking-wider">
                   TRACKING BARCODE: {order.tracking_number}
@@ -991,13 +853,151 @@ export default function OrderDetailPage() {
                   />
                 )}
               </div>
-            )}
+            {/* )} */}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+        {/* Breakdown Calculations Dashboard Block Layout */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          //  Logistics Shipping Metadata Matrix
+          <div className="md:col-span-2 bg-white border p-5 rounded-xl shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b pb-2 text-gray-700 font-bold text-sm">
+              <Printer size={16} />{" "}
+              <span>Waybills & Freight Configuration Variables</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Total Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.weight}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, weight: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Boxes Count
+                </label>
+                <input
+                  type="number"
+                  value={shipping.boxes}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, boxes: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Logistics Core Engine
+                </label>
+                <select
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:outline-none bg-white"
+                >
+                  <option value="cheapcargo">CheapCargo Ruleset</option>
+                  <option value="dhl">DHL Priority Express</option>
+                </select>
+              </div>
+            </div>
+            <div className="text-xs">
+              <label className="block text-gray-500 font-medium mb-1">
+                Active Rate Method Node
+              </label>
+              <select
+                value={shippingMethodId}
+                onChange={(e) => setShippingMethodId(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:outline-none bg-white"
+              >
+                <option value="">
+                  Select Shipping Courier Pipeline Target...
+                </option>
+                {methods.map((m: any) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+           // Contextual Action Shipping Flow State Buttons 
+            {!hasShipment && (
+              <button
+                onClick={handleShip}
+                disabled={shippingLoading || !shipping.weight}
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
+              >
+                {shippingLoading
+                  ? "Creating Manifest..."
+                  : "Initialize Courier Waybill Package Instance"}
+              </button>
+            )}
+            {hasShipment && !isBooked && (
+              <button
+                onClick={handleConfirmBooking}
+                disabled={bookingLoading}
+                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
+              >
+                {bookingLoading
+                  ? "Finalizing Booking Details..."
+                  : "Confirm Final Manifest Pickup with Courier"}
+              </button>
+            )}
+            
+            {isBooked && !hasLabel && (
+              <button
+                onClick={handleGenerateLabel}
+                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition shadow-sm cursor-pointer"
+              >
+                Generate PDF Shipping Label
+              </button>
+            )}
+
+            {isBooked && (
+              <button
+                onClick={handleRefreshTracking}
+                disabled={loading}
+                className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground text-sm font-medium rounded disabled:opacity-50 inline-flex items-center gap-1.5 transition"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"
+                  />
+                </svg>
+                {loading ? "Syncing..." : "Refresh Tracking"}
+              </button>
+            )}
+
+            {hasLabel && (
+              <a
+                href={
+                  order?.shipping_label || (order as any).label_url || undefined
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="block text-center text-xs font-bold text-blue-600 underline hover:text-blue-800 transition pt-2"
+              >
+                Open Printable Air Waybill (PDF) ↗
+              </a>
+            )}
+          </div>*/}
 
 /* "use client";
 

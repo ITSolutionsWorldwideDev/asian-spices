@@ -21,58 +21,7 @@ export async function GET(
 
     const { orderId } = await params;
 
-    // console.log('storeId === ',storeId);
-    // console.log('orderId === ',orderId);
-
     // 🔹 Fetch Order
-    /* const orderResult = await pool.query(
-      `
-      SELECT
-        o.id,
-        o.id AS order_id,
-        o.order_number,
-        o.created_at AS order_date,
-        o.payment_status AS status,
-        o.total_amount,
-        o.subtotal,
-        o.tax_amount,
-        o.discount_amount,
-        o.shipping_amount,
-        c.company_name AS customer_name,
-        c.email AS customer_email,
-        c.city AS customer_city,
-        c.postcode AS customer_postcode,
-        o.weight,
-        o.length,
-        o.width,
-        o.height,
-        o.boxes,
-        o.fulfillment_status,
-        o.order_status,
-        o.payment_status,
-        o.payment_method,
-        o.transaction_id,
-        o.tracking_number,
-        o.shipping_label,
-        o.shipping_provider,
-        o.shipped_at,
-        
-        o.shipping_status,
-        o.shipping_paid,
-        o.payment_url,
-        s.id AS shipment_id,
-        s.external_shipment_id,
-        s.label_url,
-        s.tracking_url
-
-      FROM store_orders o
-      LEFT JOIN store_customers c ON c.id = o.customer_id
-      LEFT JOIN shipments s ON s.order_id = o.id
-      WHERE o.id = $1 AND o.store_id = $2
-      `,
-      [orderId, storeId],
-    ); */
-
     const orderResult = await pool.query(
       `
       SELECT DISTINCT
@@ -121,28 +70,13 @@ export async function GET(
     );
 
     if (!orderResult.rows.length) {
-      return NextResponse.json({ error: "Order allocation context not found for this store" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Order allocation context not found for this store" },
+        { status: 404 },
+      );
     }
 
     // 🔹 Fetch Items
-    // const itemsResult = await pool.query(
-    //   `
-    //   SELECT
-    //     oi.id AS order_item_id,
-    //     oi.quantity,
-    //     sp.id AS product_id,
-    //     sp.name,
-    //     sp.sku,  
-    //     oi.fulfilled_quantity,
-    //     sp.quantity as available_stock,
-    //     oi.price
-    //   FROM store_order_items oi
-    //   LEFT JOIN store_products sp ON sp.id = oi.product_id
-    //   WHERE oi.order_id = $1
-    //   `,
-    //   [orderId],
-    // );
-
     const itemsResult = await pool.query(
       `
       SELECT
@@ -177,6 +111,73 @@ export async function GET(
     );
   }
 }
+
+/* const orderResult = await pool.query(
+      `
+      SELECT
+        o.id,
+        o.id AS order_id,
+        o.order_number,
+        o.created_at AS order_date,
+        o.payment_status AS status,
+        o.total_amount,
+        o.subtotal,
+        o.tax_amount,
+        o.discount_amount,
+        o.shipping_amount,
+        c.company_name AS customer_name,
+        c.email AS customer_email,
+        c.city AS customer_city,
+        c.postcode AS customer_postcode,
+        o.weight,
+        o.length,
+        o.width,
+        o.height,
+        o.boxes,
+        o.fulfillment_status,
+        o.order_status,
+        o.payment_status,
+        o.payment_method,
+        o.transaction_id,
+        o.tracking_number,
+        o.shipping_label,
+        o.shipping_provider,
+        o.shipped_at,
+        
+        o.shipping_status,
+        o.shipping_paid,
+        o.payment_url,
+        s.id AS shipment_id,
+        s.external_shipment_id,
+        s.label_url,
+        s.tracking_url
+
+      FROM store_orders o
+      LEFT JOIN store_customers c ON c.id = o.customer_id
+      LEFT JOIN shipments s ON s.order_id = o.id
+      WHERE o.id = $1 AND o.store_id = $2
+      `,
+      [orderId, storeId],
+    ); */
+
+// const itemsResult = await pool.query(
+//   `
+//   SELECT
+//     oi.id AS order_item_id,
+//     oi.quantity,
+//     sp.id AS product_id,
+//     sp.name,
+//     sp.sku,
+//     oi.fulfilled_quantity,
+//     sp.quantity as available_stock,
+//     oi.price
+//   FROM store_order_items oi
+//   LEFT JOIN store_products sp ON sp.id = oi.product_id
+//   WHERE oi.order_id = $1
+//   `,
+//   [orderId],
+// );
+
 /* import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 
