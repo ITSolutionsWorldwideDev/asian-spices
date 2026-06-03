@@ -92,7 +92,7 @@ export default function SigninComponent() {
                         <label className="form-label block mb-2">
                           Email <span className="text-red-600"> *</span>
                         </label>
-                        <div className="input-group w-auto input-group-flat">
+                        <div className="input-group w-auto input-group-flat bg-white rounded-b-md">
                           <input
                             type="text"
                             className="form-control"

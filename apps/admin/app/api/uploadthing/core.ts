@@ -2,7 +2,6 @@
 
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { getServerSession } from "next-auth";
-// import { authOptions } from "@acme/auth";
 import { adminAuthOptions } from "@acme/auth/admin";
 import { pool } from "@acme/db";
 
@@ -12,7 +11,7 @@ export const mediaRouter = {
   productImage: f({
     image: {
       maxFileSize: "8MB",
-      maxFileCount: 5,
+      maxFileCount: 25,
     },
   })
     .middleware(async ({ req }) => {
@@ -31,14 +30,6 @@ export const mediaRouter = {
 
       return { userId: session.user.id };
     })
-    // .middleware(async () => {
-    //   const session = await getServerSession(adminAuthOptions);
-
-    //   console.log("!session?.user?.id :", session?.user?.id);
-    //   if (!session?.user?.id) throw new Error("Unauthorized");
-
-    //   return { userId: session.user.id };
-    // })
     .onUploadComplete(async ({ file, metadata }) => {
       console.log("🔥 Upload complete triggered");
 
@@ -47,7 +38,7 @@ export const mediaRouter = {
 
       const fileUrl = file.ufsUrl ? file.ufsUrl : file.url;
 
-  return { ok: true };
+      // return { ok: true };
 
       // 🔒 VALIDATION
       if (!fileUrl || !file.name) {
@@ -84,6 +75,7 @@ export const mediaRouter = {
 
       return {
         mediaId: result.rows[0].media_id,
+        name: file.name,
         url: fileUrl,
       };
 

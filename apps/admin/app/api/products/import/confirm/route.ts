@@ -60,6 +60,35 @@ export async function POST(req: NextRequest) {
 
         skuSet.add(row.SKU);
 
+        /* ---------------- RESOLVE RELATIONSHIP ID ENTITIES ---------------- */
+        let categoryId: number | null = null;
+        let subcategoryId: number | null = null;
+        let brandId: number | null = null;
+
+        if (row.Category) {
+          const cRes = await client.query(
+            `SELECT id FROM store_categories WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
+            [row.Category]
+          );
+          if (cRes.rows.length) categoryId = cRes.rows[0].id;
+        }
+
+        if (row.Subcategory) {
+          const scRes = await client.query(
+            `SELECT id FROM store_subcategories WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
+            [row.Subcategory]
+          );
+          if (scRes.rows.length) subcategoryId = scRes.rows[0].id;
+        }
+
+        if (row.Brand) {
+          const bRes = await client.query(
+            `SELECT brand_id FROM store_brands WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
+            [row.Brand]
+          );
+          if (bRes.rows.length) brandId = bRes.rows[0].brand_id;
+        }
+
         /* ---------------- INSERT PRODUCT ---------------- */
 
         const productRes = await client.query(
@@ -69,6 +98,9 @@ export async function POST(req: NextRequest) {
             slug,
             sku,
             item_code,
+            category_id,
+            subcategory_id,
+            brand_id,
             description,
             health_benefits,
             price,
@@ -77,7 +109,7 @@ export async function POST(req: NextRequest) {
             discount_value,
             status
           )
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
           RETURNING id
           `,
           [
@@ -85,6 +117,9 @@ export async function POST(req: NextRequest) {
             row.Slug,
             row.SKU,
             row["Item Code"] || null,
+            categoryId,
+            subcategoryId,
+            brandId,
             row.Description || null,
             row["Health Benefits"] || null,
             Number(row.Price),
@@ -106,8 +141,13 @@ export async function POST(req: NextRequest) {
             .filter(Boolean);
 
           for (const countryName of countries) {
+            // const cRes = await client.query(
+            //   `SELECT country_id FROM countries WHERE country_name = $1`,
+            //   [countryName]
+            // );
+
             const cRes = await client.query(
-              `SELECT country_id FROM countries WHERE country_name = $1`,
+              `SELECT country_id FROM countries WHERE LOWER(TRIM(country_name)) = LOWER(TRIM($1))`,
               [countryName]
             );
 

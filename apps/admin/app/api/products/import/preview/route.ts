@@ -19,12 +19,20 @@ export async function POST(req: NextRequest) {
   const client = await pool.connect();
 
   try {
-    /* ---------------- FETCH EXISTING SKUS ---------------- */
-    const existingSkus = await client.query(
-      `SELECT sku FROM store_products`
-    );
+    
+    /* ---------------- FETCH STRUCTURAL LOOKUPS FOR VALIDATION ---------------- */
+    const [existingSkus, categories, subcategories, brands] = await Promise.all([
+      client.query(`SELECT sku FROM store_products`),
+      client.query(`SELECT name FROM store_categories WHERE status = 1`),
+      client.query(`SELECT name FROM store_subcategories WHERE status = 1`),
+      client.query(`SELECT name FROM store_brands WHERE status = true`)
+    ]);
 
+    // const skuSet = new Set(existingSkus.rows.map(r => r.sku));
     const skuSet = new Set(existingSkus.rows.map(r => r.sku));
+    const catSet = new Set(categories.rows.map(r => r.name.toLowerCase().trim()));
+    const subSet = new Set(subcategories.rows.map(r => r.name.toLowerCase().trim()));
+    const brandSet = new Set(brands.rows.map(r => r.name.toLowerCase().trim()));
 
     const result = [];
 
@@ -43,6 +51,23 @@ export async function POST(req: NextRequest) {
 
       if (skuSet.has(row.SKU)) {
         errors.push("Duplicate SKU already exists");
+      }
+      
+      /* ---------------- TEXT RELATIONSHIP EXISTENCE LOOKUPS ---------------- */
+      if (row.Category) {
+        if (!catSet.has(String(row.Category).toLowerCase().trim())) {
+          errors.push(`Category '${row.Category}' does not exist or is inactive`);
+        }
+      }
+      if (row.Subcategory) {
+        if (!subSet.has(String(row.Subcategory).toLowerCase().trim())) {
+          errors.push(`Subcategory '${row.Subcategory}' does not exist or is inactive`);
+        }
+      }
+      if (row.Brand) {
+        if (!brandSet.has(String(row.Brand).toLowerCase().trim())) {
+          errors.push(`Brand '${row.Brand}' does not exist or is inactive`);
+        }
       }
 
       /* ---------------- JSON VALIDATION ---------------- */
