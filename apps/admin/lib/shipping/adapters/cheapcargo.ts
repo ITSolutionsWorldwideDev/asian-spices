@@ -13,54 +13,22 @@ type Credentials = {
   apiKey: string;
   email: string;
   password: string;
+  sandbox?: boolean;
 };
 
-const BASE_URL = "https://www.cheapcargo.com/api";
+// const BASE_URL = "https://www.cheapcargo.com/api";
 // switch to demo if needed:
 // const BASE_URL = "https://www.cheapcargo-demo.nl/api";
+// export class CheapCargoAdapter implements ShippingAdapter {
 export class CheapCargoAdapter implements ShippingAdapter {
-  constructor(private creds: Credentials) {}
+  private baseUrl: string;
 
-  /* private getAuthenticationToken() {
-    const now = new Date();
-
-    // ⏱ Round hour to nearest 2-hour block
-    const hour = now.getHours();
-    const roundedHour = Math.floor(hour / 2) * 2;
-
-    const YYYY = now.getFullYear();
-    const MM = String(now.getMonth() + 1).padStart(2, "0");
-    const DD = String(now.getDate()).padStart(2, "0");
-    const HH = String(roundedHour).padStart(2, "0");
-
-    const timestamp = `${YYYY}${MM}${DD}${HH}`;
-
-    // console.log("this.creds.apiKey ==== ", this.creds.apiKey);
-    // console.log("timestamp ==== ", timestamp);
-    // md5(apiKey + timestamp);
-
-    // const returnKey = md5(this.creds.apiKey) + timestamp;
-    const returnKey = md5(this.creds.apiKey + timestamp);
-    // console.log("returnKey ==== ", returnKey);
-
-    return returnKey;
+  constructor(private creds: Credentials) {
+    // 🔥 Dynamically evaluate endpoint destination based on context flag
+    this.baseUrl = creds.sandbox 
+      ? "https://www.cheapcargo-demo.nl/api" 
+      : "https://www.cheapcargo.com/api";
   }
-
-  private getPasswordHash() {
-    const now = new Date();
-
-    const hour = now.getUTCHours();
-    const roundedHour = Math.floor(hour / 2) * 2;
-
-    const YYYY = now.getUTCFullYear();
-    const MM = String(now.getUTCMonth() + 1).padStart(2, "0");
-    const DD = String(now.getUTCDate()).padStart(2, "0");
-    const HH = String(roundedHour).padStart(2, "0");
-
-    const timestamp = `${YYYY}${MM}${DD}${HH}`;
-    return md5(this.creds.password);
-  } */
-
   /**
    * ⏱ Helper to compute standardized 2-hour server time-blocks
    * Aligned completely to local system timezone parameters
@@ -86,13 +54,13 @@ export class CheapCargoAdapter implements ShippingAdapter {
   }
 
   private getAuthenticationToken() {
-    const timestamp = this.getStandardizedTimestamp(false); // Matches your key setup criteria
+    const timestamp = this.getStandardizedTimestamp(true); // Matches your key setup criteria
     return md5(this.creds.apiKey + timestamp);
   }
 
   private getPasswordHash() {
     // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
-    const timestamp = this.getStandardizedTimestamp(false);
+    const timestamp = this.getStandardizedTimestamp(true);
     return md5(this.creds.password);
   }
 
@@ -106,7 +74,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
         version: "2.0",
         user: {
           email: this.creds.email,
-          password: this.getPasswordHash(), // "34dbe7e451f2d0b166a292ce0021599d", //
+          password: this.getPasswordHash(),
         },
         shipment: [
           {
@@ -143,7 +111,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
       },
     };
 
-    const res = await fetch(`${BASE_URL}/rateRequest`, {
+    const res = await fetch(`${this.baseUrl}/rateRequest`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -161,7 +129,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
     const payload = {
       shipments: {
-        authentication: this.getAuthenticationToken(), //"5b154bba6f6c5dc819606ce3fcbc14bd", //
+        authentication: this.getAuthenticationToken(),
         version: "2.1",
         user: {
           email: this.creds.email,
@@ -217,13 +185,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
       },
     };
 
-    /* 
-    
-        email: store_addressRes.store_email,
-        phone: store_addressRes.store_phone,
-        currency_code: store_addressRes.currency_code,
-    */
-
     console.log(
       "Submitting stringified payload data mapping to CheapCargo:",
       JSON.stringify(payload, null, 2),
@@ -242,9 +203,9 @@ export class CheapCargoAdapter implements ShippingAdapter {
       "createShipment receiver zipcode === ",
       payload?.shipments?.shipment[0]?.receiver.zipcode,
     );
-    console.log("createShipment API URL === ", `${BASE_URL}/createShipment`);
+    console.log("createShipment API URL === ", `${this.baseUrl}/createShipment`);
 
-    const res = await fetch(`${BASE_URL}/createShipment`, {
+    const res = await fetch(`${this.baseUrl}/createShipment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -277,14 +238,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
     console.log("trackingNumber === ", trackingNumber);
     console.log("trackingUrl === ", trackingUrl);
 
-    // return {
-    //   externalId,
-    //   trackingNumber,
-    //   trackingUrl,
-    //   labelUrl: undefined, // label comes from separate API
-    //   raw: data,
-    // };
-
     return {
       externalId: externalId,
       trackingNumber: trackingNumber,
@@ -292,21 +245,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
       labelUrl: undefined,
       raw: data,
     };
-    // const shipment = data?.shipments?.order[0];
-
-    // console.log("shipment === ", shipment);
-    // console.log("shipment details === ", shipment?.details);
-
-    // if (!shipment) {
-    //   throw new Error("Invalid CheapCargo response");
-    // }
-
-    // return {
-    //   externalId: shipment.orderNumber,
-    //   trackingNumber: shipment.trackingNumber || null,
-    //   labelUrl: undefined,
-    //   raw: data,
-    // };
   }
 
   // ======================================================
@@ -329,7 +267,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
       },
     };
 
-    const res = await fetch(`${BASE_URL}/getStatus`, {
+    const res = await fetch(`${this.baseUrl}/getStatus`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -362,7 +300,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 GENERATE LABEL
   // ======================================================
   async generateLabel(orderNumber: string): Promise<LabelResult> {
-    const staticPasswordHash = md5(this.creds.password);
+    // const staticPasswordHash = md5(this.creds.password);
 
     const payload = {
       labels: {
@@ -381,7 +319,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
       },
     };
 
-    const res = await fetch(`${BASE_URL}/getLabel`, {
+    const res = await fetch(`${this.baseUrl}/getLabel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -436,7 +374,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
       },
     };
 
-    const res = await fetch(`${BASE_URL}/cancelShipment`, {
+    const res = await fetch(`${this.baseUrl}/cancelShipment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -445,65 +383,3 @@ export class CheapCargoAdapter implements ShippingAdapter {
     return res.json();
   }
 }
-
-// import { withRetry } from "@/lib/utils/retry";
-// type CheapCargoCreds = {
-//   apiKey: string;
-//   email: string;
-//   password: string;
-// };
-
-// const BASE_URL = "https://api.cheapcargo.dev";
-/* export class CheapCargoAdapter implements ShippingAdapter {
-  private creds: Credentials;
-
-  constructor(creds: Credentials) {
-    this.creds = creds;
-  }
-
-  private async request(endpoint: string, method: string, body?: any) {
-    return withRetry(async () => {
-      const res = await fetch(`${BASE_URL}${endpoint}`, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.creds.api_key}`,
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("CheapCargo error:", data);
-        throw new Error(data?.message || "CheapCargo failed");
-      }
-
-      return data;
-    });
-  }
-
-  async getRates(address: any) {
-    return this.request("/rates", "POST", { address });
-  }
-
-  async createShipment(order: any) {
-    return this.request("/shipments", "POST", {
-      recipient: {
-        name: `${order.firstName} ${order.lastName}`,
-        address: order.address,
-        city: order.city,
-        postal_code: order.zip,
-        country: order.country,
-      },
-      parcels: order.items?.map((i: any) => ({
-        weight: i.weight || 1,
-        description: i.title,
-      })),
-    });
-  }
-
-  async generateLabel(shipmentId: string) {
-    return this.request(`/shipments/${shipmentId}/label`, "GET");
-  }
-} */

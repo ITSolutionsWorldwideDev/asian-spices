@@ -7,9 +7,22 @@ const COOKIE_NAME = "site-access";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  /* // Skip site lock for Vercel preview/domain
+  if (hostname === "asian-spices-web.vercel.app") {
+    return NextResponse.next();
+  } */
+
+  const hostname = req.nextUrl.hostname;
+
+  const shouldApplySiteLock =
+    hostname === "www.asianspices.online" || hostname === "asianspices.online";
+
+  if (!shouldApplySiteLock) {
+    return NextResponse.next();
+  }
+
   // Disable protection completely if needed
-  const siteLockEnabled =
-    process.env.SITE_LOCK_ENABLED === "true";
+  const siteLockEnabled = process.env.SITE_LOCK_ENABLED === "true";
 
   if (!siteLockEnabled) {
     return NextResponse.next();
@@ -25,14 +38,10 @@ export function middleware(req: NextRequest) {
   }
 
   // Allow specific public routes
-  const publicRoutes = [
-    "/coming-soon",
-    "/site-access",
-    "/api/site-access",
-  ];
+  const publicRoutes = ["/coming-soon", "/site-access", "/api/site-access"];
 
   const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (isPublicRoute) {
@@ -52,16 +61,12 @@ export function middleware(req: NextRequest) {
   // Check access cookie
   const cookie = req.cookies.get(COOKIE_NAME);
 
-  if (
-    cookie?.value === process.env.SITE_ACCESS_PASSWORD
-  ) {
+  if (cookie?.value === process.env.SITE_ACCESS_PASSWORD) {
     return NextResponse.next();
   }
 
   // Redirect visitors to Coming Soon page
-  return NextResponse.redirect(
-    new URL("/coming-soon", req.url)
-  );
+  return NextResponse.redirect(new URL("/coming-soon", req.url));
 }
 
 export const config = {

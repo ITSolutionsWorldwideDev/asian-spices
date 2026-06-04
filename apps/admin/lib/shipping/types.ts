@@ -10,11 +10,6 @@ export type AnyProviderCredentials =
   | CheapCargoCredentials
   | Record<string, any>;
 
-// export interface ShippingAdapter {
-//   getRates(address: any): Promise<any>;
-//   createShipment(order: any): Promise<any>;
-//   generateLabel(shipmentId: string): Promise<any>;
-// }
 
 export interface ShipmentInput {
   orderId: string;
@@ -34,12 +29,6 @@ export interface ShipmentResult {
 export interface LabelResult {
   url: string;
 }
-
-// export interface ShippingAdapter {
-//   createShipment(input: ShipmentInput): Promise<ShipmentResult>;
-//   getRates(input: ShipmentInput): Promise<any>;
-//   generateLabel(externalId: string): Promise<LabelResult>;
-// }
 
 export interface ShippingAdapter {
   createShipment(input: ShipmentInput): Promise<ShipmentResult>;

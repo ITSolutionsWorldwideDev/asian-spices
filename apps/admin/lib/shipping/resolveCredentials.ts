@@ -19,14 +19,6 @@ export async function resolveProviderCredentials(
       : Promise.resolve({ rows: [] }),
   ]);
 
-  /* const decryptObject = (obj: any = {}) => {
-    const result: Record<string, string> = {};
-    for (const key of Object.keys(obj)) {
-      result[key] = decrypt(obj[key]);
-    }
-    return result;
-  }; */
-
   const decryptObject = (obj: any) => {
     if (!obj || typeof obj !== "object") return {};
 
@@ -38,9 +30,6 @@ export async function resolveProviderCredentials(
 
     return result;
   };
-
-  // console.log("platform metadata:", platformRes.rows[0]);
-  // console.log("store credentials:", storeRes.rows[0]);
 
   return {
     ...decryptObject(platformRes.rows[0]?.metadata),
