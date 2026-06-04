@@ -47,6 +47,21 @@ export default async function StoresPage({
     values,
   );
 
+  /* 
+  
+	SELECT
+    s.id,
+    s.name,
+    s.slug,
+    s.status,
+    s.created_at,
+	pr.application_id,
+    COUNT(*) OVER() AS total
+FROM stores s
+LEFT JOIN partner_registration pr
+    ON pr.partner_id = s.partner_registration_id::uuid;
+  */
+
   const total = rows[0]?.total ?? 0;
 
   return (

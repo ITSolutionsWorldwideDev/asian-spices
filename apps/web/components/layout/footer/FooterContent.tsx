@@ -63,10 +63,16 @@ const FooterContent = () => {
             </Link>
           </li>
           <li>
-            <Link href="#" className="hover:underline">
-              Products
+            <Link href="about" className="hover:underline">
+              About
             </Link>
           </li>
+          <li>
+            <Link href="partnerplatform" className="hover:underline">
+              Partner Platform
+            </Link>
+          </li>
+          {/* { name: "Partner Platform", hreflink: "partnerplatform" }, */}
           <li>
             <Link href="#" className="hover:underline">
               Contact Us

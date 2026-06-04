@@ -21,7 +21,7 @@ interface NavChildren {
 
 interface NavLink {
   name: string;
-  link?: string;
+  hreflink?: string | undefined;
   children?: NavChildren[];
 }
 const ResponsiveNavigation = () => {
@@ -51,6 +51,7 @@ const ResponsiveNavigation = () => {
 
     {
       name: "Shop by Category",
+      hreflink: "#",
       children: [
         {
           name: "Asian Spices & Seasonings",
@@ -81,6 +82,7 @@ const ResponsiveNavigation = () => {
 
     {
       name: "Healthy Living",
+      hreflink: "#",
       children: [
         {
           heading: "Health Benefits of Herbs",
@@ -129,8 +131,8 @@ const ResponsiveNavigation = () => {
         },
       ],
     },
-    { name: "Recipes" },
-    { name: "Partner Platform" },
+    { name: "Authentic Asian Recipes", hreflink: "recipes" },
+    // { name: "Partner Platform", hreflink: "partnerplatform" },
   ];
 
   const [isCartOpen, setCartOpen] = useState<boolean>(false);
@@ -172,13 +174,12 @@ const ResponsiveNavigation = () => {
                 </Link>
               ) : !link.children ? (
                 <Link
-                  href={`/${link.name
-                    .toLowerCase()
+                  href={`/${link?.hreflink?.toLowerCase()
                     .replace(/[^a-z0-9\s-]/g, "")
                     .trim()
                     .replace(/\s+/g, "")}`}
                   onClick={() => handleClick(link.name)}
-                  className={`relative px-2 py-2 text-sm font-semibold transition-colors duration-200 text-center
+                  className={`relative px-2 py-2 text-sm font-semibold transition-colors duration-200 flex text-center
                      ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
                 >
                   {link.name}

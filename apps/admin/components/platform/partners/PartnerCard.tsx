@@ -30,6 +30,10 @@ export default function PartnerCard({
 
         <p className="text-xs text-gray-500">
           {partner.business_email_address}
+        </p>        
+
+        <p className="text-xs text-gray-500">
+          Application ID: {partner.application_id}
         </p>
       </div>
 

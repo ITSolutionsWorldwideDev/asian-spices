@@ -1,6 +1,7 @@
 // apps/web/components/layout/checkout/ShippingForm.tsx
 
 "use client";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useLoaderStore } from "@/store/useLoaderStore";
 import { ChevronRight } from "lucide-react";
 
@@ -49,6 +50,9 @@ export default function ShippingForm({
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const { show, hide } = useLoaderStore();
+
+  
+    const { symbol, rate } = useCurrencyStore();
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
@@ -407,7 +411,7 @@ export default function ShippingForm({
                   </div>
                 </div>
                 <span className="font-semibold text-gray-900">
-                  {option.price === 0 ? "Free" : `$${option.price.toFixed(2)}`}
+                  {option.price === 0 ? "Free" : `${symbol}${option.price.toFixed(2)}`}
                 </span>
               </label>
             ))}

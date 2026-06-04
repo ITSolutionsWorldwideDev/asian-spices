@@ -8,6 +8,7 @@ import { Edit, Trash2, Pause, Play } from "react-feather";
 type Store = {
   id: string;
   name: string;
+  application_id?: string;
   slug: string;
   status: "active" | "suspended";
   created_at: string;
@@ -40,6 +41,10 @@ export default function StoreCard({
             {store.status}
           </span>
         </div>
+
+        <p className="text-xs text-gray-500">
+          Application ID: {store.application_id}
+        </p>
 
         <p className="text-xs text-gray-500 mb-3">
           {store.slug}

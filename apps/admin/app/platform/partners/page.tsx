@@ -45,6 +45,7 @@ export default async function PartnersPage({
     `
     SELECT 
       partner_id,
+      application_id,
       company_name,
       business_email_address,
       status,
