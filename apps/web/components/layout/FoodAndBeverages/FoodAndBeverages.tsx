@@ -3,12 +3,37 @@ import ProductPageHeader from "@/components/ui/ProductPageHeader";
 import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
 import ProductCard from "@/components/ui/ProductCard";
 import React from "react";
-import RegisterOnApp from "@/components/ui/RegisterOnApp";
+// import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
 
 const FoodAndBeverages = () => {
-  const products = [
+  return (
+    <div>
+      <ProductPageHeader
+        heading="Every Grain, A Burst of Taste"
+        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
+        videoLink="/foods-beverages/0_Food_Asian_Food_3840x2160.mp4"
+      />
+
+      <HeadingDescription
+        heading="Explore Our Collection"
+        text="Shop By All Spices"
+        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
+      />
+
+      <div className="lg:grid lg:grid-cols-[auto_1fr] lg:gap-4 container mx-auto p-5 lg:items-start "></div>
+      {/* <RegisterOnApp /> */}
+      <Reviews />
+      <Footer />
+    </div>
+  );
+};
+
+export default FoodAndBeverages;
+
+/* 
+const products = [
     {
       id: 1,
       title: "Organic Turmeric Powder",
@@ -179,34 +204,4 @@ const FoodAndBeverages = () => {
     "Good Spices",
     "Good Spices",
   ];
-  return (
-    <div>
-      <ProductPageHeader
-        heading="Every Grain, A Burst of Taste"
-        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
-        videoLink="/foods-beverages/0_Food_Asian_Food_3840x2160.mp4"
-      />
-
-      <HeadingDescription
-        heading="Explore Our Collection"
-        text="Shop By All Spices"
-        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
-      />
-
-      <div className="lg:grid lg:grid-cols-[auto_1fr] lg:gap-4 container mx-auto p-5 lg:items-start ">
-        {/* <ProductFilterSearch
-          // categoriesData={categoriesData}
-          storesData={storesData}
-          title1={"Kitchens Category"}
-          title2={"Stores"}
-        />
-        <ProductCard  /> */}
-      </div>
-      <RegisterOnApp />
-      <Reviews />
-      <Footer />
-    </div>
-  );
-};
-
-export default FoodAndBeverages;
+*/

@@ -7,18 +7,15 @@ import RecipeSidebar from "@/components/layout/recipes/RecipeSidebar";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
-import RegisterOnApp from "@/components/ui/RegisterOnApp";
+// import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
-
-// import RecipeHero from "@/components/recipes/RecipeHero";
 
 import {
   getRecipes,
   getRecipeCategories,
   getRecipeTags,
 } from "@/lib/dbactions/recipes";
-
 
 interface RecipesPageProps {
   searchParams: Promise<{
@@ -29,78 +26,6 @@ interface RecipesPageProps {
   }>;
 }
 
-/* async function getRecipes(params: {
-  page?: string;
-  search?: string;
-  category?: string;
-  tag?: string;
-}) {
-  const query = new URLSearchParams();
-
-  if (params.page) {
-    query.set("page", params.page);
-  }
-
-  if (params.search) {
-    query.set("search", params.search);
-  }
-
-  if (params.category) {
-    query.set("category", params.category);
-  }
-
-  if (params.tag) {
-    query.set("tag", params.tag);
-  }
-
-  const res = await fetch(
-    `/api/recipes?${query.toString()}`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch recipes");
-  }
-
-  return res.json();
-}
-
-async function getCategories() {
-  const res = await fetch(
-    `/api/recipe-categories`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!res.ok) {
-    return [];
-  }
-
-  const data = await res.json();
-
-  return data.items || [];
-}
-
-async function getTags() {
-  const res = await fetch(
-    `/api/recipe-tags`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!res.ok) {
-    return [];
-  }
-
-  const data = await res.json();
-
-  return data.items || [];
-} */
-
 export async function generateMetadata() {
   return {
     title: "Recipes",
@@ -109,16 +34,10 @@ export async function generateMetadata() {
   };
 }
 
-export default async function RecipesPage({
-  searchParams,
-}: RecipesPageProps) {
+export default async function RecipesPage({ searchParams }: RecipesPageProps) {
   const params = await searchParams;
 
-  const [
-    recipesData,
-    categories,
-    tags,
-  ] = await Promise.all([
+  const [recipesData, categories, tags] = await Promise.all([
     getRecipes(params),
     getRecipeCategories(),
     getRecipeTags(),
@@ -129,9 +48,7 @@ export default async function RecipesPage({
   const pagination = recipesData.pagination;
 
   return (
-
     <>
-    
       <ProductPageHeader
         heading="A World of Recipes, One Pinch of Spice"
         text="Explore a diverse collection of recipes where every dish tells a flavorful story, from street‑style bites to homely classics, all elevated by the essence of spices."
@@ -147,9 +64,7 @@ export default async function RecipesPage({
       <div className="container mx-auto px-4 py-10">
         {/* SEARCH */}
         <div className="mb-8">
-          <RecipeSearchBar
-            defaultSearch={params.search || ""}
-          />
+          <RecipeSearchBar defaultSearch={params.search || ""} />
         </div>
 
         {/* MAIN GRID */}
@@ -189,90 +104,9 @@ export default async function RecipesPage({
         </div>
       </div>
 
-
-      <RegisterOnApp />
+      {/* <RegisterOnApp /> */}
       <Reviews />
       <Footer />
-
     </>
   );
 }
-
-/* import ProductPageHeader from "@/components/ui/ProductPageHeader";
-import HeadingDescription from "@/components/ui/HeadingDescription";
-
-import React from "react";
-import RegisterOnApp from "@/components/ui/RegisterOnApp";
-import Reviews from "@/components/ui/Reviews";
-import Footer from "@/components/ui/Footer";
-import ProductDisplay from "@/components/layout/recipes/ProductDisplay";
-
-const RecipesPage = () => {
-  const categoriesData = [
-    {
-      name: "Chicken Specialties",
-      children: [
-        "Chicken Biryani",
-        "Chicken Cheese Pizza",
-        "Chicken Karahi",
-        "Butter Chicken",
-        "Spicy Chicken Wings",
-      ],
-    },
-    {
-      name: "Indian Spices",
-    },
-    {
-      name: "Chinese Spices",
-    },
-
-    { name: "Thai Spices" }, // No children
-    { name: "Blend Spices" },
-  ];
-
-  const storesData = [
-    { name: "alpha", children: ["fsadf", "dfa/sf", "fafads", "faf"] },
-    { name: "Bvr Spices", children: ["fsadf", "dfa/sf", "fafads", "faf"] },
-    "Neam Spices",
-    "Thika Masala",
-    "Too Spicy",
-    "Aron Masalas",
-    "Farm Special",
-    "Zafrani Mehal",
-    "Chili Fresh",
-    "Good Spices",
-  ];
-
-  return (
-    <div>
-      <ProductPageHeader
-        heading="A World of Recipes, One Pinch of Spice"
-        text="Explore a diverse collection of recipes where every dish tells a flavorful story, from street‑style bites to homely classics, all elevated by the essence of spices."
-        videoLink="/recipes/Comp 1_11.mp4"
-      />
-
-      <HeadingDescription
-        heading="Explore Our Collection"
-        text="All the flavors now you finger tips "
-        description="Diverse  Collection But Taste So Yummy...!"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
-        <ProductDisplay />
-      </div>
-      <RegisterOnApp />
-      <Reviews />
-      <Footer />
-    </div>
-  );
-};
-
-export default RecipesPage; */
-
-
-
-      // <HeadingDescription
-      //   heading="Explore Our Collection"
-      //   text="All the flavors now you finger tips "
-      //   description="Diverse  Collection But Taste So Yummy...!"
-      // />

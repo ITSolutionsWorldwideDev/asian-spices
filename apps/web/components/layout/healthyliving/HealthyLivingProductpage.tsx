@@ -1,9 +1,9 @@
 import React from "react";
 import ProductHeader from "./ProductHeader";
 import HeadingDescription from "@/components/ui/HeadingDescription";
-import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
-import ProductCard from "@/components/ui/ProductCard";
-import RegisterOnApp from "@/components/ui/RegisterOnApp";
+// import ProductFilterSearch from "@/components/ui/ProductFilterSearch";
+// import ProductCard from "@/components/ui/ProductCard";
+// import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 import Footer from "@/components/ui/Footer";
 
@@ -67,6 +67,42 @@ const HealthyLivingProductpage = ({ slug }: props) => {
   }
 
   const image = slugToImage[slug as AllowedSlug];
+
+  return (
+    <div>
+      <ProductHeader
+        heading="Every Grain, A Burst of Taste"
+        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
+        imageLink={image}
+      />
+      <HeadingDescription
+        heading="Explore Our Collection"
+        text="Shop By All Spices"
+        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
+      />
+
+      <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
+        {/* <ProductFilterSearch
+          // categoriesData={categoriesData}
+          storesData={storesData}
+          title1={"Spices Category"}
+          title2={"Stores"}
+        />
+        <ProductCard /> */}
+      </div>
+
+      {/* <RegisterOnApp /> */}
+      <Reviews />
+      <Footer />
+    </div>
+  );
+};
+
+export default HealthyLivingProductpage;
+
+/* 
+
+
 
   const products = [
     {
@@ -258,35 +294,4 @@ const HealthyLivingProductpage = ({ slug }: props) => {
     "Chili Fresh",
     "Good Spices",
   ];
-
-  return (
-    <div>
-      <ProductHeader
-        heading="Every Grain, A Burst of Taste"
-        text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
-        imageLink={image}
-      />
-      <HeadingDescription
-        heading="Explore Our Collection"
-        text="Shop By All Spices"
-        description="Discover authentic spices from across Asia, each category carefully for quality and flavor Indian Spices"
-      />
-
-      <div className="grid grid-col-1 lg:grid-cols-[auto_1fr] gap-4 container mx-auto p-5 items-start">
-        {/* <ProductFilterSearch
-          // categoriesData={categoriesData}
-          storesData={storesData}
-          title1={"Spices Category"}
-          title2={"Stores"}
-        />
-        <ProductCard /> */}
-      </div>
-
-      <RegisterOnApp />
-      <Reviews />
-      <Footer />
-    </div>
-  );
-};
-
-export default HealthyLivingProductpage;
+*/

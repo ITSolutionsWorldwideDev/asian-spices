@@ -3,7 +3,7 @@
 import Footer from "@/components/ui/Footer";
 import HeadingDescription from "@/components/ui/HeadingDescription";
 import ProductPageHeader from "@/components/ui/ProductPageHeader";
-import RegisterOnApp from "@/components/ui/RegisterOnApp";
+// import RegisterOnApp from "@/components/ui/RegisterOnApp";
 import Reviews from "@/components/ui/Reviews";
 
 import {
@@ -37,7 +37,9 @@ type Filters = {
   page: number;
 };
 
-export default async function KitchenAppliancesPage({ searchParams }: PageProps) {
+export default async function KitchenAppliancesPage({
+  searchParams,
+}: PageProps) {
   const params = await searchParams;
 
   const cleanArray = (val?: string) => {
@@ -66,7 +68,6 @@ export default async function KitchenAppliancesPage({ searchParams }: PageProps)
 
   return (
     <div className="category-animation">
-
       <ProductPageHeader
         heading="Every Grain, A Burst of Taste"
         text="Handpicked, pure, and powerful  our spices bring depth, warmth, and character to every recipe"
@@ -89,7 +90,7 @@ export default async function KitchenAppliancesPage({ searchParams }: PageProps)
         </div>
       </div>
 
-      <RegisterOnApp />
+      {/* <RegisterOnApp /> */}
       <Reviews />
       <Footer />
     </div>
