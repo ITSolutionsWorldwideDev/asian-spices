@@ -316,6 +316,22 @@ export default function LoginForm() {
           </Link>
         </p> */}
 
+        <div
+          className="
+            mt-8
+            rounded-xl
+            bg-orange-50
+            border
+            border-orange-100
+            p-3
+            text-center
+          "
+        >
+          <p className="text-xs text-orange-700">
+            🔒 Your account is protected with secure authentication
+          </p>
+        </div>
+
         {/* Footer */}
         <p className="text-xs text-gray-400 mt-10">
           © 2026 ALL RIGHTS RESERVED

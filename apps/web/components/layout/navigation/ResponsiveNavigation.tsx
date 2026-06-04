@@ -1,11 +1,8 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu, Heart, Home } from "lucide-react";
 import { RxCross1 } from "react-icons/rx";
-import { Menu } from "lucide-react";
-import { Heart } from "lucide-react";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import Cart from "@/components/ui/Cart";
 import { createPortal } from "react-dom";
@@ -24,6 +21,7 @@ interface NavChildren {
 
 interface NavLink {
   name: string;
+  link?: string;
   children?: NavChildren[];
 }
 const ResponsiveNavigation = () => {
@@ -48,30 +46,34 @@ const ResponsiveNavigation = () => {
   }, [mobileMenu]);
 
   const navLinks: NavLink[] = [
-    { name: "Home" },
+    // { name: "Home", link: "home" },
     // { name: "About" },
 
     {
-      name: "Category",
+      name: "Shop by Category",
       children: [
         {
-          name: "Spices",
-          image: "524531ab08204ddf1a7e11f44c85ef183cbf3159 (1).jpg",
+          name: "Asian Spices & Seasonings",
+          // image: "524531ab08204ddf1a7e11f44c85ef183cbf3159 (1).jpg",
+          image: "spices.png",
           href: "spices",
         },
         {
-          name: "KitchenAppliances",
-          image: "bef4555df0ac442433de79fbc2676fdbc3d5b455.jpg",
+          name: "Kitchen Appliances & Cooking Tools",
+          // image: "bef4555df0ac442433de79fbc2676fdbc3d5b455.jpg",
+          image: "kitchen-appliances.png",
           href: "kitchen-appliances",
         },
         // {
         //   name: "Recipes",
         //   image: "e50f5d03690c88ecb61ae41e5b6aa2fd285b988d.jpg",
-        //   href: "recipes  ",
+        //   image: "recipes.png",
+        //   href: "recipes",
         // },
         {
-          name: "Foods & Beverages ",
-          image: "7998dbf578bd435e51167e00d97f1bc7f0963051.png",
+          name: "Asian Foods & Beverages",
+          // image: "7998dbf578bd435e51167e00d97f1bc7f0963051.png",
+          image: "foods-beverages.png",
           href: "foods-beverages",
         },
       ],
@@ -151,21 +153,21 @@ const ResponsiveNavigation = () => {
       {/* desktop navigatio */}
       <div className="hidden lg:flex items-center space-x-4 ">
         {/* <ul className=" flex items-center rounded-full  py-2 space-x-6 bg-white/30 backdrop-blur shadow-inner p-10"> */}
-        <ul className="flex items-center rounded-full py-2 px-6 space-x-6 bg-white/30 backdrop-blur shadow-inner">
+        <ul className="flex items-center rounded-full py-2 px-6 space-x-2 bg-white/30 backdrop-blur shadow-inner">
           {navLinks.map((link) => (
             <li key={link.name} className="relative">
-
               {link.name.toLocaleLowerCase() == "home" ? (
                 <Link
                   href={`/`}
                   onClick={() => handleClick(link.name)}
-                  className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200
+                  className={`relative px-2 py-2 text-sm font-semibold transition-colors duration-200
                      ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
                 >
-                  {link.name}
+                  {/* {link.name} */}
+                  <Home size={16} />
 
                   {activeLink === link.name && (
-                    <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-1/2 mx-auto rounded-full"></span>
+                    <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-full mx-auto rounded-full"></span>
                   )}
                 </Link>
               ) : !link.children ? (
@@ -176,13 +178,13 @@ const ResponsiveNavigation = () => {
                     .trim()
                     .replace(/\s+/g, "")}`}
                   onClick={() => handleClick(link.name)}
-                  className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200
+                  className={`relative px-2 py-2 text-sm font-semibold transition-colors duration-200 text-center
                      ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}`}
                 >
                   {link.name}
 
                   {activeLink === link.name && (
-                    <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-1/2 mx-auto rounded-full"></span>
+                    <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-3/4 mx-auto rounded-full"></span>
                   )}
                 </Link>
               ) : (
@@ -190,7 +192,7 @@ const ResponsiveNavigation = () => {
                   {/* DROPDOWN BUTTON */}
                   <button
                     onClick={() => handleClick(link.name)}
-                    className={`relative px-4 py-2 text-sm font-semibold transition-colors duration-200 flex items-center
+                    className={`relative px-2 py-2 text-sm font-semibold transition-colors duration-200 flex items-center
                         ${activeLink === link.name ? "text-amber-300" : "text-white/90 hover:text-amber-200"}
             `}
                   >
@@ -198,7 +200,7 @@ const ResponsiveNavigation = () => {
                     <ChevronDown className="ml-1 h-4 w-4" />
 
                     {activeLink === link.name && (
-                      <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-1/2 mx-auto rounded-full"></span>
+                      <span className="absolute left-0 right-0 bottom-0 h-1 bg-amber-400 w-3/4 mx-auto rounded-full"></span>
                     )}
                   </button>
 
@@ -206,7 +208,6 @@ const ResponsiveNavigation = () => {
                   {activeLink === link.name && isMenuOpen && (
                     <div className="absolute top-full left-0 mt-5 z-50">
                       {link.name === "Healthy Living" ? (
-                        
                         <div className="fixed top-full left-0 mt-5 z-50">
                           <div className="w-6xl bg-gray-100 rounded-xl shadow-md ">
                             {/* Top Section */}
@@ -239,7 +240,7 @@ const ResponsiveNavigation = () => {
                                 </div>
                               ))}
                             </div>
-                            
+
                             <div className="bg-orange-100 px-6 py-4 rounded-xl">
                               <button className="text-orange-600 font-medium hover:underline">
                                 View All {link.name} Products →
@@ -248,7 +249,6 @@ const ResponsiveNavigation = () => {
                           </div>
                         </div>
                       ) : (
-                        
                         <ul className="bg-white text-black shadow-lg rounded-lg w-64">
                           {link.children.map((child) => (
                             <li key={child.name}>
@@ -279,18 +279,16 @@ const ResponsiveNavigation = () => {
             </li>
           ))}
         </ul>
-        
       </div>
 
       {/* mobile navigation */}
       {mobileMenu && (
         <>
-        
           <div
             className="fixed inset-0 bg-black/40 z-40"
             onClick={() => setMobileMenu(false)}
           />
-          
+
           <div className="fixed inset-x-0 top-[100px] z-50 bg-amber-900/95 shadow-xl rounded-b-lg lg:hidden max-h-[80vh] overflow-y-auto ">
             {navLinks.map((link) => (
               <div
@@ -334,7 +332,6 @@ const ResponsiveNavigation = () => {
                       {link.name}
                       <ChevronDown className="h-4 w-4" />
                     </button>
-
 
                     {activeLink === link.name && (
                       <div className="bg-amber-800/60">
@@ -384,7 +381,7 @@ const ResponsiveNavigation = () => {
                                         }`}
                                       />
                                     </button>
-                                    
+
                                     {activeSection === child.heading &&
                                       child.category.map((item) => (
                                         <Link
@@ -409,12 +406,10 @@ const ResponsiveNavigation = () => {
               </div>
             ))}
 
-
             <div
               className="p-4 flex flex-col space-y-2"
               onClick={() => setMobileMenu(!mobileMenu)}
             >
-
               <div className="">
                 {session ? (
                   <div className="bg-white rounded-xl p-4 space-y-3">

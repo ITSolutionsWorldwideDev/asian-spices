@@ -27,7 +27,8 @@ interface SpiceFrame {
   subtitle: string;
   quality: string;
   description: string;
-  img: string;
+  img?: string;
+  video?: string;
   stats: FrameStats;
 }
 interface SpiceFrameProps {

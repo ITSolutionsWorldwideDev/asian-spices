@@ -25,7 +25,8 @@ const frames = [
     subtitle: "Exotic Selection",
     quality: "Discover True Flavors",
     description: `Explore our curated collection of rare Asian spices. From fragrant cardamom to fiery chili peppers, experience the authentic taste of Asia in every dish.`,
-    img: "0e72f704144da62cceae789fe0037f38a650f230.webp",
+    // img: "0e72f704144da62cceae789fe0037f38a650f230.webp",
+    video: "Slider_2.mp4",
     stats: {
       varieties: "200+",
       countries: "15+",
@@ -38,7 +39,8 @@ const frames = [
     subtitle: "Heritage Quality",
     quality: "Farm To Table",
     description: `Experience the vibrant traditions of Asian spice markets. Premium quality spices sourced directly from trusted farmers who practice sustainable agriculture.`,
-    img: "14b140c043c554c46173a4756175feabd5060b1f.webp",
+    // img: "14b140c043c554c46173a4756175feabd5060b1f.webp",
+    video: "Slider_3.mp4",
     stats: {
       partnerfarms: "500+",
       fairtrades: "Yes",
@@ -64,13 +66,30 @@ export default function Header() {
   return (
     <section className="relative w-full  flex flex-col">
       {/* Background Image */}
-      {current && (
+      {current && current.img && (
         <>
           <Image
             src={`/assets/home/homeheaderimages/${current.img}`}
             alt={current.title}
             fill
             className="object-cover"
+          />
+
+          {/* Main Content */}
+          <HeaderContent current={current} />
+        </>
+      )}
+
+      {current && current.video && (
+        <>
+          <video
+            className="w-full h-full absolute inset-0 object-cover"
+            src={`/assets/home/homeheaderimages/${current.video}`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
           />
 
           {/* Main Content */}
