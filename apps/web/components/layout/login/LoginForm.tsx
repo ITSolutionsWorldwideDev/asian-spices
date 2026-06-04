@@ -96,10 +96,52 @@ export default function LoginForm() {
   };
 
   return (
-    <div className=" flex items-center justify-center ">
-      <div className="w-full max-w-md">
-        {/* Heading */}
-        <div>
+    // <div className=" flex items-center justify-center ">
+    <div
+      className="
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        px-4
+        py-10
+        bg-gradient-to-br
+        from-orange-50
+        via-white
+        to-amber-50
+        relative
+        overflow-hidden
+      "
+    >
+      <div className="absolute top-0 left-0 h-72 w-72 bg-orange-300/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-72 w-72 bg-amber-300/20 rounded-full blur-3xl" />
+      {/* <div className="w-full max-w-md"> */}
+      <div
+        className="
+    relative
+    w-full
+    max-w-lg
+    rounded-3xl
+    bg-white/80
+    backdrop-blur-xl
+    border
+    border-white/30
+    p-10
+    shadow-[0_20px_80px_rgba(0,0,0,0.08)]
+  "
+      >
+        <div className="flex justify-center">
+          <Link href="/">
+            <Image
+              src="/assets/logo/Group 87.png"
+              alt="Asian Spices"
+              width={70}
+              height={70}
+              className="cursor-pointer"
+            />
+          </Link>
+        </div>
+        {/* <div>
           <Link href={`/`}>
             <Image
               src={`/assets/logo/Group 87.png`}
@@ -109,71 +151,170 @@ export default function LoginForm() {
               className="mb-10 cursor-pointer"
             />
           </Link>
+        </div> */}
+        <div className="text-center mb-8 mt-6">
+          <h1 className="text-3xl font-bold text-slate-900">Welcome Back 👋</h1>
+
+          <p className="mt-3 text-slate-500">
+            Sign in to continue shopping your favorite Asian spices.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-8">
+        {/* <h1 className="text-2xl font-semibold text-gray-900 mb-8">
           Welcome to Asian Spices 👋
         </h1>
         <p className="text-sm text-gray-400 mb-10">
           Great to see you. Sign in to access your account and get started.
-        </p>
+        </p> */}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
           {/* Email */}
           <div>
             <label className="text-sm text-gray-600 font-bold">Email</label>
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
+            <div className="relative">
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                className="
+                w-full
+                mt-2
+                px-4
+                py-3
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                text-sm
+                transition-all
+                duration-200
+                focus:outline-none
+                focus:border-orange-400
+                focus:ring-4
+                focus:ring-orange-100
+                "
+                // className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+
+              <span className="absolute right-4 top-4">✉️</span>
+            </div>
             {errors.email && <p className="error">{errors.email}</p>}
           </div>
 
           {/* Password */}
           <div>
             <label className="text-sm text-gray-600 font-bold">Password</label>
-            <input
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
+            <div className="relative">
+              <input
+                type="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                className="
+                w-full
+                mt-2
+                px-4
+                py-3
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                text-sm
+                transition-all
+                duration-200
+                focus:outline-none
+                focus:border-orange-400
+                focus:ring-4
+                focus:ring-orange-100
+                "
+                // className="w-full mt-1 px-4 py-3 border  border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+              <span className="absolute right-4 top-4">🔒</span>
+            </div>
             {errors.password && <p className="error">{errors.password}</p>}
+
+            <div className="flex justify-end">
+              <Link
+                href="/reset-password"
+                className="
+                  text-sm
+                  text-orange-600
+                  hover:text-orange-700
+                  transition
+                "
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </div>
-          <div className="text-sm text-gray-600 mb-4">
+          {/* <div className="text-sm text-gray-600 mb-4">
             <Link href="/reset-password">
               Reset Password
               <span className="menu-arrow inside-submenu" />
             </Link>
-          </div>
+          </div> */}
 
           {/* Sign up button */}
           <button
             type="submit"
-            className="w-full py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition"
+            className="
+              w-full
+              py-3.5
+              rounded-xl
+              font-semibold
+              text-white
+              bg-gradient-to-r
+              from-orange-500
+              to-amber-500
+              hover:shadow-xl
+              hover:scale-[1.01]
+              transition-all
+              duration-300
+              disabled:opacity-60
+              "
+            // className="w-full py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         {/* Divider */}
-        <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          {/* <span className="px-3 text-sm text-gray-400">Or</span> */}
-          <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex items-center my-8">
+          <div className="flex-1 h-px bg-slate-200" />
+
+          <span className="px-4 text-xs uppercase tracking-wider text-slate-400">
+            Account Access
+          </span>
+
+          <div className="flex-1 h-px bg-slate-200" />
         </div>
+        {/* <div className="flex items-center my-6">
+          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-200" />
+        </div> */}
 
         {/* Login link */}
-        <p className="text-sm text-gray-500 mt-6 font-bold">
+
+        <p className="text-center text-sm text-slate-500">
+          Don't have an account?{" "}
+          <Link
+            href="/signup"
+            className="
+              font-semibold
+              text-orange-600
+              hover:text-orange-700
+            "
+          >
+            Create one
+          </Link>
+        </p>
+        {/* <p className="text-sm text-gray-500 mt-6 font-bold">
           Don't you have an account?&nbsp;
           <Link href="/signup" className="text-blue-600 hover:underline">
             Sign up
           </Link>
-        </p>
+        </p> */}
 
         {/* Footer */}
         <p className="text-xs text-gray-400 mt-10">
@@ -182,21 +323,4 @@ export default function LoginForm() {
       </div>
     </div>
   );
-}
-
-{
-  /* Google Button */
-}
-{
-  /* <button className="w-full flex items-center justify-center gap-2  py-3 rounded-lg hover:bg-gray-50 transition bg-white">
-          <Image
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            width={20}
-            height={20}
-          />
-          <span className="text-sm font-medium text-gray-700">
-            Sign in with Google
-          </span>
-        </button> */
 }

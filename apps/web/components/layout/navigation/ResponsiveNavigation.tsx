@@ -49,7 +49,7 @@ const ResponsiveNavigation = () => {
 
   const navLinks: NavLink[] = [
     { name: "Home" },
-    { name: "About" },
+    // { name: "About" },
 
     {
       name: "Category",
@@ -64,11 +64,11 @@ const ResponsiveNavigation = () => {
           image: "bef4555df0ac442433de79fbc2676fdbc3d5b455.jpg",
           href: "kitchen-appliances",
         },
-        {
-          name: "Recipes",
-          image: "e50f5d03690c88ecb61ae41e5b6aa2fd285b988d.jpg",
-          href: "recipes  ",
-        },
+        // {
+        //   name: "Recipes",
+        //   image: "e50f5d03690c88ecb61ae41e5b6aa2fd285b988d.jpg",
+        //   href: "recipes  ",
+        // },
         {
           name: "Foods & Beverages ",
           image: "7998dbf578bd435e51167e00d97f1bc7f0963051.png",
@@ -127,6 +127,7 @@ const ResponsiveNavigation = () => {
         },
       ],
     },
+    { name: "Recipes" },
     { name: "Partner Platform" },
   ];
 
@@ -447,10 +448,10 @@ const ResponsiveNavigation = () => {
                     <Link href="/login" className="font-bold">
                       Login
                     </Link>
-                    {" / "}
+                    {/* {" / "}
                     <Link href="/signup" className="font-bold">
                       Signup
-                    </Link>
+                    </Link> */}
                   </div>
                 )}
               </div>
