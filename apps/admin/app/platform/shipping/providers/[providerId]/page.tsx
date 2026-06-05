@@ -28,6 +28,8 @@ export default async function EditProviderPage({
   // ✅ Use service (includes decrypted credentials)
   const provider = await getProviderCredentials(slug);
 
+  console.log('provider ==== ',provider);
+
   return (
     <div className="page-wrapper">
       <div className="content">

@@ -56,7 +56,10 @@ export async function POST(req: NextRequest) {
       INSERT INTO shipping_provider_configs (provider_id, store_id, extra, is_active)
       VALUES ($1, NULL, $2, $3)
       `,
-      [providerId, encrypted, is_active],
+      [providerId, 
+        // encrypted,
+        credentials, 
+        is_active],
     );
 
     // await client.query(
@@ -173,7 +176,10 @@ export async function PUT(req: NextRequest) {
       ON CONFLICT (provider_id, store_id) 
       DO UPDATE SET extra = EXCLUDED.extra, is_active = EXCLUDED.is_active, updated_at = now()
       `,
-      [id, encrypted, is_active],
+      [id, 
+        // encrypted,
+        credentials,
+        is_active],
     );
 
     await client.query("COMMIT");

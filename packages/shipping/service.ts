@@ -23,6 +23,8 @@ export async function createShipment(orderId: string) {
 
   const method = methods[0];
 
+  console.log('packages/shipping/service.ts ');
+
   // 3. Get config
   const { rows: configs } = await pool.query(
     `SELECT * FROM shipping_provider_configs

@@ -223,6 +223,14 @@ export default function ProductFormComponent({
     { value: "fixed", label: "Fixed Amount" },
   ];
 
+  
+  const formatFileName = (name: string) => {
+    let cleaned = name.split("-").slice(1).join("-");
+    if (!cleaned) cleaned = name; // Guard variant if name doesn't contain tokens
+    cleaned = cleaned.replace(/_/g, " ");
+    return cleaned.length > 30 ? cleaned.slice(0, 30) + "..." : cleaned;
+  };
+
   /* ---------------- Watchers ---------------- */
 
   const name = watch("name");
@@ -537,6 +545,8 @@ export default function ProductFormComponent({
 
     // 2. Add an optional chaining check or rely on the safe fallback array
     return itemsToRender?.map((item) => {
+      
+          const displayName = formatFileName(item.file_name);
       const isSelected = selectedMedia.includes(item.media_id);
       const isPrimary = primaryMedia === item.media_id;
 
@@ -564,6 +574,11 @@ export default function ProductFormComponent({
             height={200}
             className="rounded object-cover"
           />
+
+          {/* Metadata labels row */}
+              <p className="mt-2 text-xs font-medium text-gray-700 truncate px-0.5">
+                {displayName}
+              </p>
 
           {isPrimary && (
             <span className="absolute left-1 top-1 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">

@@ -1,6 +1,5 @@
 // apps/admin/app/api/products/route.ts
 import { NextRequest, NextResponse } from "next/server";
-// import { getCurrentStoreAPI } from "@/lib/auth/guards";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { pool } from "@acme/db";
 
@@ -89,44 +88,6 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ items: result.rows });
 }
-
-/* export async function GET(req: NextRequest) {
-  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  // const store = await getCurrentStoreAPI(req);
-  
-  await requirePlatformAdmin();
-
-  const result = await pool.query(
-    `
-    SELECT 
-      p.*,
-      c.name AS category,
-      sc.name AS subcategory,
-      b.name AS brand,
-      pi.url AS primary_image,
-      (
-        SELECT price
-        FROM store_product_prices spp
-        WHERE spp.product_id = p.id
-          AND spp.customer_type = 'B2C'
-        ORDER BY min_quantity ASC
-        LIMIT 1
-      ) AS b2c_price
-    FROM store_products p
-    LEFT JOIN store_categories c ON c.id = p.category_id
-    LEFT JOIN store_subcategories sc ON sc.id = p.subcategory_id
-    LEFT JOIN store_brands b ON b.brand_id = p.brand_id
-    LEFT JOIN store_product_images pi 
-      ON pi.product_id = p.id AND pi.is_primary = true
-    ORDER BY p.created_at DESC
-    `,
-    []
-  );
-
-  return NextResponse.json({ items: result.rows });
-} */
-
-
 /* ------------------ POST (Create Product) ------------------ */
 export async function POST(req: NextRequest) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
@@ -229,6 +190,44 @@ export async function POST(req: NextRequest) {
 }
 
 
+
+
+
+/* export async function GET(req: NextRequest) {
+  // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
+  // const store = await getCurrentStoreAPI(req);
+  
+  await requirePlatformAdmin();
+
+  const result = await pool.query(
+    `
+    SELECT 
+      p.*,
+      c.name AS category,
+      sc.name AS subcategory,
+      b.name AS brand,
+      pi.url AS primary_image,
+      (
+        SELECT price
+        FROM store_product_prices spp
+        WHERE spp.product_id = p.id
+          AND spp.customer_type = 'B2C'
+        ORDER BY min_quantity ASC
+        LIMIT 1
+      ) AS b2c_price
+    FROM store_products p
+    LEFT JOIN store_categories c ON c.id = p.category_id
+    LEFT JOIN store_subcategories sc ON sc.id = p.subcategory_id
+    LEFT JOIN store_brands b ON b.brand_id = p.brand_id
+    LEFT JOIN store_product_images pi 
+      ON pi.product_id = p.id AND pi.is_primary = true
+    ORDER BY p.created_at DESC
+    `,
+    []
+  );
+
+  return NextResponse.json({ items: result.rows });
+} */
 
 
   // const result = await pool.query(
