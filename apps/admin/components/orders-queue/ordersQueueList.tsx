@@ -76,7 +76,7 @@ export default function OrdersQueueListComponent() {
     {
       title: "Total",
       dataIndex: "total_amount",
-      // render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => `€${v.toFixed(2)}`,
     },
     {
       title: "Order Status",

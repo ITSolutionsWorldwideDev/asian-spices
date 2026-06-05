@@ -72,7 +72,7 @@ export default function CustomersListComponent() {
       title: "Credit Limit",
       render: (_: any, r: Customer) =>
         r.customer_type === "B2B"
-          ? `$${Number(r.credit_limit).toFixed(2)}`
+          ? `€${Number(r.credit_limit).toFixed(2)}`
           : "-",
     },
     {
@@ -82,7 +82,7 @@ export default function CustomersListComponent() {
     {
       title: "Spent",
       dataIndex: "total_spent",
-      render: (v: number) => `$${Number(v).toFixed(2)}`,
+      render: (v: number) => `€${Number(v).toFixed(2)}`,
     },
     {
       title: "Action",
@@ -106,7 +106,7 @@ export default function CustomersListComponent() {
     {
       title: "Spent",
       dataIndex: "total_spent",
-      render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => `€${v.toFixed(2)}`,
     },
     {
       title: "Status",

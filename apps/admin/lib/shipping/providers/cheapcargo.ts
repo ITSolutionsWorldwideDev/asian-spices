@@ -17,57 +17,50 @@ type Credentials = {
 // Helpers
 // -----------------------------
 
+// function getAuthenticationToken(apiKey: any) {
+//   const now = new Date();
 
-function getAuthenticationToken(apiKey: any) {
-  const now = new Date();
+//   // ⏱ Round hour to nearest 2-hour block
+//   const hour = now.getHours();
+//   const roundedHour = Math.floor(hour / 2) * 2;
 
-  // ⏱ Round hour to nearest 2-hour block
-  const hour = now.getHours();
-  const roundedHour = Math.floor(hour / 2) * 2;
+//   const YYYY = now.getFullYear();
+//   const MM = String(now.getMonth() + 1).padStart(2, "0");
+//   const DD = String(now.getDate()).padStart(2, "0");
+//   const HH = String(roundedHour).padStart(2, "0");
 
-  const YYYY = now.getFullYear();
-  const MM = String(now.getMonth() + 1).padStart(2, "0");
-  const DD = String(now.getDate()).padStart(2, "0");
-  const HH = String(roundedHour).padStart(2, "0");
+//   const timestamp = `${YYYY}${MM}${DD}${HH}`;
 
-  const timestamp = `${YYYY}${MM}${DD}${HH}`;
-
-  return md5(apiKey + timestamp);
-}
+//   return md5(apiKey + timestamp);
+// }
 
 // function getPasswordHash(value: string) {
 //   return crypto.createHash("md5").update(value).digest("hex");
 // }
 
-  function getStandardizedTimestamp(useUTC = false): string {
-      const now = new Date();
-  
-      const hour = useUTC ? now.getUTCHours() : now.getHours();
-      const roundedHour = Math.floor(hour / 2) * 2;
-  
-      const YYYY = useUTC ? now.getUTCFullYear() : now.getFullYear();
-      const MM = String(
-        (useUTC ? now.getUTCMonth() : now.getMonth()) + 1,
-      ).padStart(2, "0");
-      const DD = String(useUTC ? now.getUTCDate() : now.getDate()).padStart(
-        2,
-        "0",
-      );
-      const HH = String(roundedHour).padStart(2, "0");
-  
-      return `${YYYY}${MM}${DD}${HH}`;
-    }
-  
-    // function getAuthenticationToken(apiKey: any) {
-    //   const timestamp = getStandardizedTimestamp(true); // Matches your key setup criteria
-    //   return md5(apiKey + timestamp);
-    // }
-  
-    function getPasswordHash(value: string) {
-      // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
-      const timestamp = getStandardizedTimestamp(true);
-      return md5(value);
-    } 
+function getStandardizedTimestamp(useUTC = false): string {
+  const now = new Date();
+
+  const hour = useUTC ? now.getUTCHours() : now.getHours();
+  const roundedHour = Math.floor(hour / 2) * 2;
+
+  const YYYY = useUTC ? now.getUTCFullYear() : now.getFullYear();
+  const MM = String((useUTC ? now.getUTCMonth() : now.getMonth()) + 1).padStart(2, "0");
+  const DD = String(useUTC ? now.getUTCDate() : now.getDate()).padStart(2, "0");
+  const HH = String(roundedHour).padStart(2, "0");
+
+  return `${YYYY}${MM}${DD}${HH}`;
+}
+
+function getAuthenticationToken(apiKey: any) {
+  const timestamp = getStandardizedTimestamp(true); // Matches your key setup criteria
+  return md5(apiKey + timestamp);
+}
+
+function getPasswordHash(value: string) {
+  const timestamp = getStandardizedTimestamp(true);
+  return md5(value);
+}
 
 // -----------------------------
 // TEST CONNECTION (ONLY FUNCTION YOU NEED HERE)
@@ -77,7 +70,7 @@ export async function testCheapCargoConnection(creds: Credentials) {
     console.log("creds.password === ", creds.password);
 
     const authentication = getAuthenticationToken(creds.apiKey);
-    const passwordHash = "34dbe7e451f2d0b166a292ce0021599d";// getPasswordHash(creds.apiKey);//  
+    const passwordHash = "34dbe7e451f2d0b166a292ce0021599d"; // getPasswordHash(creds.apiKey);//
 
     console.log("authentication === ", authentication);
     console.log("creds.email === ", creds.email);
@@ -85,7 +78,7 @@ export async function testCheapCargoConnection(creds: Credentials) {
 
     const payload = {
       shipments: {
-        "authentication": authentication,
+        authentication: authentication,
         version: "2.1",
         user: {
           email: creds.email,
