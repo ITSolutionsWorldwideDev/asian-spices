@@ -2,6 +2,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
+import {
+  assignNextStore,
+  logOrderEvent,
+  ORDER_EVENTS,
+} from "@acme/order-routing";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,6 +31,52 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("paymentStatus === ", paymentStatus);
+
+    if (paymentStatus === "paid") {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        const updateResult: any = await client.query(
+          `UPDATE store_orders
+               SET payment_status = 'paid',
+                   order_status = 'pending', 
+                   transaction_id = $1,
+                   updated_at = NOW()
+               WHERE id = $2 AND payment_status != 'paid'
+               RETURNING id`,
+          [transactionId, orderId],
+        );
+
+        if (updateResult?.rowCount > 0) {
+          // Log payment collection completion event
+          await logOrderEvent(client, {
+            orderId: orderId,
+            eventType: ORDER_EVENTS.ASSIGNED,
+            message: `Paynl capture successful. Captured Reference ID: ${transactionId}. Order created and routing started`,
+            metadata: { transactionId },
+          });
+
+          // ⚡ RUN CRITICAL STORE SELECTION PIPELINE ⚡
+          console.log(
+            `Executing decentralized routing for Order ID: ${orderId}`,
+          );
+          await assignNextStore(client, orderId);
+        }
+
+        await client.query("COMMIT");
+
+        return NextResponse.json({
+          success: true,
+          transactionId: transactionId,
+        });
+      } catch (txError) {
+        await client.query("ROLLBACK");
+        throw txError; // Bubbles up to outer catch block handler
+      } finally {
+        client.release();
+      }
+    }
 
     let query = `
       UPDATE store_orders

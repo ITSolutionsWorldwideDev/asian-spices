@@ -193,7 +193,7 @@ const { subtotal, tax, shipping, total } = calculateTotals(
           <h2 className="font-semibold mb-4">Order Summary</h2>
           
           {/* Optional Shipping Selector UI inside Cart */}
-          <div className="flex flex-col gap-2 mb-4">
+          {/* <div className="flex flex-col gap-2 mb-4">
             <label className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Shipping Method</label>
             <select
               value={shippingMethod}
@@ -206,7 +206,7 @@ const { subtotal, tax, shipping, total } = calculateTotals(
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           <div className="space-y-2 text-sm py-5">
             <div className="flex justify-between mt-3">

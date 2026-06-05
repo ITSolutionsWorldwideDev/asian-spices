@@ -6,10 +6,12 @@ import { useState } from "react";
 import { Eye, ChevronDown, ChevronUp, FileText, Download } from "lucide-react";
 import OrderTimeline from "@/components/ui/OrderTimeline";
 import OrderSummaryReadOnly from "../../checkout/OrderSummaryReadOnly";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 
 export default function OrderCard({ order, isOpen, onToggle }: any) {
   const [downloading, setDownloading] = useState(false);
   const isPaid = order.payment_status === "paid";
+    const { symbol, rate } = useCurrencyStore();
 
   const handleDownloadInvoice = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Stop parent details chevron toggle triggers
@@ -100,7 +102,7 @@ export default function OrderCard({ order, isOpen, onToggle }: any) {
 
       {/* FOOTER */}
       <div className="mt-3 flex justify-between items-center">
-        <p className="font-bold">${order.total_amount}</p>
+        <p className="font-bold">{symbol}{order.total_amount}</p>
 
         <button
           onClick={onToggle}

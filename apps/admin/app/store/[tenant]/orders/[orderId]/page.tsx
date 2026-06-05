@@ -828,7 +828,7 @@ export default function OrderDetailPage() {
               <span>${Number(order.subtotal).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500">
-              <span>Tax Assessment</span>
+              <span>Tax</span>
               <span>${Number(order.tax_amount).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500 border-b pb-2">

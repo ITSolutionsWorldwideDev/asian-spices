@@ -398,6 +398,8 @@ export default function Checkout() {
               setFormData={setFormData}
               shippingMethod={shippingMethod}
               setShippingMethod={setShippingMethod}
+              subtotal={convertedTotals.subtotal}
+              shipping={convertedTotals.shipping}
               errors={errors}
               addresses={addresses}
               selectedAddress={selectedAddress}

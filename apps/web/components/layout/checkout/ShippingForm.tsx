@@ -3,9 +3,14 @@
 "use client";
 import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { useLoaderStore } from "@/store/useLoaderStore";
-import { ChevronRight } from "lucide-react";
+// import { ChevronRight } from "lucide-react";
 
 import { useEffect, useState } from "react";
+import {
+  SHIPPING_OPTIONS,
+  ShippingMethod,
+  FREE_SHIPPING_THRESHOLD,
+} from "@/lib/pricing";
 
 export interface ShippingOption {
   id: string;
@@ -21,6 +26,8 @@ interface Props {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   shippingMethod: string; //shippingMethod: "standard" | "express" | "overnight";
   setShippingMethod: (value: string) => void; //setShippingMethod: (value: any) => void;
+  subtotal: number;
+  shipping: number;
   errors: Record<string, string>;
 
   addresses: any[];
@@ -40,6 +47,8 @@ export default function ShippingForm({
   setFormData,
   shippingMethod,
   setShippingMethod,
+  subtotal,
+  shipping,
   errors,
   addresses,
   selectedAddress,
@@ -51,8 +60,16 @@ export default function ShippingForm({
   const [loadingOptions, setLoadingOptions] = useState(false);
   const { show, hide } = useLoaderStore();
 
-  
-    const { symbol, rate } = useCurrencyStore();
+  const { symbol, rate } = useCurrencyStore();
+
+  const isValidShippingMethod = (method: any): method is ShippingMethod => {
+    return method in SHIPPING_OPTIONS;
+  };
+
+  const amountForFreeShipping =
+    subtotal < FREE_SHIPPING_THRESHOLD ? FREE_SHIPPING_THRESHOLD - subtotal : 0;
+
+  const hasFreeShipping = shipping === 0;
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({
@@ -410,68 +427,20 @@ export default function ShippingForm({
                     </p>
                   </div>
                 </div>
-                <span className="font-semibold text-gray-900">
-                  {option.price === 0 ? "Free" : `${symbol}${option.price.toFixed(2)}`}
-                </span>
+
+                {hasFreeShipping && option.name == "Standard" ? (
+                  <span className="text-[#00A63E]">FREE</span>
+                ) : (
+                  <span className="font-semibold text-gray-900">
+                    {option.price === 0
+                      ? "Free"
+                      : `${symbol}${option.price.toFixed(2)}`}
+                  </span>
+                )}
               </label>
             ))}
           </div>
         )}
-
-        {/* <div className="space-y-4">
-          <label className="flex items-center justify-between border border-[#E5E7EB] rounded-xl p-4 cursor-pointer">
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                name="shipping"
-                value="standard"
-                checked={shippingMethod === "standard"}
-                onChange={(e) => {
-                  setShippingMethod(e.target.value);
-                }}
-              />
-              <div>
-                <p className="font-medium">Standard Shipping</p>
-                <p className="text-sm text-gray-500">5-7 business days</p>
-              </div>
-            </div>
-            <span className="font-medium">$5.99</span>
-          </label>
-
-          <label className="flex items-center justify-between border  border-[#E5E7EB] rounded-xl p-4 cursor-pointer">
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                name="shipping"
-                value="express"
-                checked={shippingMethod === "express"}
-                onChange={(e) => setShippingMethod(e.target.value)}
-              />
-              <div>
-                <p className="font-medium">Express Shipping</p>
-                <p className="text-sm text-gray-500">2-3 business days</p>
-              </div>
-            </div>
-            <span className="font-medium">$12.99</span>
-          </label>
-
-          <label className="flex items-center justify-between border border-[#E5E7EB] rounded-xl p-4 cursor-pointer">
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                name="shipping"
-                value="overnight"
-                checked={shippingMethod === "overnight"}
-                onChange={(e) => setShippingMethod(e.target.value)}
-              />
-              <div>
-                <p className="font-medium">Overnight Shipping</p>
-                <p className="text-sm text-gray-500">Next business day</p>
-              </div>
-            </div>
-            <span className="font-medium">$24.99</span>
-          </label>
-        </div> */}
       </div>
     </div>
   );

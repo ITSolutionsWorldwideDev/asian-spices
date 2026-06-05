@@ -18,7 +18,10 @@ export default function PaynlReturnHandler({
 //   onDone?: () => void;
 }) {
   const [processing, setProcessing] = useState(true);
-  const { clearCart } = useCartStore();
+  // const { clearCart } = useCartStore();
+
+  
+  const clearCart = useCartStore((s) => s.clearCart);
 
   useEffect(() => {
     if (statusAction?.toLowerCase() === "paid") {
@@ -43,6 +46,7 @@ export default function PaynlReturnHandler({
             statusAction,
           }),
         });
+        clearCart();
       } catch (err) {
         console.error("Pay.nl confirm failed:", err);
       } finally {
