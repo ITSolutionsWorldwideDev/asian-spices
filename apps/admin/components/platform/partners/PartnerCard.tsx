@@ -6,12 +6,7 @@ import Link from "next/link";
 import { Check, X } from "react-feather";
 import { useState } from "react";
 
-export default function PartnerCard({
-  partner,
-  onApprove,
-  onReject,
-}: any) {
-
+export default function PartnerCard({ partner, onApprove, onReject }: any) {
   const [showReject, setShowReject] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -19,9 +14,7 @@ export default function PartnerCard({
     <div className="bg-white rounded-lg shadow-sm border p-4 flex flex-col justify-between">
       <div>
         <div className="flex justify-between mb-2">
-          <h3 className="font-semibold text-sm">
-            {partner.company_name}
-          </h3>
+          <h3 className="font-semibold text-sm">{partner.company_name}</h3>
 
           <span className="text-xs px-2 py-1 rounded bg-gray-100">
             {partner.status}
@@ -30,7 +23,7 @@ export default function PartnerCard({
 
         <p className="text-xs text-gray-500">
           {partner.business_email_address}
-        </p>        
+        </p>
 
         <p className="text-xs text-gray-500">
           Application ID: {partner.application_id}
@@ -44,20 +37,27 @@ export default function PartnerCard({
         >
           View
         </Link>
+      </div>
+    </div>
+  );
+}
 
-        {partner.status === "pending" && (
+{
+  /* {partner.status === "pending" && (
           <div className="flex gap-2">
             <button onClick={onApprove}>
               <Check size={14} />
             </button>
-            <button onClick={() => setShowReject(true)}>{/* onClick={onReject}  */}
+            <button onClick={() => setShowReject(true)}>
               <X size={14} />
             </button>
           </div>
-        )}
-      </div>
-      
-      {showReject && (
+        )} */
+}
+
+/* 
+        
+        {showReject && (
         <div className="mt-3 space-y-2">
           <textarea
             placeholder="Reason..."
@@ -74,6 +74,4 @@ export default function PartnerCard({
           </button>
         </div>
       )}
-    </div>
-  );
-}
+        */

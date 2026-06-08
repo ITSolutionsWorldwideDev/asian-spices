@@ -23,12 +23,6 @@ export default async function PartnerDetailPage({
     return notFound();
   }
 
-//   console.log("Partner id === ", id);
-
-  //   if (!id) {
-  //     throw new Error("Partner ID is required");
-  //   }
-
   const { rows } = await pool.query(
     `
     SELECT *

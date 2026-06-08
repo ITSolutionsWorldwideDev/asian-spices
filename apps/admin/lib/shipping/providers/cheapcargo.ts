@@ -53,12 +53,11 @@ function getStandardizedTimestamp(useUTC = false): string {
 }
 
 function getAuthenticationToken(apiKey: any) {
-  const timestamp = getStandardizedTimestamp(true); // Matches your key setup criteria
+  const timestamp = getStandardizedTimestamp(false); // Matches your key setup criteria
   return md5(apiKey + timestamp);
 }
 
 function getPasswordHash(value: string) {
-  const timestamp = getStandardizedTimestamp(true);
   return md5(value);
 }
 
@@ -68,9 +67,10 @@ function getPasswordHash(value: string) {
 export async function testCheapCargoConnection(creds: Credentials) {
   try {
     console.log("creds.password === ", creds.password);
+    console.log("creds.apiKey === ", creds.apiKey);
 
     const authentication = getAuthenticationToken(creds.apiKey);
-    const passwordHash = "34dbe7e451f2d0b166a292ce0021599d"; // getPasswordHash(creds.apiKey);//
+    const passwordHash = getPasswordHash(creds.apiKey);//"34dbe7e451f2d0b166a292ce0021599d"; // 
 
     console.log("authentication === ", authentication);
     console.log("creds.email === ", creds.email);

@@ -153,6 +153,88 @@ function Field({ label, value }: any) {
 }
 
 function DocumentPreview({ label, files }: { label: string; files: string[] }) {
+  if (!files || files.length === 0 || !files[0]) {
+    return (
+      <div className="col-span-2">
+        <p className="text-xs text-gray-500 font-semibold">{label}</p>
+        <p className="text-sm text-gray-400 mt-1">No document uploaded</p>
+      </div>
+    );
+  }
+
+  const getBlobUrl = (base64String: string) => {
+    try {
+      const arr = base64String.split(",");
+      if (arr.length < 2) return base64String; // Return as-is if fallback URL string
+      const mime = arr[0].match(/:(.*?);/)?.[1] || "";
+      const byteString = atob(arr[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mime });
+      return URL.createObjectURL(blob);
+    } catch (err) {
+      console.error("Blob parsing error", err);
+      return "";
+    }
+  };
+
+  return (
+    <div className="col-span-2 space-y-2">
+      <p className="text-xs text-gray-500 font-semibold">{label}</p>
+      <div className="flex flex-wrap gap-3">
+        {files.map((file: string, index: number) => {
+          if (!file) return null;
+          const isPdf =
+            file.startsWith("data:application/pdf") || file.includes(".pdf");
+          const isImage = file.startsWith("data:image");
+          const computedUrl = file.startsWith("data:")
+            ? getBlobUrl(file)
+            : file;
+
+          return (
+            <div
+              key={index}
+              className="border rounded p-2 w-42 bg-gray-50 flex flex-col justify-between"
+            >
+              <div className="h-32 bg-white rounded flex items-center justify-center overflow-hidden border">
+                {isPdf ? (
+                  <embed
+                    src={computedUrl}
+                    type="application/pdf"
+                    className="w-full h-full"
+                  />
+                ) : isImage ? (
+                  <img
+                    src={computedUrl}
+                    alt="Document upload"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs text-gray-400">
+                    View Document Attachment
+                  </span>
+                )}
+              </div>
+              <a
+                href={computedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-center text-blue-600 mt-2 font-medium hover:underline"
+              >
+                Open in Full Window
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* function DocumentPreview({ label, files }: { label: string; files: string[] }) {
   // console.log('files.length ==== ',files.length);
   if (!files || files.length === 0) {
     return (
@@ -210,7 +292,7 @@ function DocumentPreview({ label, files }: { label: string; files: string[] }) {
 
           return (
             <div key={index} className="border rounded p-2 w-40 bg-white">
-              {/* PREVIEW */}
+        
               {isPdf ? (
                 <iframe src={file} className="w-full h-32 rounded" />
               ) : isImage ? (
@@ -225,7 +307,7 @@ function DocumentPreview({ label, files }: { label: string; files: string[] }) {
                 </div>
               )}
 
-              {/* OPEN BUTTON */}
+          
               <button
                 onClick={() => openBase64File(file)}
                 className="text-xs text-blue-600 mt-2 underline cursor-pointer"
@@ -238,26 +320,4 @@ function DocumentPreview({ label, files }: { label: string; files: string[] }) {
       </div>
     </div>
   );
-}
-
-/* return (
-            <div key={index} className="border rounded p-2 w-40">
-              {isPdf ? (
-                <iframe src={file} className="w-full h-32 rounded" />
-              ) : (
-                <img
-                  src={file}
-                  alt="document"
-                  className="w-full h-32 object-cover"
-                />
-              )}
-
-              <a
-                href={file}
-                target="_blank"
-                className="text-xs text-blue-600 block mt-1"
-              >
-                Open
-              </a>
-            </div>
-          ); */
+} */
