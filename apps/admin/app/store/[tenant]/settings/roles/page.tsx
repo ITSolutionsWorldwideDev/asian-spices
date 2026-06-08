@@ -13,7 +13,7 @@ export default async function RolesPage() {
   `);
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper2">
       <div className="content">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">

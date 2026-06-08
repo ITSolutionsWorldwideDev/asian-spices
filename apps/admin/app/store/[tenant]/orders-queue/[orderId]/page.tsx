@@ -212,7 +212,7 @@ export default function OrderDetailPage() {
   };
 
   return (
-    <div className="page-wrapper max-w-7xl mx-auto p-6">
+    <div className="page-wrapper2 max-w-7xl mx-auto p-6">
       <div className="content space-y-6">
         
         {/* Navigation Action Header bar */}

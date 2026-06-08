@@ -83,7 +83,7 @@ export default function BlogsListComponent() {
   ------------------------------------ */
   return (
     <>
-      <div className="page-wrapper">
+      <div className="page-wrapper2">
         <div className="content">
           <div className="page-header flex justify-between items-center mb-4">
             <div>

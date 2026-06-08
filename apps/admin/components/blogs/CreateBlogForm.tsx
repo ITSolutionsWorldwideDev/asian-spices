@@ -79,7 +79,7 @@ export default function CreateBlogForm() {
   };
 
   return (
-    <div className="page-wrapper p-4 mb-10">
+    <div className="page-wrapper2 p-4 mb-10">
       <div className="content max-w-6xl mx-auto">
         <div className="flex flex-wrap justify-between items-center mb-6">
           <div>

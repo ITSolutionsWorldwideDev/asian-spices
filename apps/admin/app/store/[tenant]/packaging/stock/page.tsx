@@ -55,7 +55,7 @@ export default async function StoreStockPage({
   );
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">

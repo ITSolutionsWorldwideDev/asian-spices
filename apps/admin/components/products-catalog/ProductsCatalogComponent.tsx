@@ -349,7 +349,7 @@ export default function ProductsCatalogComponent() {
   ];
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper2">
       <div className="content">
         <div className="page-header flex flex-col  w-full  justify-between mb-4">
           <div className=" mb-2   w-full ">

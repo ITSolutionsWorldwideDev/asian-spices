@@ -37,7 +37,7 @@ export default async function PackagingRulesPage() {
   const [rulesResult, typesResult] = await Promise.all([rulesPromise, typesPromise]);
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content max-w-7xl mx-auto">
         <RulesClient 
           rules={rulesResult.rows} 

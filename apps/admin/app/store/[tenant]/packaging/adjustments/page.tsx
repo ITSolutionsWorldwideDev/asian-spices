@@ -56,7 +56,7 @@ export default async function StoreAdjustmentsPage({
   );
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content max-w-7xl mx-auto">
         <div className="p-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">

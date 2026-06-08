@@ -128,7 +128,7 @@ export default function CustomersListComponent() {
   ]; */
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper2">
       <div className="content">
         <div className="page-header mb-4">
           <h4 className="text-lg font-semibold">Store Customers</h4>

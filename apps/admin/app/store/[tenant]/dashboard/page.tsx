@@ -28,7 +28,7 @@ export default async function StoreDashboard({
   } = await getStoreDashboardData(store.id);
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content space-y-6">
         {/* Header */}
         <div className="space-y-1">

@@ -107,7 +107,7 @@ export default function OrdersListComponent() {
 
   return (
     <>
-      <div className="pt-0 page-wrapper">
+      <div className="pt-0 page-wrapper2">
         <div className="content">
           <div className="page-header flex flex-wrap justify-between items-center gap-3 mb-4">
             <div>

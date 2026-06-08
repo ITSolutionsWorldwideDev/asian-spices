@@ -98,7 +98,7 @@ export default function CustomerDetailPage() {
   if (!customer) return <p className="p-6">Customer not found</p>;
 
   return (
-    <div className="page-wrapper ">
+    <div className="page-wrapper2 ">
       <div className="content space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -298,7 +298,7 @@ export default function CustomerDetailPage() {
   if (!customer) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="page-wrapper p-6 space-y-6">
+    <div className="page-wrapper2 p-6 space-y-6">
   
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">

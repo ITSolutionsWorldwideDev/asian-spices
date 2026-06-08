@@ -44,7 +44,7 @@ export default async function PackagingAddonsPage({
   const total = rows[0]?.total ?? 0;
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content max-w-7xl mx-auto">
         <AddonsClient
           addons={rows}

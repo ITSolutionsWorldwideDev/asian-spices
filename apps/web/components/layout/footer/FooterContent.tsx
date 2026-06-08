@@ -6,6 +6,7 @@ import {
   FaInstagram,
   FaYoutube,
   FaLinkedinIn,
+  FaTiktok
 } from "react-icons/fa";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { AiOutlineMail } from "react-icons/ai";
@@ -42,7 +43,8 @@ const FooterContent = () => {
             <FaYoutube className="cursor-pointer hover:scale-110 duration-150 " />
           </div>
           <div className="rounded-full p-1  bg-white/40">
-            <FaLinkedinIn className="cursor-pointer hover:scale-110 duration-150 " />
+            {/* <FaLinkedinIn className="cursor-pointer hover:scale-110 duration-150 " /> */}
+            <FaTiktok className="cursor-pointer hover:scale-110 duration-150 " />
           </div>
         </div>
       </div>

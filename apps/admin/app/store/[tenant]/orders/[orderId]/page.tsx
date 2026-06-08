@@ -61,6 +61,12 @@ type OrderDetail = {
   items: OrderItem[];
 };
 
+type BoxRow = {
+  packagingTypeId: string;
+  weight: string;
+  boxesCount: number;
+};
+
 type PackagingInventoryItem = {
   id: string;
   packaging_type_id: string;
@@ -99,6 +105,51 @@ export default function OrderDetailPage() {
     height: "",
     boxes: "1",
   });
+
+  // 2. Updated Box Row state configuration initialization
+  const [boxRows, setBoxRows] = useState<BoxRow[]>([
+    { packagingTypeId: "", weight: "", boxesCount: 1 },
+  ]);
+
+  // 3. Dynamic row helpers
+  const addBoxRow = () => {
+    if (boxRows.length < 3) {
+      setBoxRows([
+        ...boxRows,
+        { packagingTypeId: "", weight: "", boxesCount: 1 },
+      ]);
+    }
+  };
+
+  const removeBoxRow = (index: number) => {
+    setBoxRows(boxRows.filter((_, i) => i !== index));
+  };
+
+  const updateBoxRow = (index: number, field: keyof BoxRow, value: any) => {
+    const updated = [...boxRows];
+
+    if (field === "packagingTypeId") {
+      updated[index].packagingTypeId = value;
+      // Auto-fill empty weights when a preset inventory target is picked
+      const selectedBox = packagingOptions.find(
+        (p) => (p.packaging_type_id || p.id) === value,
+      );
+      if (selectedBox) {
+        const emptyWeight = Number(selectedBox.empty_weight_kg || 0);
+        updated[index].weight =
+          emptyWeight > 0 ? emptyWeight.toFixed(2) : "0.10";
+      } else {
+        updated[index].weight = "";
+      }
+    } else if (field === "boxesCount") {
+      updated[index].boxesCount = parseInt(value) || 1;
+    } else {
+      // Weight mutations
+      updated[index].weight = value;
+    }
+
+    setBoxRows(updated);
+  };
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -268,6 +319,82 @@ export default function OrderDetailPage() {
       return;
     }
 
+    // Ensure all boxes have weights before proceeding
+    const invalidRows = boxRows.some(
+      (row) => !row.weight || Number(row.weight) <= 0,
+    );
+    if (invalidRows) {
+      showToast(
+        "error",
+        "Please confirm weight designations on all active item boxes",
+      );
+      return;
+    }
+
+    try {
+      setShippingLoading(true);
+
+      // Reconstruct separate box instances matching CheapCargo dimensional parameters
+      const formattedParcels = boxRows.flatMap((row) => {
+        const matchedBox = packagingOptions.find(
+          (p) => (p.packaging_type_id || p.id) === row.packagingTypeId,
+        );
+
+        // Extract coordinates from matched data blocks, or apply manual fallback defaults
+        const length = matchedBox
+          ? Math.round(Number(matchedBox.length_cm))
+          : 10;
+        const width = matchedBox ? Math.round(Number(matchedBox.width_cm)) : 10;
+        const height = matchedBox
+          ? Math.round(Number(matchedBox.height_cm))
+          : 10;
+
+        // Unpack multiple boxes from a single type row into individual array items
+        return Array.from({ length: row.boxesCount }).map(() => ({
+          weight: normalizeNumber(row.weight),
+          length,
+          width,
+          height,
+        }));
+      });
+
+      const payload = {
+        orderId,
+        shippingMethodId,
+        provider, // cheapcargo or dhl
+        parcels: formattedParcels, // Array sent downstream to your internal endpoint routing handler
+      };
+
+      const res = await fetch("/api/shipping/create-shipment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(
+          data.error || "Failed registration manifest data parameters",
+        );
+
+      showToast("success", "Carrier parcel entity registered successfully");
+      await fetchOrder();
+    } catch (err: any) {
+      showToast("error", err.message);
+    } finally {
+      setShippingLoading(true); // set true to lock fields or false to release
+      setShippingLoading(false);
+    }
+  };
+
+  /* const handleShip = async () => {
+    if (!shippingMethodId) {
+      showToast("error", "Please select a courier dispatch configuration");
+      return;
+    }
+
     try {
       setShippingLoading(true);
 
@@ -302,7 +429,7 @@ export default function OrderDetailPage() {
     } finally {
       setShippingLoading(false);
     }
-  };
+  }; */
 
   const handleConfirmBooking = async () => {
     if (!order?.shipment_id) {
@@ -425,7 +552,7 @@ export default function OrderDetailPage() {
   // const hasLabel = !!order.shipping_label;
 
   return (
-    <div className="page-wrapper ">
+    <div className="page-wrapper2 ">
       <div className="content space-y-6">
         {/* Dynamic Header Controls Bar */}
         <div className="flex items-center justify-between bg-white border p-4 rounded-xl shadow-sm">
@@ -610,111 +737,124 @@ export default function OrderDetailPage() {
               <span>Waybills & Freight Packaging Variables</span>
             </div>
 
-            {/* 🚀 INTEGRATED PACKAGING SELECTION MODULE DROP-DOWN */}
-            <div className="text-xs">
-              <label className="block text-gray-500 font-medium mb-1">
-                Select Active Box Variant from Stock Inventory Template
-              </label>
-              <select
-                value={selectedPackagingId}
-                onChange={(e) => handlePackagingChange(e.target.value)}
-                disabled={hasShipment}
-                className="w-full p-2 border rounded-lg focus:outline-none bg-white font-medium text-gray-700 disabled:bg-gray-50"
-              >
-                <option value="">
-                  -- Manual Dimension Configuration (No Template Chosen) --
-                </option>
-                {packagingOptions &&
-                  packagingOptions.map((box) => {
-                    // Parse string decimals smoothly to prevent rendering errors
-                    const l = Math.round(Number(box.length_cm || 0));
-                    const w = Math.round(Number(box.width_cm || 0));
-                    const h = Math.round(Number(box.height_cm || 0));
-                    const availableStock =
-                      box.quantity_available !== undefined
-                        ? box.quantity_available
-                        : 0;
+            {/* 🚀 MULTI-BOX LOGISTICS INPUT MATRIX */}
+            <div className="overflow-x-auto text-xs">
+              <table className="w-full border-collapse text-left bg-gray-50 rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-gray-100 border-b border-gray-200 text-gray-600 font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="p-3">Box Variant Template</th>
+                    <th className="p-3 w-28">Weight (kg)</th>
+                    <th className="p-3 w-28">Boxes Count</th>
+                    <th className="p-3 w-16 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {boxRows.map((row, index) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-gray-50/70 transition-colors"
+                    >
+                      {/* Dropdown Selection Column */}
+                      <td className="p-3">
+                        <select
+                          value={row.packagingTypeId}
+                          onChange={(e) =>
+                            updateBoxRow(
+                              index,
+                              "packagingTypeId",
+                              e.target.value,
+                            )
+                          }
+                          disabled={hasShipment}
+                          className="w-full p-2 border rounded-lg focus:outline-none bg-white font-medium text-gray-700 disabled:bg-gray-50"
+                        >
+                          <option value="">
+                            -- Manual Configuration (No Template Chosen) --
+                          </option>
+                          {packagingOptions &&
+                            packagingOptions.map((box) => {
+                              const l = Math.round(Number(box.length_cm || 0));
+                              const w = Math.round(Number(box.width_cm || 0));
+                              const h = Math.round(Number(box.height_cm || 0));
+                              const availableStock =
+                                box.quantity_available !== undefined
+                                  ? box.quantity_available
+                                  : 0;
+                              const targetValue =
+                                box.packaging_type_id || box.id;
 
-                    // Fallback target identifier validation
-                    const targetValue = box.packaging_type_id || box.id;
+                              return (
+                                <option
+                                  key={box.id || targetValue}
+                                  value={targetValue}
+                                >
+                                  {box.name || "Unnamed Variant"} (
+                                  {box.sku || "N/A"}) — {l}x{w}x{h} cm [Avail:{" "}
+                                  {availableStock}]
+                                </option>
+                              );
+                            })}
+                        </select>
+                      </td>
 
-                    return (
-                      <option key={box.id || targetValue} value={targetValue}>
-                        {box.name || "Unnamed Variant"} ({box.sku || "N/A"}) —{" "}
-                        {l}x{w}x{h} cm [Avail: {availableStock}]
-                      </option>
-                    );
-                  })}
-              </select>
-            </div>
+                      {/* Individual row unit weight input */}
+                      <td className="p-3">
+                        <input
+                          type="number"
+                          placeholder="0.0"
+                          value={row.weight}
+                          disabled={hasShipment}
+                          onChange={(e) =>
+                            updateBoxRow(index, "weight", e.target.value)
+                          }
+                          className="w-full p-2 border rounded-lg focus:outline-none disabled:bg-gray-50 font-medium"
+                        />
+                      </td>
 
-            {/* Dimensional Form Variables Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  value={shipping.weight}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, weight: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Length (cm)
-                </label>
-                <input
-                  type="number"
-                  value={shipping.length}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, length: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Width (cm)
-                </label>
-                <input
-                  type="number"
-                  value={shipping.width}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, width: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Height (cm)
-                </label>
-                <input
-                  type="number"
-                  value={shipping.height}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, height: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 font-medium mb-1">
-                  Boxes Count
-                </label>
-                <input
-                  type="number"
-                  value={shipping.boxes}
-                  onChange={(e) =>
-                    setShipping({ ...shipping, boxes: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-lg focus:outline-none"
-                />
-              </div>
+                      {/* Individual row package grouping allocation count */}
+                      <td className="p-3">
+                        <input
+                          type="number"
+                          min="1"
+                          value={row.boxesCount}
+                          disabled={hasShipment}
+                          onChange={(e) =>
+                            updateBoxRow(
+                              index,
+                              "boxesCount",
+                              parseInt(e.target.value) || 1,
+                            )
+                          }
+                          className="w-full p-2 border rounded-lg focus:outline-none disabled:bg-gray-50 font-medium"
+                        />
+                      </td>
+
+                      {/* Dynamic Row Evacuation Command Trigger */}
+                      <td className="p-3 text-center">
+                        <button
+                          type="button"
+                          disabled={boxRows.length === 1 || hasShipment}
+                          onClick={() => removeBoxRow(index)}
+                          className="text-red-500 hover:text-red-700 font-bold text-sm disabled:opacity-30 disabled:hover:text-red-500 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Append Row Option Action Trigger */}
+              {!hasShipment && boxRows.length < 3 && (
+                <button
+                  type="button"
+                  onClick={addBoxRow}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-blue-400 rounded-lg text-blue-600 hover:bg-blue-50 transition font-medium text-[11px]"
+                >
+                  + Add Box Type Variance Variant ({boxRows.length}/3)
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -753,11 +893,26 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Conditional Action Dispatch Interfaces */}
-            {!hasShipment && (
+            {/* {!hasShipment && (
               <button
                 onClick={handleShip}
                 disabled={
                   shippingLoading || !shipping.weight || !shipping.length
+                }
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white text-xs font-bold rounded-lg transition"
+              >
+                {shippingLoading
+                  ? "Creating Manifest..."
+                  : "Initialize Courier Waybill Package Instance"}
+              </button>
+            )} */}
+            {!hasShipment && (
+              <button
+                onClick={handleShip}
+                disabled={
+                  shippingLoading ||
+                  !shippingMethodId ||
+                  boxRows.some((row) => !row.weight || Number(row.weight) <= 0)
                 }
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white text-xs font-bold rounded-lg transition"
               >
@@ -841,18 +996,18 @@ export default function OrderDetailPage() {
             </div>
 
             {/* {order.tracking_number && ( */}
-              <div className="pt-4 border-t border-dashed mt-4 space-y-2 text-center bg-gray-50 rounded-lg p-3">
-                <span className="block text-xs font-mono font-bold text-gray-600 tracking-wider">
-                  TRACKING BARCODE: {order.tracking_number}
-                </span>
-                {order.shipping_label && (
-                  <img
-                    src={order.shipping_label}
-                    alt="Logistics Router Tracking Stamp Map"
-                    className="w-28 h-28 mx-auto border rounded-md shadow-inner bg-white mt-1"
-                  />
-                )}
-              </div>
+            <div className="pt-4 border-t border-dashed mt-4 space-y-2 text-center bg-gray-50 rounded-lg p-3">
+              <span className="block text-xs font-mono font-bold text-gray-600 tracking-wider">
+                TRACKING BARCODE: {order.tracking_number}
+              </span>
+              {order.shipping_label && (
+                <img
+                  src={order.shipping_label}
+                  alt="Logistics Router Tracking Stamp Map"
+                  className="w-28 h-28 mx-auto border rounded-md shadow-inner bg-white mt-1"
+                />
+              )}
+            </div>
             {/* )} */}
           </div>
         </div>
@@ -861,3 +1016,113 @@ export default function OrderDetailPage() {
   );
 }
 
+{
+  /* <div className="text-xs">
+              <label className="block text-gray-500 font-medium mb-1">
+                Select Active Box Variant from Stock Inventory Template
+              </label>
+              <select
+                value={selectedPackagingId}
+                onChange={(e) => handlePackagingChange(e.target.value)}
+                disabled={hasShipment}
+                className="w-full p-2 border rounded-lg focus:outline-none bg-white font-medium text-gray-700 disabled:bg-gray-50"
+              >
+                <option value="">
+                  -- Manual Dimension Configuration (No Template Chosen) --
+                </option>
+                {packagingOptions &&
+                  packagingOptions.map((box) => {
+                    // Parse string decimals smoothly to prevent rendering errors
+                    const l = Math.round(Number(box.length_cm || 0));
+                    const w = Math.round(Number(box.width_cm || 0));
+                    const h = Math.round(Number(box.height_cm || 0));
+                    const availableStock =
+                      box.quantity_available !== undefined
+                        ? box.quantity_available
+                        : 0;
+
+                    // Fallback target identifier validation
+                    const targetValue = box.packaging_type_id || box.id;
+
+                    return (
+                      <option key={box.id || targetValue} value={targetValue}>
+                        {box.name || "Unnamed Variant"} ({box.sku || "N/A"}) —{" "}
+                        {l}x{w}x{h} cm [Avail: {availableStock}]
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
+
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.weight}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, weight: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Boxes Count
+                </label>
+                <input
+                  type="number"
+                  value={shipping.boxes}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, boxes: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+            </div> */
+}
+
+{
+  /* <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Length (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.length}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, length: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Width (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.width}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, width: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Height (cm)
+                </label>
+                <input
+                  type="number"
+                  value={shipping.height}
+                  onChange={(e) =>
+                    setShipping({ ...shipping, height: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg focus:outline-none"
+                />
+              </div> */
+}

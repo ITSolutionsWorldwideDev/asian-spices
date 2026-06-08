@@ -22,7 +22,7 @@ export default async function EditAddonPage({
 
   if (!addon) {
     return (
-      <div className="page-wrapper p-6">
+      <div className="page-wrapper2 p-6">
         <div className="content max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-red-700">
             <h4 className="font-bold">Addon Element Missing</h4>
@@ -34,7 +34,7 @@ export default async function EditAddonPage({
   }
 
   return (
-    <div className="page-wrapper p-6">
+    <div className="page-wrapper2 p-6">
       <div className="content max-w-4xl mx-auto">
         <AddonForm addon={addon} />
       </div>
