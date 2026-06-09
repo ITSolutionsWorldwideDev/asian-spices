@@ -721,7 +721,7 @@ export default function OrderDetailPage() {
                     )}
                   </td>
                   <td className="p-4 text-right font-semibold text-gray-900">
-                    ${(Number(item.price) * item.quantity).toFixed(2)}
+                    €{(Number(item.price) * item.quantity).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -980,19 +980,19 @@ export default function OrderDetailPage() {
           <div className="bg-white border rounded-xl shadow-sm p-5 space-y-2.5 text-sm">
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
-              <span>${Number(order.subtotal).toFixed(2)}</span>
+              <span>€{Number(order.subtotal).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500">
               <span>Tax</span>
-              <span>${Number(order.tax_amount).toFixed(2)}</span>
+              <span>€{Number(order.tax_amount).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500 border-b pb-2">
               <span>Shipping Invoiced Fee</span>
-              <span>${Number(order.shipping_amount).toFixed(2)}</span>
+              <span>€{Number(order.shipping_amount).toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-gray-900 text-base pt-1">
               <span>Gross Total Amount</span>
-              <span>${total.toFixed(2)}</span>
+              <span>€{total.toFixed(2)}</span>
             </div>
 
             {/* {order.tracking_number && ( */}

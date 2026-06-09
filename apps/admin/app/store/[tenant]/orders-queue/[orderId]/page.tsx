@@ -38,6 +38,8 @@ type OrderDetail = {
   tax_amount: string | number;
   shipping_amount: string | number;
   customer_city: string;
+  customer_state: string;
+  customer_country: string;
   customer_postcode: string;
   tracking_number: string;
   shipping_label: string;
@@ -78,6 +80,8 @@ export default function OrderDetailPage() {
         const res = await fetch(`/api/orders-queue/${orderId}`);
         if (!res.ok) throw new Error("Order not found");
         const data = await res.json();
+
+        console.log('data.order === ',data.order);
         setOrder(data.order);
       } catch (err: any) {
         showToast("error", err.message || "Could not load order details");
@@ -268,7 +272,7 @@ export default function OrderDetailPage() {
               <User size={16} />
               <h4 className="font-bold text-xs uppercase tracking-wider text-gray-400">Target Shipping Region</h4>
             </div>
-            <p className="text-sm text-gray-800 font-medium">City Location: {order.customer_city}</p>
+            <p className="text-sm text-gray-800 font-medium">City Location: {order.customer_city}, {order.customer_state}, {order.customer_country}</p>
             <p className="text-sm text-gray-800 font-medium">Postal Address Area: {order.customer_postcode}</p>
           </div>
 

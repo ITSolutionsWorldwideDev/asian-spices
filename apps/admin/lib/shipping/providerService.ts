@@ -21,7 +21,7 @@ export async function getProviderCredentials(slug: string) {
     [slug],
   ); //  AND p.is_active = true
 
-  console.log('shipping/providerService.ts  xyz === ',slug);
+  // console.log('shipping/providerService.ts  xyz === ',slug);
 
 
   /* 

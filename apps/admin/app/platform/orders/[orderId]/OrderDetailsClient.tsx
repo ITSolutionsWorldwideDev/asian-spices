@@ -115,7 +115,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
             />
 
             <SmartActionButton
-              label="Cancel"
+              label="Cancel Order"
               onClick={() => action("cancel")}
               disabled={actionState.cancel.disabled}
               reason={actionState.cancel.reason}
@@ -150,17 +150,17 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
         {/* 🔥 ORDER SUMMARY */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-4 rounded shadow">
-            <p className="text-sm text-gray-500">Status</p>
+            <h3 className="font-semibold mb-2">Status</h3>
             <p className="font-semibold">{order?.order_status}</p>
           </div>
 
           <div className="bg-white p-4 rounded shadow">
-            <p className="text-sm text-gray-500">Store</p>
+            <h3 className="font-semibold mb-2">Store</h3>
             <p className="font-semibold">{order?.store_name || "-"}</p>
           </div>
 
           <div className="bg-white p-4 rounded shadow">
-            <p className="text-sm text-gray-500">Rejections</p>
+            <h3 className="font-semibold mb-2">Rejections</h3>
             <p className="font-semibold">{order?.rejection_count}</p>
           </div>
         </div>
@@ -169,17 +169,18 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-white p-4 rounded shadow">
             <h3 className="font-semibold mb-2">Customer</h3>
-            <p>{order.customer_name}</p>
-            <p className="text-sm text-gray-500">{order.email}</p>
-            <p className="text-sm text-gray-500">{order.phone}</p>
+            <span className="text-sm text-gray-500 flex">{order.customer_name}</span>
+            <span className="text-sm text-gray-500 flex">{order.email}</span>
+            <span className="text-sm text-gray-500 flex">{order.phone}</span>
           </div>
 
           <div className="bg-white p-4 rounded shadow">
             <h3 className="font-semibold mb-2">Shipping Address</h3>
-            <p>{order.address_line1}</p>
-            <p>
-              {order.city}, {order.country}
-            </p>
+            <span className="text-sm text-gray-500 flex">{order.shipping_address_line1}</span>
+            <span className="text-sm text-gray-500 flex">{order.shipping_address_line2}</span>
+            <span className="text-sm text-gray-500 flex">
+              {order.shipping_postal_code}, {order.shipping_city}, {order.shipping_state}, {order.shipping_country}
+            </span>
           </div>
         </div>
 

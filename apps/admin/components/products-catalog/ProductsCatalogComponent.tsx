@@ -314,7 +314,7 @@ export default function ProductsCatalogComponent() {
           )}
 
           <span className="text-xs text-gray-500 mt-2">
-            Base: ${record.base_price}
+            Base: €{record.base_price}
           </span>
         </div>
       ),
@@ -515,7 +515,7 @@ export default function ProductsCatalogComponent() {
                       <div className="flex justify-between text-sm">
                         <span>Price:</span>
                         <strong>
-                          ${Number(productDetail.price).toFixed(2)}
+                          €{Number(productDetail.price).toFixed(2)}
                         </strong>
                       </div>
 
