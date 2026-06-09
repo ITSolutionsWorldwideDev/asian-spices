@@ -60,7 +60,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
 
   private getPasswordHash() {
     // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
-    const timestamp = this.getStandardizedTimestamp(true);
+    // const timestamp = this.getStandardizedTimestamp(true);
     return md5(this.creds.password);
   }
 

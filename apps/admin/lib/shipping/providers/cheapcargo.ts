@@ -4,8 +4,8 @@ import crypto from "crypto";
 import { withRetry } from "@/lib/utils/retry";
 import md5 from "md5";
 
-// const BASE_URL = "https://www.cheapcargo-demo.nl/api/rateRequest";
-const BASE_URL = "https://www.cheapcargo.com/api/rateRequest";
+const BASE_URL = "https://www.cheapcargo-demo.nl/api/rateRequest";
+// const BASE_URL = "https://www.cheapcargo.com/api/rateRequest";
 
 type Credentials = {
   apiKey: string;
@@ -70,7 +70,7 @@ export async function testCheapCargoConnection(creds: Credentials) {
     console.log("creds.apiKey === ", creds.apiKey);
 
     const authentication = getAuthenticationToken(creds.apiKey);
-    const passwordHash = getPasswordHash(creds.apiKey);//"34dbe7e451f2d0b166a292ce0021599d"; // 
+    const passwordHash =  getPasswordHash(creds.password.trim()); //"34dbe7e451f2d0b166a292ce0021599d"; //
 
     console.log("authentication === ", authentication);
     console.log("creds.email === ", creds.email);
