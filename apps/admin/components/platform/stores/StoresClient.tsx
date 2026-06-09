@@ -15,6 +15,8 @@ export default function StoresClient({ stores, total, page, pageSize }: any) {
   const [optimisticStores, updateOptimistic] = useOptimistic(
     stores,
     (state, action: any) => {
+
+      console.log('action === ',action);
       if (action.type === "delete") {
         return state.filter((s: any) => s.id !== action.id);
       }
@@ -23,6 +25,7 @@ export default function StoresClient({ stores, total, page, pageSize }: any) {
           s.id === action.id ? { ...s, status: action.status } : s,
         );
       }
+      console.log('state === ',state);
       return state;
     },
   );
@@ -69,14 +72,14 @@ export default function StoresClient({ stores, total, page, pageSize }: any) {
               key={store.id}
               store={store}
               onDelete={async () => {
-                updateOptimistic({ type: "delete", id: store.id });
                 await deleteStore(store.id);
+                updateOptimistic({ type: "delete", id: store.id });
               }}
               onToggleStatus={async () => {
                 const status =
                   store.status === "active" ? "suspended" : "active";
+                  await setStoreStatus(store.id, status);
                 updateOptimistic({ type: "status", id: store.id, status });
-                await setStoreStatus(store.id, status);
               }}
             />
           ))}

@@ -16,6 +16,7 @@ export default async function EditProviderPage({
 
   const { rows } = await pool.query(
     `SELECT slug FROM shipping_providers WHERE id = $1`,
+    // `SELECT slug FROM shipping_provider_configs WHEREprovider_id = $1`,
     [providerId]
   );
 
@@ -28,7 +29,7 @@ export default async function EditProviderPage({
   // ✅ Use service (includes decrypted credentials)
   const provider = await getProviderCredentials(slug);
 
-  // console.log('provider ==== ',provider);
+  console.log('provider ==== ',provider);
 
   return (
     <div className="page-wrapper">

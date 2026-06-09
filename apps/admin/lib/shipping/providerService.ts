@@ -16,6 +16,7 @@ export async function getProviderCredentials(slug: string) {
     LEFT JOIN shipping_provider_configs c
       ON c.provider_id = p.id AND c.store_id IS NULL
     WHERE p.slug = $1 and c.is_active = true
+    ORDER BY c.created_at DESC
     LIMIT 1
     `,
     [slug],
@@ -45,16 +46,26 @@ export async function getProviderCredentials(slug: string) {
   const row = rows[0];
   const credentials: Record<string, string> = {};
 
-  // if (row.metadata) {
   if (row.extra && typeof row.extra === "object") {
     for (const key of Object.keys(row.extra)) {
       try {
-        credentials[key] = decrypt(row.extra[key]);
+        credentials[key] = row.extra[key];
       } catch (e) {
         credentials[key] = ""; // Keep things from crashing if decrypt fails
       }
     }
   }
+
+  // if (row.metadata) {
+  // if (row.extra && typeof row.extra === "object") {
+  //   for (const key of Object.keys(row.extra)) {
+  //     try {
+  //       credentials[key] = decrypt(row.extra[key]);
+  //     } catch (e) {
+  //       credentials[key] = ""; // Keep things from crashing if decrypt fails
+  //     }
+  //   }
+  // }
 
   return {
     id: row.id,

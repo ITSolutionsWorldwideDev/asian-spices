@@ -23,6 +23,8 @@ export default function StoreCard({
   onDelete: () => void;
   onToggleStatus: () => void;
 }) {
+
+  console.log('store === ',store)
   return (
     <div className="bg-white rounded-lg shadow-sm border p-4 flex flex-col justify-between">
       <div>

@@ -39,6 +39,8 @@ export async function updateStore(
 export async function deleteStore(storeId: string) {
   const user = await requirePlatformAdmin();
 
+  console.log('deleteStore ');
+
   await pool.query(`DELETE FROM stores WHERE id = $1`, [storeId]);
 
   await logAudit({
