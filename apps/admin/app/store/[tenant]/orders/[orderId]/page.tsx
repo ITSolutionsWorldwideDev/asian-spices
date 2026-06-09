@@ -165,7 +165,13 @@ export default function OrderDetailPage() {
         }));
       }
 
+      console.log("data.order ==== ", data.order);
+
       setOrder(data.order);
+
+      if (data.order?.shipping_provider) {
+        setShippingMethodId(data.order.shipping_provider);
+      }
     } catch (err) {
       showToast("error", "Failed to resolve active order entity fields");
     } finally {
@@ -871,7 +877,8 @@ export default function OrderDetailPage() {
                   <option value="dhl">DHL Priority Express</option>
                 </select>
               </div>
-              <div>
+
+              {/* <div>
                 <label className="block text-gray-500 font-medium mb-1">
                   Active Rate Method Node
                 </label>
@@ -888,6 +895,31 @@ export default function OrderDetailPage() {
                       {m.name}
                     </option>
                   ))}
+                </select>
+              </div> */}
+
+              <div>
+                <label className="block text-gray-500 font-medium mb-1">
+                  Active Rate Method Node
+                </label>
+                <select
+                  value={shippingMethodId}
+                  onChange={(e) => setShippingMethodId(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:outline-none bg-white text-gray-800"
+                >
+                  <option value="">
+                    Select Shipping Courier Pipeline Target...
+                  </option>
+                  {methods.map((m: any) => {
+                    // 🚀 Match safely against name or internal rate identifiers
+                    const elementValue = m.name || m.id;
+                    return (
+                      <option key={m.id} value={elementValue}>
+                        {m.name}{" "}
+                        {m.rate ? `(€${Number(m.rate).toFixed(2)})` : ""}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>

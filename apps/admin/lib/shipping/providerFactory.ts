@@ -7,16 +7,11 @@ import { ShippingAdapter } from "./types";
 
 export async function getShippingProvider(
   slug: string,
-  storeId?: string
+  storeId?: string,
 ): Promise<ShippingAdapter> {
   const provider = await getProviderCredentials(slug);
 
-  const credentials = await resolveProviderCredentials(
-    provider.id,
-    storeId
-  );
-
-  console.log("credentials ==== ", credentials);
+  const credentials = await resolveProviderCredentials(provider.id, storeId);
 
   // Determine sandbox status using a platform env var or parsing database flags
   // const isSandbox = process.env.NEXT_PUBLIC_APP_ENV !== "production" || credentials.mode === "sandbox";
@@ -35,58 +30,3 @@ export async function getShippingProvider(
       throw new Error(`Unsupported provider: ${slug}`);
   }
 }
-
-// export async function getShippingProvider2(slug: string) {
-//   const provider = await getProviderCredentials(slug);
-
-//   switch (provider.slug) {
-//     case "cheapcargo":
-//       return {
-//         createShipment: async () => {
-//           throw new Error("Use new rateRequest flow only");
-//         },
-//         getRates: async () => {
-//           throw new Error("Use new rateRequest flow only");
-//         },
-//         generateLabel: async () => {
-//           throw new Error("Not supported in current API");
-//         },
-//       };
-
-//     default:
-//       throw new Error(`Unsupported provider: ${slug}`);
-//   }
-// }
-
-// export async function getShippingProvider(
-//   slug: string
-// ): Promise<ShippingAdapter> {
-//   const provider = await getProviderCredentials(slug);
-
-//   switch (provider.slug) {
-//     case "cheapcargo":
-//       return new CheapCargoAdapter(provider.credentials as any);
-
-//     // future:
-//     // case "dhl":
-//     //   return new DHLAdapter(provider.credentials);
-
-//     default:
-//       throw new Error(`Unsupported provider: ${slug}`);
-//   }
-// }
-
-/* import { CheapCargoAdapter } from "./adapters/CheapCargoAdapter";
-
-export function getShippingProvider(
-  slug: string,
-  config: any
-) {
-  switch (slug) {
-    case "cheapcargo":
-      return new CheapCargoAdapter(config);
-
-    default:
-      throw new Error(`Unsupported provider: ${slug}`);
-  }
-} */

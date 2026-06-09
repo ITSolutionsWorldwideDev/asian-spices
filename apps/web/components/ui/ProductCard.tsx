@@ -44,6 +44,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ products }: ProductCardProps) {
+
   const { selectedCategories } = useCategoryFilterStore();
   const { symbol, selectedCurrency, rate } = useCurrencyStore();
 
@@ -82,19 +83,18 @@ export default function ProductCard({ products }: ProductCardProps) {
               key={`${product.id}-${index}`}
               className="bg-white rounded-2xl shadow hover:shadow-2xl transition p-4 relative hover:scale-105"
             >
-              {/* Tags */}
               {product.tag && (
                 <span className="absolute top-1/11 left-1/11 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
                   {product.tag}
                 </span>
               )}
 
-              {product.discount_value && (
+              {/* {product.discount_value && (
                 <span className="absolute top-1/6 left-1/11 bg-red-500 font-bold text-white text-xs px-2 py-1 rounded-full flex items-center">
                   <GoTag className="mr-2" />
                   {product.discount_value} % OFF
                 </span>
-              )}
+              )} */}
 
               {/* Like button */}
               <button
@@ -111,25 +111,15 @@ export default function ProductCard({ products }: ProductCardProps) {
                     isLoggedIn,
                   )
                 }
-                // onClick={() => {
-                //   toggleWishlist(product);
-                //   isInWishlist(product.id);
-                // }}
-                className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
+                className="absolute top-4 right-4 bg-white rounded-full p-2 shadow transition hover:scale-110 z-10"
+
+                // className="absolute top-1/11 right-1/11 bg-white rounded-full p-2 shadow transition hover:scale-110"
               >
                 <Heart
                   className={`w-5 h-5  transition ${mounted && isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-500 "}`}
                 />
               </button>
 
-              {/* Product left in stock */}
-              {/* {product.quantity && (
-                <span className="absolute bottom-[45%] right-1/11 bg-white text-black text-xs px-2 py-1 rounded-full flex items-center">
-                  Only {product.quantity} Left!
-                </span>
-              )} */}
-
-              {/* Image */}
 
               <Image
                 src={
@@ -148,7 +138,7 @@ export default function ProductCard({ products }: ProductCardProps) {
               <span className="text-gray-400 ml-1">({product.reviews})</span>
             </div> */}
 
-              {/* Title */}
+
               <Link
                 href={`/${product.category_slug || "spices"}/${product.slug}`.replace(
                   /\/+/g,
@@ -162,20 +152,15 @@ export default function ProductCard({ products }: ProductCardProps) {
                   {product.description?.split(" ").slice(0, 3).join(" ")}...
                 </span>
               </Link>
-              {/* Price */}
+          
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-orange-400 font-bold text-xl">
                   {symbol}
                   {Number(product.price * rate).toFixed(2)}
                 </span>
-                {/* {product.oldPrice && (
-                <span className="line-through text-gray-400 text-sm">
-                  ${product.oldPrice}
-                </span>
-              )} */}
               </div>
 
-              {/* Button */}
+        
               {cartItem ? (
                 <div className="mt-4 flex items-center justify-between border rounded-lg overflow-hidden">
                   <button

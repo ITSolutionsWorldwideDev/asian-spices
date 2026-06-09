@@ -76,6 +76,30 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
   };
 
   useEffect(() => {
+    if (loading || !hasMore) return; // Don't track if we are already fetching or done
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          fetchMore();
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when even a small piece of the loader div is exposed
+        rootMargin: "100px", // Pre-fetch slightly before user reaches the absolute bottom
+      },
+    );
+
+    const el = observerRef.current;
+    if (el) observer.observe(el);
+
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [loading, hasMore, page, filters]); // 🚀 Added dependencies
+
+  /* useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -96,7 +120,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     return () => {
       if (el) observer.unobserve(el);
     };
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore, page]); */
 
   useEffect(() => {
     setProducts(initialProducts);

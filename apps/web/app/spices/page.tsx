@@ -24,6 +24,7 @@ interface PageProps {
     max?: string;
     search?: string;
     page?: string;
+    sort?: string; // 🚀 Added
   }>;
 }
 
@@ -49,7 +50,18 @@ export default async function SpicesPage({ searchParams }: PageProps) {
       .filter((v) => v !== "" && v !== "null" && v !== "undefined");
   };
 
-  const filters: Filters = {
+  const filters: Filters & { sort: string } = {
+    category: "spices",
+    subcategories: cleanArray(params.subcategories),
+    brands: cleanArray(params.brands),
+    minPrice: params.min,
+    maxPrice: params.max,
+    search: params.search,
+    sort: params.sort || "newest", // 🚀 Forwarded to InfiniteProducts
+    page: Number(params.page || 1),
+  };
+
+  /* const filters: Filters = {
     category: "spices",
     subcategories: cleanArray(params.subcategories),
     brands: cleanArray(params.brands),
@@ -57,7 +69,7 @@ export default async function SpicesPage({ searchParams }: PageProps) {
     maxPrice: params.max,
     search: params.search,
     page: Number(params.page || 1),
-  };
+  }; */
 
   const subcategories = await getSubcategories("spices");
   const brands = await getBrands();

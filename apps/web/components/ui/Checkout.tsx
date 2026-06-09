@@ -69,8 +69,6 @@ export default function Checkout() {
     any[]
   >([]);
 
-  // const [shippingMethod, setShippingMethod] =
-  //   useState<ShippingMethod>("standard");
 
   const [formData, setFormData] = useState<CheckoutData>({
     email: "",
@@ -271,7 +269,8 @@ export default function Checkout() {
             shipping: convertedTotals.shipping,
             total: convertedTotals.total,
           },
-          shippingMethod,
+          // shippingMethod,
+          shippingMethod: selectedOption ? selectedOption.name : "Standard Delivery",
           payment_status: "pending",
           order_status: "pending",
         }),

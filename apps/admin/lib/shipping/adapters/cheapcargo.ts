@@ -20,11 +20,10 @@ export class CheapCargoAdapter implements ShippingAdapter {
   private baseUrl: string;
 
   constructor(private creds: Credentials) {
+    console.log("creds ==== ", creds);
 
-    console.log('creds ==== ',creds);
-    
-    this.baseUrl = creds.sandbox 
-      ? "https://www.cheapcargo-demo.nl/api" 
+    this.baseUrl = creds.sandbox
+      ? "https://www.cheapcargo-demo.nl/api"
       : "https://www.cheapcargo.com/api";
   }
   /**
@@ -64,7 +63,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 RATE REQUEST
   // ======================================================
   async getRates(input: ShipmentInput): Promise<any> {
-
     const parcelList = Array.isArray(input.parcels) ? input.parcels : [];
 
     const payload = {
@@ -185,7 +183,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
                 height: Number(parcel.height || 10),
                 value: Math.round(150 / Math.max(1, parcelList.length)), // Safely split total custom declared value
                 package: "PACKAGE",
-                quantity: 1, 
+                quantity: 1,
               })),
               // colli: [
               //   {
@@ -211,11 +209,10 @@ export class CheapCargoAdapter implements ShippingAdapter {
       JSON.stringify(payload, null, 2),
     );
 
-    console.log("createShipment API payload === ", payload);
-    console.log(
-      "createShipment API payload shipments === ",
-      payload?.shipments?.shipment,
-    );
+    // console.log(
+    //   "createShipment API payload shipments === ",
+    //   payload?.shipments?.shipment,
+    // );
     console.log(
       "createShipment sender zipcode === ",
       payload?.shipments?.shipment[0]?.sender.zipcode,
@@ -224,47 +221,90 @@ export class CheapCargoAdapter implements ShippingAdapter {
       "createShipment receiver zipcode === ",
       payload?.shipments?.shipment[0]?.receiver.zipcode,
     );
-    console.log("createShipment API URL === ", `${this.baseUrl}/createShipment`);
+    console.log(
+      "createShipment API URL === ",
+      `${this.baseUrl}/createShipment`,
+    );
 
-    const res = await fetch(`${this.baseUrl}/createShipment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(`${this.baseUrl}/createShipment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          // 🚀 Inject standard User-Agent so Nginx doesn't classify Next.js fetch as a suspicious bot script
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 AcmeShippingApp/1.0",
+        },
+        // headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await res.json();
+      // 🚀 DEFENSIVE CHECK: If response is not OK (e.g. 400, 500 HTML error), capture text instead of crashing JSON parser
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`CheapCargo HTTP Error (${res.status}):`, errorText);
+        throw new Error(
+          `CheapCargo gateway returned HTTP status ${res.status}. Check your server log output.`,
+        );
+      }
 
-    console.log("shipment data === ", data);
-    console.log("shipment data.shipment === ", data.shipment);
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const textData = await res.text();
+        console.error(
+          "Expected JSON but received raw response content:",
+          textData,
+        );
+        throw new Error(
+          "CheapCargo API did not return valid JSON. See logs for HTML error context.",
+        );
+      }
 
-    if (data?.shipment?.status !== "ok") {
-      console.log("shipment data.shipment?.error === ", data.shipment?.error);
-      console.error("CheapCargo error:", data);
-      throw new Error("CheapCargo shipment failed");
+      const data = await res.json();
+
+      console.log("shipment data === ", data);
+      console.log("shipment data.shipment === ", data.shipment);
+
+      if (data?.shipment?.status !== "ok") {
+        console.log("shipment data.shipment?.error === ", data.shipment?.error);
+        console.error("CheapCargo error:", data);
+        throw new Error("CheapCargo shipment failed");
+      }
+      console.log("shipment data.shipment?.order === ", data.shipment?.order);
+
+      const order = data?.shipment?.order?.[0];
+
+      if (!order) {
+        console.error("Invalid CheapCargo response:", data);
+        throw new Error("Invalid CheapCargo response");
+      }
+
+      const externalId = order.number;
+      const trackingNumber = order.details?.awb || undefined;
+      const trackingUrl = order.details?.trackAndTrace || undefined;
+
+      console.log("externalId === ", externalId);
+      console.log("trackingNumber === ", trackingNumber);
+      console.log("trackingUrl === ", trackingUrl);
+
+      return {
+        externalId: externalId,
+        trackingNumber: trackingNumber,
+        trackingUrl: trackingUrl,
+        labelUrl: undefined,
+        raw: data,
+      };
+    } catch (error: any) {
+      console.log("createShipment api error =======  ", error);
     }
-    console.log("shipment data.shipment?.order === ", data.shipment?.order);
-
-    const order = data?.shipment?.order?.[0];
-
-    if (!order) {
-      console.error("Invalid CheapCargo response:", data);
-      throw new Error("Invalid CheapCargo response");
-    }
-
-    const externalId = order.number;
-    const trackingNumber = order.details?.awb || undefined;
-    const trackingUrl = order.details?.trackAndTrace || undefined;
-
-    console.log("externalId === ", externalId);
-    console.log("trackingNumber === ", trackingNumber);
-    console.log("trackingUrl === ", trackingUrl);
 
     return {
-      externalId: externalId,
-      trackingNumber: trackingNumber,
-      trackingUrl: trackingUrl,
+      externalId: "",
+      trackingNumber: "",
+      trackingUrl: "",
       labelUrl: undefined,
-      raw: data,
+      raw: "",
     };
   }
 

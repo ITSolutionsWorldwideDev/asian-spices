@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
     const store = await getCurrentStoreAPI(req);
     const storeId = store.id;
 
-    const { orderId, shippingMethodId, packagingTypeId, parcels } = await req.json();
+    const { orderId, shippingMethodId, packagingTypeId, parcels } =
+      await req.json();
 
     if (!orderId || !shippingMethodId) {
       return NextResponse.json(
@@ -73,13 +74,11 @@ export async function POST(req: NextRequest) {
     );
 
     const method = methodRes.rows[0];
-    
+
     if (!method) throw new Error("Shipping method not found");
     if (!method.provider_id) throw new Error("This method is not API-based");
 
-    // console.log('validateShipmentRequest order ==== ',order);
-    console.log('validateShipmentRequest method ==== ',method);
-    console.log('validateShipmentRequest parcels ==== ',parcels);
+    console.log("validateShipmentRequest parcels ==== ", parcels);
 
     // -----------------------------
     // Validate request (NEW)
@@ -94,8 +93,6 @@ export async function POST(req: NextRequest) {
     // 🧠 Resolve provider + credentials
     // -----------------------------
     const provider = await getShippingProvider(method.slug, storeId);
-
-    console.log("provider ==== ", provider);
 
     if (!provider?.createShipment) {
       throw new Error("Shipping provider not implemented");
@@ -131,7 +128,7 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 📦 Build shipment input
     // -----------------------------
-    const shipmentInput = {
+    /* const shipmentInput = {
       orderId: order.id,
       to: {
         email: order.customer_email,
@@ -153,10 +150,90 @@ export async function POST(req: NextRequest) {
         currency_code: store_addressRes.currency_code,
       },
       parcels,
+    }; */
+
+    const shipmentInput = {
+      orderId: order.id,
+      to: {
+        email: order.customer_email,
+        street: order.shipping_address_line1 || order.customer_city,
+        number: order.shipping_address_line2 || "",
+        city: order.shipping_city || order.customer_city,
+        postal_code: "1000AA",
+        country: order.shipping_country || "NL",
+      },
+      from: {
+        name: order.name,
+        street: store_addressRes.address_line1,
+        number: store_addressRes.address_line2 || "",
+        city: store_addressRes.city,
+        postal_code: "2000BB",
+        country: store_addressRes.country,
+        email: store_addressRes.store_email,
+        phone: store_addressRes.store_phone,
+        currency_code: store_addressRes.currency_code,
+      },
+      parcels,
     };
 
-    console.log('shipmentInput ==== ',shipmentInput);
-
+    /* const shipmentInput = {
+      shipments: {
+        authentication: "317ad2da332f65569b172c77b9565bda",
+        version: "2.1",
+        user: {
+          email: "user@example.com",
+          password: "51f740668efd21ab9ec1d0d382d9746e",
+        },
+        shipment: [
+          {
+            "@pay": false,
+            "@waitForLabel": false,
+            "@id": "E-1887",
+            "@orderBy": "price",
+            sender: {
+              companyName: "My Company",
+              contactPerson: "John Sender",
+              street: "Hoofdstraat",
+              number: "123",
+              zipcode: "1000AA",
+              city: "Amsterdam",
+              country: "NL",
+              phone: "+31612345678",
+              email: "sender@example.com",
+              type: "business",
+            },
+            receiver: {
+              companyName: "Customer Corp",
+              contactPerson: "Jane Receiver",
+              street: "Kerkstraat",
+              number: "456",
+              zipcode: "2000BB",
+              city: "Rotterdam",
+              country: "NL",
+              phone: "+31687654321",
+              email: "receiver@example.com",
+              type: "business",
+            },
+            content: {
+              colli: [
+                {
+                  description: "Electronics package",
+                  weight: 2.5,
+                  length: 30,
+                  width: 20,
+                  height: 15,
+                  value: 150,
+                  package: "PACKAGE",
+                  quantity: 1,
+                },
+              ],
+            },
+            reference: "ORDER-2026-001",
+          },
+        ],
+      },
+    };
+ */
     // -----------------------------
     // 🚀 Create shipment
     // -----------------------------
@@ -219,7 +296,6 @@ export async function POST(req: NextRequest) {
       shipmentResult.raw?.shipment?.order?.[0]?.details?.status === "booked";
 
     if (isBooked) {
-
       const orderData = shipmentResult.raw?.shipment?.order?.[0];
       const details = orderData?.details;
       const shippingStatus = details?.status || "new";
@@ -249,7 +325,7 @@ export async function POST(req: NextRequest) {
       // Decrement the store packaging inventory if a fixed template was used
       if (packagingTypeId) {
         const totalBoxesUsed = parseInt(parcels.boxes, 10) || 1;
-        
+
         const inventoryUpdateRes = await client.query(
           `
           UPDATE store_packaging_inventory
@@ -257,7 +333,7 @@ export async function POST(req: NextRequest) {
               updated_at = NOW()
           WHERE store_id = $2 AND (packaging_type_id = $3 OR id = $3)
           `,
-          [totalBoxesUsed, storeId, packagingTypeId]
+          [totalBoxesUsed, storeId, packagingTypeId],
         );
 
         if (inventoryUpdateRes.rowCount === 0) {
@@ -268,7 +344,7 @@ export async function POST(req: NextRequest) {
             VALUES ($1, $2, 0, 10)
             ON CONFLICT (store_id, packaging_type_id) DO NOTHING
             `,
-            [storeId, packagingTypeId]
+            [storeId, packagingTypeId],
           );
         }
       }
@@ -293,4 +369,3 @@ export async function POST(req: NextRequest) {
     client.release();
   }
 }
-
