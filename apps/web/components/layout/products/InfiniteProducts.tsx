@@ -17,6 +17,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
   const observerRef = useRef<HTMLDivElement | null>(null);
 
+  const isFetchingRef = useRef(false);
   const limit = 12;
 
   const buildParams = (filters: any, page: number) => {
@@ -40,8 +41,9 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
   };
 
   const fetchMore = async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || isFetchingRef.current) return;
 
+    isFetchingRef.current = true;
     setLoading(true);
 
     try {
@@ -54,50 +56,67 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
 
       const newProducts = data.data || [];
 
+      if (newProducts.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
       setProducts((prev: any) => {
         const map = new Map();
 
         [...prev, ...newProducts].forEach((p) => {
-          map.set(p.id, p); // ensures unique by id
+          if (p && p.id) map.set(p.id, p);
         });
+
+        // [...prev, ...newProducts].forEach((p) => {
+        //   map.set(p.id, p); // ensures unique by id
+        // });
 
         return Array.from(map.values());
       });
 
       if (newProducts.length < limit) {
         setHasMore(false);
+      } else {
+        setPage((prev) => prev + 1);
       }
 
-      setPage((prev) => prev + 1);
+      // setPage((prev) => prev + 1);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
       hide();
     }
   };
 
   useEffect(() => {
-    if (loading || !hasMore) return; // Don't track if we are already fetching or done
+    const currentTarget = observerRef.current;
+    if (!currentTarget) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (entry?.isIntersecting) {
+        if (!entry) return;
+
+        // Only fetch when element enters the viewport and we aren't currently loading items
+        if (entry.isIntersecting && !isFetchingRef.current && hasMore) {
           fetchMore();
         }
       },
       {
-        threshold: 0.1, // Trigger when even a small piece of the loader div is exposed
-        rootMargin: "100px", // Pre-fetch slightly before user reaches the absolute bottom
+        threshold: 0.1, // Triggers as soon as 10% of the target element is visible
+        rootMargin: "50px", // Start pre-fetching 50px before touching the container absolute bottom
       },
     );
 
-    const el = observerRef.current;
-    if (el) observer.observe(el);
+    observer.observe(currentTarget);
 
     return () => {
-      if (el) observer.unobserve(el);
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
     };
-  }, [loading, hasMore, page, filters]); // 🚀 Added dependencies
+  }, [page, hasMore, filters, loading]);
 
   /* useEffect(() => {
     const observer = new IntersectionObserver(
@@ -122,10 +141,17 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
     };
   }, [loading, hasMore, page]); */
 
+  // useEffect(() => {
+  //   setProducts(initialProducts);
+  //   setPage(2);
+  //   setHasMore(true);
+  // }, [initialProducts]);
+
   useEffect(() => {
-    setProducts(initialProducts);
+    setProducts(initialProducts || []);
     setPage(2);
     setHasMore(true);
+    isFetchingRef.current = false;
   }, [initialProducts]);
 
   return (
