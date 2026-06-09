@@ -16,6 +16,8 @@ export async function getShippingProvider(
     storeId
   );
 
+  console.log("credentials ==== ", credentials);
+
   // Determine sandbox status using a platform env var or parsing database flags
   // const isSandbox = process.env.NEXT_PUBLIC_APP_ENV !== "production" || credentials.mode === "sandbox";
   const isSandbox = true;

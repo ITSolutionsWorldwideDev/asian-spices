@@ -19,15 +19,9 @@ export async function createShipmentForOrder(
       postalCode: order.customer_postcode,
     },
     from: order.store_address, // adjust
-    parcel: order.shippingInput, // from UI
+    // parcels: order.shippingInput, // from UI
+    parcels: order.parcels,
   });
-
-  // const shipment = await provider.createShipment({
-  //   orderId: order.id,
-  //   to: order.shippingAddress,
-  //   from: order.storeAddress,
-  //   parcel: order.items,
-  // });
 
   if (!shipment?.externalId) {
     throw new Error("Shipment creation failed: missing externalId");
@@ -49,25 +43,3 @@ export async function createShipmentForOrder(
     label,
   };
 }
-
-/* import { getShippingProvider } from "./providerFactory";
-
-export async function createShipmentForOrder(order: any, providerSlug: string) {
-  const provider = await getShippingProvider(providerSlug);
-
-  const shipment = await provider.createShipment(order);
-
-  if (!shipment?.id) {
-    throw new Error("Shipment creation failed: missing ID");
-  }
-
-  let label = null;
-  try {
-    label = await provider.generateLabel(shipment.id);
-  } catch (err) {
-    console.warn("Label generation failed", err);
-  }
-
-  return { shipment, label };
-}
- */

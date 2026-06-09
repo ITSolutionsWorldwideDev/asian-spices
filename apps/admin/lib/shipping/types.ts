@@ -15,7 +15,7 @@ export interface ShipmentInput {
   orderId: string;
   to: any;
   from: any;
-  parcel: any;
+  parcels: any;
 }
 
 export interface ShipmentResult {

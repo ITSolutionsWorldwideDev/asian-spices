@@ -16,15 +16,13 @@ type Credentials = {
   sandbox?: boolean;
 };
 
-// const BASE_URL = "https://www.cheapcargo.com/api";
-// switch to demo if needed:
-// const BASE_URL = "https://www.cheapcargo-demo.nl/api";
-// export class CheapCargoAdapter implements ShippingAdapter {
 export class CheapCargoAdapter implements ShippingAdapter {
   private baseUrl: string;
 
   constructor(private creds: Credentials) {
-    // 🔥 Dynamically evaluate endpoint destination based on context flag
+
+    console.log('creds ==== ',creds);
+    
     this.baseUrl = creds.sandbox 
       ? "https://www.cheapcargo-demo.nl/api" 
       : "https://www.cheapcargo.com/api";
@@ -59,8 +57,6 @@ export class CheapCargoAdapter implements ShippingAdapter {
   }
 
   private getPasswordHash() {
-    // FIX: Aligned explicitly to local timestamp blocks to prevent multi-hour shifting blocks
-    // const timestamp = this.getStandardizedTimestamp(true);
     return md5(this.creds.password);
   }
 
@@ -68,6 +64,9 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // 🔹 RATE REQUEST
   // ======================================================
   async getRates(input: ShipmentInput): Promise<any> {
+
+    const parcelList = Array.isArray(input.parcels) ? input.parcels : [];
+
     const payload = {
       shipments: {
         authentication: this.getAuthenticationToken(),
@@ -92,18 +91,28 @@ export class CheapCargoAdapter implements ShippingAdapter {
               type: "business",
             },
             content: {
-              colli: [
-                {
-                  description: "Order shipment",
-                  weight: Number(input.parcel.weight),
-                  length: Number(input.parcel.length || 0),
-                  width: Number(input.parcel.width || 0),
-                  height: Number(input.parcel.height || 0),
-                  value: 100,
-                  package: "PACKAGE",
-                  quantity: Number(input.parcel.boxes || 1),
-                },
-              ],
+              colli: parcelList.map((parcel: any, idx: number) => ({
+                description: `Order shipment item component #${idx + 1}`,
+                weight: Number(parcel.weight),
+                length: Number(parcel.length || 10),
+                width: Number(parcel.width || 10),
+                height: Number(parcel.height || 10),
+                value: 100,
+                package: "PACKAGE",
+                quantity: 1, // Handled individually as explicit elements inside the list array wrapper
+              })),
+              // colli: [
+              //   {
+              //     description: "Order shipment",
+              //     weight: Number(input.parcel.weight),
+              //     length: Number(input.parcel.length || 0),
+              //     width: Number(input.parcel.width || 0),
+              //     height: Number(input.parcel.height || 0),
+              //     value: 100,
+              //     package: "PACKAGE",
+              //     quantity: Number(input.parcel.boxes || 1),
+              //   },
+              // ],
             },
             incoterm: "DAP",
           },
@@ -126,6 +135,8 @@ export class CheapCargoAdapter implements ShippingAdapter {
   // ======================================================
   async createShipment(input: ShipmentInput): Promise<ShipmentResult> {
     console.log("createShipment API input === ", input);
+
+    const parcelList = Array.isArray(input.parcels) ? input.parcels : [];
 
     const payload = {
       shipments: {
@@ -166,18 +177,28 @@ export class CheapCargoAdapter implements ShippingAdapter {
               type: "business",
             },
             content: {
-              colli: [
-                {
-                  description: "Order package",
-                  weight: Number(input.parcel.weight) || 2.5,
-                  length: Number(input.parcel.length || 0),
-                  width: Number(input.parcel.width || 0),
-                  height: Number(input.parcel.height || 0),
-                  value: 150,
-                  package: "PACKAGE",
-                  quantity: Number(input.parcel.boxes || 1),
-                },
-              ],
+              colli: parcelList.map((parcel: any, idx: number) => ({
+                description: `Order package item element box #${idx + 1}`,
+                weight: Number(parcel.weight) || 1.0,
+                length: Number(parcel.length || 10),
+                width: Number(parcel.width || 10),
+                height: Number(parcel.height || 10),
+                value: Math.round(150 / Math.max(1, parcelList.length)), // Safely split total custom declared value
+                package: "PACKAGE",
+                quantity: 1, 
+              })),
+              // colli: [
+              //   {
+              //     description: "Order package",
+              //     weight: Number(input.parcel.weight) || 2.5,
+              //     length: Number(input.parcel.length || 0),
+              //     width: Number(input.parcel.width || 0),
+              //     height: Number(input.parcel.height || 0),
+              //     value: 150,
+              //     package: "PACKAGE",
+              //     quantity: Number(input.parcel.boxes || 1),
+              //   },
+              // ],
             },
             reference: input.orderId,
           },

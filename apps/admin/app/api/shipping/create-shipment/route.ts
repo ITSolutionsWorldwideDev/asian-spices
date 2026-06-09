@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const store = await getCurrentStoreAPI(req);
     const storeId = store.id;
 
-    const { orderId, shippingMethodId, packagingTypeId, parcel } = await req.json();
+    const { orderId, shippingMethodId, packagingTypeId, parcels } = await req.json();
 
     if (!orderId || !shippingMethodId) {
       return NextResponse.json(
@@ -73,13 +73,13 @@ export async function POST(req: NextRequest) {
     );
 
     const method = methodRes.rows[0];
-    if (!method) {
-      throw new Error("Shipping method not found");
-    }
+    
+    if (!method) throw new Error("Shipping method not found");
+    if (!method.provider_id) throw new Error("This method is not API-based");
 
-    if (!method.provider_id) {
-      throw new Error("This method is not API-based");
-    }
+    // console.log('validateShipmentRequest order ==== ',order);
+    console.log('validateShipmentRequest method ==== ',method);
+    console.log('validateShipmentRequest parcels ==== ',parcels);
 
     // -----------------------------
     // Validate request (NEW)
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     validateShipmentRequest({
       order,
       method,
-      parcel,
+      parcels,
     });
 
     // -----------------------------
@@ -152,10 +152,10 @@ export async function POST(req: NextRequest) {
         phone: store_addressRes.store_phone,
         currency_code: store_addressRes.currency_code,
       },
-      parcel,
+      parcels,
     };
 
-    // console.log('shipmentInput ==== ',shipmentInput);
+    console.log('shipmentInput ==== ',shipmentInput);
 
     // -----------------------------
     // 🚀 Create shipment
@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
 
       // Decrement the store packaging inventory if a fixed template was used
       if (packagingTypeId) {
-        const totalBoxesUsed = parseInt(parcel.boxes, 10) || 1;
+        const totalBoxesUsed = parseInt(parcels.boxes, 10) || 1;
         
         const inventoryUpdateRes = await client.query(
           `
