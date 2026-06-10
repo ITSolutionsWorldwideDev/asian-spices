@@ -179,10 +179,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  await requirePlatformAdmin();
+  
   const { id } = await params;
 
-  await pool.query("DELETE FROM products WHERE id=$1", [id]);
+  console.log('DELETE id ===== ',id);
+
+  await requirePlatformAdmin();
+
+  const result = await pool.query("DELETE FROM products WHERE id=$1", [id]);
+
+  console.log('result ===== ',result);
 
   return NextResponse.json({ success: true });
 }
