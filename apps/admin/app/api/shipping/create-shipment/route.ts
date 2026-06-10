@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       FROM store_shipping_providers as shp
 	    LEFT JOIN shipping_methods sm ON sm.provider_id = sm.provider_id
       LEFT JOIN shipping_providers sp ON sm.provider_id = sp.id
-      WHERE sm.id = $1 AND shp.store_id = $2 AND sm.is_active = true
+      WHERE sm.name = $1 AND shp.store_id = $2 AND sm.is_active = true
       `,
       [shippingMethodId, storeId],
     );
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     // -----------------------------
     // 📦 Build shipment input
     // -----------------------------
-    /* const shipmentInput = {
+    const shipmentInput = {
       orderId: order.id,
       to: {
         email: order.customer_email,
@@ -150,9 +150,9 @@ export async function POST(req: NextRequest) {
         currency_code: store_addressRes.currency_code,
       },
       parcels,
-    }; */
+    };
 
-    const shipmentInput = {
+    /* const shipmentInput = {
       orderId: order.id,
       to: {
         email: order.customer_email,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
         currency_code: store_addressRes.currency_code,
       },
       parcels,
-    };
+    }; */
 
     /* const shipmentInput = {
       shipments: {

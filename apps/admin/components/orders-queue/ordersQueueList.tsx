@@ -75,7 +75,7 @@ export default function OrdersQueueListComponent() {
     { title: "Items", dataIndex: "items_count" },
     {
       title: "Total",
-      dataIndex: "total_amount",
+      dataIndex: "local_allocated_value",
       render: (v: number) => `€${v}`,
     },
     {

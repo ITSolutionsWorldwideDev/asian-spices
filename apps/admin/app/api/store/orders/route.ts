@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
         JOIN store_orders o ON o.id = oi.order_id
 
         WHERE oia.store_id = $1
-        AND o.routing_status IN ('assigned','accepted')
+        AND o.routing_status IN ('assigned','split','accepted')
 
         GROUP BY o.id
         ORDER BY o.created_at DESC
@@ -38,6 +38,5 @@ export async function GET(req: NextRequest) {
     [storeId],
   );
 
-//   return NextResponse.json({ methods: rows });
 return NextResponse.json({ orders: rows });
 }

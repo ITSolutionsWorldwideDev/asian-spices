@@ -51,8 +51,12 @@ export class CheapCargoAdapter implements ShippingAdapter {
   }
 
   private getAuthenticationToken() {
-    const timestamp = this.getStandardizedTimestamp(true); // Matches your key setup criteria
-    return md5(this.creds.apiKey + timestamp);
+
+    console.log('this.creds.apiKey ==== ',this.creds.apiKey);
+    const timestamp = this.getStandardizedTimestamp(false);
+
+    console.log('timestamp ==== ',timestamp);
+    return md5(this.creds.apiKey.trim() + timestamp);
   }
 
   private getPasswordHash() {
@@ -231,7 +235,7 @@ export class CheapCargoAdapter implements ShippingAdapter {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
           // 🚀 Inject standard User-Agent so Nginx doesn't classify Next.js fetch as a suspicious bot script
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 AcmeShippingApp/1.0",
