@@ -104,7 +104,7 @@ export const getProducts = async (filters: any) => {
   }
 
   // 🔥 Pagination
-  const limit = 12;
+  const limit = 20;
   const offset = (page - 1) * limit;
 
   index++;
@@ -116,6 +116,9 @@ export const getProducts = async (filters: any) => {
   values.push(offset);
 
   const result = await pool.query(query, values);
+
+  // console.log('products list query ====',query);
+  // console.log('products list values ====',values);
 
   return result.rows;
 };

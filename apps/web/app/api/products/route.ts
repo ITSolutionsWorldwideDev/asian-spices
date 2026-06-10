@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
   };
 
   try {
+
+    // console.log('filters ====',filters);
     const products = await getProducts(filters);
 
     return NextResponse.json({

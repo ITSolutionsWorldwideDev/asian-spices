@@ -70,7 +70,10 @@ export default function ProductCard({ products }: ProductCardProps) {
   const [showAll, setShowAll] = useState(false);
 
   // const visibleProducts = showAll ? productData : productData.slice(0, 8);
-  const visibleProducts = showAll ? products : products.slice(0, 8);
+  const visibleProducts = showAll ? products : products.slice(0, 20);
+
+  console.log('products ==== ',products.length);
+  console.log('visibleProducts ==== ',visibleProducts.length);
 
   return (
     <div>
@@ -220,7 +223,7 @@ export default function ProductCard({ products }: ProductCardProps) {
 
       {/* See More/See Less Button */}
 
-      {products.length > 8 && (
+      {products.length > 16 && (
         <div className="flex justify-center mt-8 mb-10">
           <button
             onClick={() => setShowAll(!showAll)}

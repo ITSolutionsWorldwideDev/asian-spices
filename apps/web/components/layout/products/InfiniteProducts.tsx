@@ -18,7 +18,7 @@ export default function InfiniteProducts({ initialProducts, filters }: any) {
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   const isFetchingRef = useRef(false);
-  const limit = 12;
+  const limit = 20;
 
   const buildParams = (filters: any, page: number) => {
     const params = new URLSearchParams();
