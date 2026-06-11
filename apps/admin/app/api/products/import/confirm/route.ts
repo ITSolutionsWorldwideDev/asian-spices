@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       `SELECT sku FROM store_products`
     );
 
-    const skuSet = new Set(existing.rows.map((r) => r.sku));
+    const skuSet = new Set(existing.rows.map((r: ProductSkuRow) => r.sku));
 
     /* ---------------- INSERT LOOP ---------------- */
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         let brandId: number | null = null;
 
         if (row.Category) {
-          const cRes = await client.query(
+          const cRes = await client.query<{ id: number }>(
             `SELECT id FROM store_categories WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
             [row.Category]
           );
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         }
 
         if (row.Subcategory) {
-          const scRes = await client.query(
+          const scRes = await client.query<{ id: number }>(
             `SELECT id FROM store_subcategories WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
             [row.Subcategory]
           );
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         }
 
         if (row.Brand) {
-          const bRes = await client.query(
+          const bRes = await client.query<{ brand_id: number }>(
             `SELECT brand_id FROM store_brands WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) LIMIT 1`,
             [row.Brand]
           );
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
 
         /* ---------------- INSERT PRODUCT ---------------- */
 
-        const productRes = await client.query(
+        const productRes = await client.query<{ id: number }>(
           `
           INSERT INTO store_products (
             name,
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
             //   [countryName]
             // );
 
-            const cRes = await client.query(
+            const cRes = await client.query<{ country_id: number }>(
               `SELECT country_id FROM countries WHERE LOWER(TRIM(country_name)) = LOWER(TRIM($1))`,
               [countryName]
             );
