@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
 import { getCurrentStoreAPI } from "@/lib/auth/guards";
 
+interface AllocatedItemRow {
+  allocation_id: string;
+  order_item_id: string;
+  quantity: string | number;
+  product_id: string;
+  name: string;
+  sku: string;
+  allocation_status: string;
+  available_stock: number;
+  price: string | number;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ orderId: string }> },
@@ -65,7 +77,7 @@ export async function GET(
     const orderData = orderResult.rows[0];
 
     // 2️⃣ Fetch isolated item subsets allocated to this specific partner store location
-    const itemsResult = await pool.query(
+    const itemsResult = await pool.query<AllocatedItemRow>(
       `
       SELECT
         oia.id AS allocation_id,
