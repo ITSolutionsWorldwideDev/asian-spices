@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@acme/db";
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
 
 const generateApplicationId = () => {
   const date = new Date();
