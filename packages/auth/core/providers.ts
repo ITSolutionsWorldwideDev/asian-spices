@@ -5,6 +5,11 @@ import { AUTH_ROLES } from "./constants";
 
 type AppType = "admin" | "web";
 
+interface StoreRole {
+  role: (typeof AUTH_ROLES)[keyof typeof AUTH_ROLES] | string;
+  storeId?: string;
+}
+
 export function credentialsProvider(app: AppType) {
   return CredentialsProvider({
     name: "Credentials",
@@ -21,19 +26,38 @@ export function credentialsProvider(app: AppType) {
       const user = await authorizeUser(credentials.email, credentials.password);
 
       // 🔒 ADMIN APP ACCESS RULES
+
       if (app === "admin") {
         const isAdmin =
           user.isPlatformAdmin === true ||
-          user.storeRoles?.some((r) =>
-            [AUTH_ROLES.ADMIN, AUTH_ROLES.MANAGER, AUTH_ROLES.EDITOR].includes(
-              r.role,
-            ),
+          (user.storeRoles as StoreRole[] | undefined)?.some((r) =>
+            // 🟢 Add 'as string[]' here so TypeScript allows general string lookups
+            (
+              [
+                AUTH_ROLES.ADMIN,
+                AUTH_ROLES.MANAGER,
+                AUTH_ROLES.EDITOR,
+              ] as string[]
+            ).includes(r.role),
           );
 
         if (!isAdmin) {
           throw new Error("Not authorized for admin access");
         }
       }
+      // if (app === "admin") {
+      //   const isAdmin =
+      //     user.isPlatformAdmin === true ||
+      //     user.storeRoles?.some((r) =>
+      //       [AUTH_ROLES.ADMIN, AUTH_ROLES.MANAGER, AUTH_ROLES.EDITOR].includes(
+      //         r.role,
+      //       ),
+      //     );
+
+      //   if (!isAdmin) {
+      //     throw new Error("Not authorized for admin access");
+      //   }
+      // }
 
       // 🛍️ WEB APP ACCESS RULES
       if (app === "web") {
