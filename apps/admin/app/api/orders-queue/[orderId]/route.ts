@@ -69,8 +69,11 @@ export async function GET(
 
     if (!orderResult.rowCount) {
       return NextResponse.json(
-        { error: "Order context not found or access denied for this store location" }, 
-        { status: 404 }
+        {
+          error:
+            "Order context not found or access denied for this store location",
+        },
+        { status: 404 },
       );
     }
 
@@ -96,11 +99,32 @@ export async function GET(
       `,
       [orderId, storeId],
     );
-    
 
     // 3️⃣ Dynamically compute financial aggregates for this local partition string context
     let localSubtotal = 0;
-    const formattedItems = itemsResult.rows.map(item => {
+
+    const formattedItems = itemsResult.rows.map(
+      (item: {
+        price: string | number;
+        quantity: string | number;
+        allocation_status: string;
+        [key: string]: any;
+      }) => {
+        const itemPrice = Number(item.price);
+        const allocatedQty = Number(item.quantity);
+        localSubtotal += itemPrice * allocatedQty;
+
+        return {
+          ...item,
+          price: itemPrice,
+          quantity: allocatedQty,
+          fulfilled_quantity:
+            item.allocation_status === "accepted" ? allocatedQty : 0,
+        };
+      },
+    );
+
+    /* const formattedItems = itemsResult.rows.map(item => {
       const itemPrice = Number(item.price);
       const allocatedQty = Number(item.quantity);
       localSubtotal += itemPrice * allocatedQty;
@@ -112,7 +136,7 @@ export async function GET(
         // Frontend tracking convenience fallback mapping
         fulfilled_quantity: item.allocation_status === 'accepted' ? allocatedQty : 0
       };
-    });
+    }); */
 
     // Mirroring localized tax estimates derived proportional to overall baseline subtotal splits
     const localTax = Number((localSubtotal * 0.08).toFixed(2)); // Use real store-tax strategies if available
@@ -123,11 +147,10 @@ export async function GET(
       subtotal: localSubtotal,
       tax_amount: localTax,
       total_amount: localTotal,
-      items: formattedItems
+      items: formattedItems,
     };
 
     return NextResponse.json({ order: orderDetails });
-
   } catch (error) {
     console.error("Order detail split fetch breakdown failed:", error);
     return NextResponse.json(
