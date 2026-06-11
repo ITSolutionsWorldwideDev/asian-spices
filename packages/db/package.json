@@ -7,8 +7,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "echo Raw_SQL_DB_Package_Ready",
-    "check-types": "npx tsc --noEmit",
+    "build": "node -p 0",
+  "check-types": "npx tsc --noEmit",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "deploy": "prisma migrate deploy"

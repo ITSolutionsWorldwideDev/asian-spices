@@ -8,8 +8,8 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "check-types": "npx tsc --noEmit",
-    "build": "echo Type_Package_Ready"
+    "build": "node -p 0",
+    "check-types": "npx tsc --noEmit"
   },
   "turbo": {
     "tasks": {

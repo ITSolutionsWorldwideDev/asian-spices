@@ -9,7 +9,7 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "build": "echo Utils_Ready",
+    "build": "node -e \"\"",
     "check-types": "npx tsc --noEmit"
   }
 }

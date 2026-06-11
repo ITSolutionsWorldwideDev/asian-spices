@@ -41,7 +41,11 @@ export async function POST(req: NextRequest) {
     // ---------------------------------------
     // ❌ Delete removed rates
     // ---------------------------------------
-    const toDelete = existingIds.filter((id) => !incomingIds.includes(id));
+    // const toDelete = existingIds.filter((id) => !incomingIds.includes(id));
+
+    const toDelete = existingIds.filter(
+      (id: string | number) => !incomingIds.includes(id),
+    );
 
     if (toDelete.length > 0) {
       await client.query(

@@ -11,6 +11,10 @@
     "./web": "./web/auth-options.ts",
     "./constants": "./constants.ts"
   },
+  "scripts": {
+    "build": "node -p 0",
+  "check-types": "npx tsc --noEmit"
+  },
   "dependencies": {
     "next-auth": "^4.24.5",
     "bcryptjs": "^2.4.3"

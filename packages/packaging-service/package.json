@@ -12,8 +12,9 @@
     }
   },
   "scripts": {
-    "check-types": "npx tsc --noEmit",
-    "build": "echo 'No-op build step (source-first)'"
+
+    "build": "node -p 0",
+  "check-types": "npx tsc --noEmit"
   },
   "scripts23": {
     "build": ""

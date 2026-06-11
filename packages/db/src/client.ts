@@ -47,7 +47,22 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Generic parameterized query helper
+// Generic parameterized query helper
 export async function runQuery<T extends QueryResultRow = any>(
+  query: string,
+  params: any[] = [],
+): Promise<QueryResult<T>> {
+  ensureEnv();
+
+  const client = await pool.connect();
+  try {
+    /* 🟢 THE FIX: Cast the execution result directly as a Promise return */
+    return (await client.query(query, params)) as QueryResult<T>;
+  } finally {
+    client.release();
+  }
+}
+/* export async function runQuery<T extends QueryResultRow = any>(
   query: string,
   params: any[] = [],
 ): Promise<QueryResult<T>> {
@@ -60,3 +75,4 @@ export async function runQuery<T extends QueryResultRow = any>(
     client.release();
   }
 }
+ */
