@@ -13,7 +13,8 @@
       "@acme/utils": ["../../packages/utils"],
       "@acme/db": ["../../packages/db"],
       "@acme/order-routing": ["../../packages/order-routing"]
-    }
+    },
+    "types": ["node", "pg", "nodemailer"]
   },
   "include": [
     "next-env.d.ts",
