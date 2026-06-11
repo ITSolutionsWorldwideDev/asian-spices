@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!methodId || !Array.isArray(rates)) {
       return NextResponse.json(
         { success: false, error: "Missing methodId or rates" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,10 +27,13 @@ export async function POST(req: NextRequest) {
     // ---------------------------------------
     const existingRes = await client.query(
       `SELECT id FROM shipping_rates WHERE method_id = $1`,
-      [methodId]
+      [methodId],
     );
 
-    const existingIds = existingRes.rows.map((r) => r.id);
+    // const existingIds = existingRes.rows.map((r) => r.id);
+    const existingIds = existingRes.rows.map(
+      (r: { id: string | number; [key: string]: any }) => r.id,
+    );
 
     // IDs coming from frontend
     const incomingIds = rates.filter((r: any) => r.id).map((r: any) => r.id);
@@ -43,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (toDelete.length > 0) {
       await client.query(
         `DELETE FROM shipping_rates WHERE id = ANY($1::uuid[])`,
-        [toDelete]
+        [toDelete],
       );
     }
 
@@ -95,7 +98,7 @@ export async function POST(req: NextRequest) {
             max_price || null,
             price,
             id,
-          ]
+          ],
         );
       } else {
         // INSERT
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
             min_price || null,
             max_price || null,
             price,
-          ]
+          ],
         );
       }
     }
@@ -145,7 +148,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: err.message || "Server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     client.release();
