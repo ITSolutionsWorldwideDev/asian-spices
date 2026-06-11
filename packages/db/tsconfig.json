@@ -2,9 +2,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "preserve",
     "noEmit": true
   },
-  "include": ["src/**/*.ts"]
+
+  "include": [
+    "src/**/*",
+    "global-modules.d.ts" /* 🟢 Force compiler to stitch this mapping into the context */
+  ]
+
+  // "include": ["src/**/*.ts"]
 }
 // {
 //   "extends": "../../tsconfig.json",
