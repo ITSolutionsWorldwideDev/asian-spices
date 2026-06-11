@@ -15,5 +15,11 @@
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.6"
   }
 }
