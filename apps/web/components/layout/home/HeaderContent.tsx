@@ -6,7 +6,7 @@ import { MdOutlineShoppingBag } from "react-icons/md";
 import { FaTruckFast } from "react-icons/fa6";
 import { CiTrophy } from "react-icons/ci";
 import { LuSalad } from "react-icons/lu";
-import { Pool } from "pg";
+// import { Pool } from "pg";
 interface FrameStats {
   Curcumin_Content?: string;
   Customer_Rating?: string;
