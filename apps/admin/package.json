@@ -10,26 +10,25 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    
+    "@acme/auth": "*",
+    "@acme/db": "*",
+    "@acme/payments": "*",
+    "@acme/types": "*",
+    "@acme/utils": "*",
     "@hookform/resolvers": "^5.2.2",
+    "@repo/ui": "*",
     "next": "^16.0.7",
     "next-auth": "^4.24.13",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.71.2",
-    "zod": "^4.3.6",
-
-    "@acme/auth": "*",
-    "@acme/db": "*",
-    "@acme/payments": "*",
-    "@acme/types": "*",
-    "@repo/ui": "*",
-    "@acme/utils": "*"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/md5": "^2.3.6",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.22",
