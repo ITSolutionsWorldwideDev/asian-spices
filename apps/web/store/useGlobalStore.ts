@@ -36,36 +36,66 @@ export const useGlobalStore = create<GlobalState>((set, get) => ({
 
   fetchInitialData: async () => {
     const { countries } = get();
-    // const { countries, currencies } = get();
 
-    // ✅ prevent refetch
     if (countries.length > 0) return;
-    // if (countries.length > 0 && currencies.length > 0) return;
 
-    const [countryRes] = await Promise.all([
-      fetch("/api/countries"),
-    ]);
+    try {
+      const countryRes = await fetch("/api/countries", {
+        cache: "no-store",
+      });
 
-    // const [countryRes, currencyRes] = await Promise.all([
-    //   fetch("/api/countries"),
-    //   fetch("/api/currencies"),
-    // ]);
+      if (!countryRes.ok) {
+        console.error(
+          "Countries API failed:",
+          countryRes.status,
+          countryRes.statusText,
+        );
 
-    // ✅ check response BEFORE parsing
-    if (!countryRes.ok) throw new Error("Countries fetch failed");
-    // if (!currencyRes.ok) throw new Error("Currencies fetch failed");
+        set({
+          countries: [],
+          selectedCountry: DEFAULT_COUNTRY,
+        });
 
-    const countriesData = await countryRes.json();
-    // const currenciesData = await currencyRes.json();
+        return;
+      }
 
-    set({
-      countries: countriesData,
-      // currencies: currenciesData,
-      selectedCountry: DEFAULT_COUNTRY,
-      // selectedCurrency: DEFAULT_CURRENCY,
-    });
+      const countriesData = await countryRes.json();
+
+      set({
+        countries: countriesData ?? [],
+        selectedCountry: DEFAULT_COUNTRY,
+      });
+    } catch (error) {
+      console.error("Countries fetch error:", error);
+
+      set({
+        countries: [],
+        selectedCountry: DEFAULT_COUNTRY,
+      });
+    }
   },
 
   setSelectedCountry: (code) => set({ selectedCountry: code }),
   // setSelectedCurrency: (code) => set({ selectedCurrency: code }),
 }));
+
+/* fetchInitialData: async () => {
+    const { countries } = get();
+
+    // ✅ prevent refetch
+    if (countries.length > 0) return;
+
+    const [countryRes] = await Promise.all([
+      fetch("/api/countries"),
+    ]);
+
+    // ✅ check response BEFORE parsing
+    if (!countryRes.ok) throw new Error("Countries fetch failed");
+
+    const countriesData = await countryRes.json();
+
+    set({
+      countries: countriesData,
+      selectedCountry: DEFAULT_COUNTRY,
+    });
+  }, */

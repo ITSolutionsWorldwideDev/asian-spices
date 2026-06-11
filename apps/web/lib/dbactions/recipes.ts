@@ -1,6 +1,6 @@
 // apps/web/lib/dbactions/recipes.ts
 
-import { pool } from "@acme/db";
+import { pool, runQuery } from "@acme/db";
 
 type GetRecipesParams = {
   page?: string;
@@ -72,7 +72,7 @@ export async function getRecipes(params: GetRecipesParams) {
   /*
    * TOTAL
    */
-  const totalRes = await pool.query(
+  const totalRes = await runQuery(
     `
     SELECT COUNT(DISTINCT r.id)::int AS total
     FROM recipes r
@@ -92,7 +92,7 @@ export async function getRecipes(params: GetRecipesParams) {
 
   values.push(offset);
 
-  const { rows } = await pool.query(
+  const { rows } = await runQuery(
     `
     SELECT
       r.id,
@@ -154,7 +154,7 @@ export async function getRecipes(params: GetRecipesParams) {
 }
 
 export async function getRecipeBySlug(slug: string) {
-  const { rows } = await pool.query(
+  const { rows } = await runQuery(
     `
     SELECT
       r.id,
@@ -212,7 +212,7 @@ export async function getRecipeBySlug(slug: string) {
 }
 
 export async function getRecipeCategories() {
-  const { rows } = await pool.query(`
+  const { rows } = await runQuery(`
     SELECT
       id,
       name,
@@ -225,7 +225,7 @@ export async function getRecipeCategories() {
 }
 
 export async function getRecipeTags() {
-  const { rows } = await pool.query(`
+  const { rows } = await runQuery(`
     SELECT
       id,
       name,
@@ -240,7 +240,7 @@ export async function getRecipeTags() {
 }
 
 export async function getRecipeById(id: string) {
-  const { rows } = await pool.query(
+  const { rows } = await runQuery(
     `
     SELECT
       r.id,
