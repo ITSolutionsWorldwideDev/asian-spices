@@ -96,6 +96,7 @@ export async function GET(
       `,
       [orderId, storeId],
     );
+    
 
     // 3️⃣ Dynamically compute financial aggregates for this local partition string context
     let localSubtotal = 0;
