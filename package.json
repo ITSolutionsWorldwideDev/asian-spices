@@ -19,6 +19,7 @@
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^24.10.10",
     "@types/node-fetch": "^2.6.13",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.15.6",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.7",
