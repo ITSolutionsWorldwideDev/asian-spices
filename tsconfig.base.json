@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "incremental": true,
 
-    "types": ["node"]
+    // "types": ["node"]
   }
 }
 
