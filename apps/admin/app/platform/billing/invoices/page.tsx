@@ -1,10 +1,18 @@
 import { pool } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 
+interface InvoiceRow {
+  id: string | number;
+  store_id: string | number;
+  amount_cents: number;
+  status: string;
+  issued_at: string | Date;
+}
+
 export default async function InvoicesPage() {
   await requirePlatformAdmin();
 
-  const { rows } = await pool.query(
+  const { rows } = await pool.query<InvoiceRow>(
     `
     SELECT id, store_id, amount_cents, status, issued_at
     FROM invoices

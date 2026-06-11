@@ -28,13 +28,19 @@ export async function POST(req: NextRequest) {
       client.query(`SELECT name FROM store_brands WHERE status = true`)
     ]);
 
+    
     // const skuSet = new Set(existingSkus.rows.map(r => r.sku));
-    const skuSet = new Set(existingSkus.rows.map(r => r.sku));
-    const catSet = new Set(categories.rows.map(r => r.name.toLowerCase().trim()));
-    const subSet = new Set(subcategories.rows.map(r => r.name.toLowerCase().trim()));
-    const brandSet = new Set(brands.rows.map(r => r.name.toLowerCase().trim()));
+    // const catSet = new Set(categories.rows.map(r => r.name.toLowerCase().trim()));
+    // const subSet = new Set(subcategories.rows.map(r => r.name.toLowerCase().trim()));
+    // const brandSet = new Set(brands.rows.map(r => r.name.toLowerCase().trim()));
 
-    const result = [];
+    const skuSet = new Set(existingSkus.rows.map((r: { sku: string }) => r.sku));
+    const catSet = new Set(categories.rows.map((r: { name: string }) => r.name.toLowerCase().trim()));
+    const subSet = new Set(subcategories.rows.map((r: { name: string }) => r.name.toLowerCase().trim()));
+    const brandSet = new Set(brands.rows.map((r: { name: string }) => r.name.toLowerCase().trim()));
+
+    // const result = [];
+    const result: Array<{ row: number; data: any; isValid: boolean; errors: string[] }> = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];

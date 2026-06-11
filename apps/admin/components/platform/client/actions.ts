@@ -7,6 +7,26 @@ import { revalidatePath } from "next/cache";
 import { requirePlatformAdminServer } from "@/lib/auth/server-guards";
 import bcrypt from "bcryptjs";
 
+interface RoleReferenceRow {
+  id: string | number;
+  key: string;
+  name: string;
+}
+
+interface StoreAssignmentInput {
+  store_id: string | number;
+  role_id: string | number;
+}
+
+interface SaveUserFormData {
+  email: string;
+  name: string;
+  password?: string;
+  is_platform_admin: boolean;
+  status: string;
+  storeAssignments?: StoreAssignmentInput[];
+}
+
 export async function getReferenceData() {
   await requirePlatformAdminServer();
 
@@ -18,7 +38,7 @@ export async function getReferenceData() {
 
     // 2. Fetch only 'store' scoped roles for the assignments dropdown
     // We exclude 'platform' roles because those are handled by the is_platform_admin toggle
-    const rolesRes = await pool.query(
+    const rolesRes = await pool.query<RoleReferenceRow>(
       `SELECT id, key, '' AS name FROM roles WHERE scope = 'store' ORDER BY key ASC`
     );
 
@@ -36,17 +56,22 @@ export async function getReferenceData() {
   }
 }
 
-export async function saveUserAction(userId: string | null, formData: any) {
+export async function saveUserAction(userId: string | null, formData: SaveUserFormData) {
   const actor = await requirePlatformAdminServer();
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    let finalUserId = userId;
+    let finalUserId: string | number | null = userId;
 
     if (!userId) {
       // CREATE USER
+
+      if (!formData.password) {
+        throw new Error("Password is required for user creation");
+      }
+
       const hashedPassword = await bcrypt.hash(formData.password, 10);
       const userRes = await client.query(
         `INSERT INTO users (email, name, password_hash, is_platform_admin, status)
@@ -66,7 +91,7 @@ export async function saveUserAction(userId: string | null, formData: any) {
     // Simplest way: Delete existing and re-insert (or use a delta)
     await client.query(`DELETE FROM store_users WHERE user_id = $1`, [finalUserId]);
     
-    if (formData.storeAssignments?.length > 0) {
+    if (formData.storeAssignments && formData.storeAssignments?.length > 0) {
       for (const assign of formData.storeAssignments) {
         await client.query(
           `INSERT INTO store_users (store_id, user_id, role_id) VALUES ($1, $2, $3)`,

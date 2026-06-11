@@ -33,7 +33,11 @@ export async function GET(
     [id],
   );
 
-  const country_ids = countries.rows.map((c) => c.country_id);
+  // const country_ids = countries.rows.map((c) => c.country_id);
+
+  const country_ids = countries.rows.map(
+    (c: { country_id: string | number }) => c.country_id,
+  );
 
   const prices = await pool.query(
     `SELECT * FROM store_product_prices WHERE product_id=$1`,
@@ -101,7 +105,7 @@ export async function PUT(
         body.brand_id,
         body.description,
         body.price,
-        999999999,//body.quantity,
+        999999999, //body.quantity,
         body.discount_type,
         body.discount_value,
         body.status ?? 1,
@@ -109,7 +113,6 @@ export async function PUT(
         id,
       ],
     );
-
 
     /* ---------------- Countries (MULTI) ---------------- */
 
@@ -179,16 +182,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   // await requireStorePermission(PERMISSIONS.MANAGE_PRODUCTS);
-  
+
   const { id } = await params;
 
-  console.log('DELETE id ===== ',id);
+  console.log("DELETE id ===== ", id);
 
   await requirePlatformAdmin();
 
   const result = await pool.query("DELETE FROM products WHERE id=$1", [id]);
 
-  console.log('result ===== ',result);
+  console.log("result ===== ", result);
 
   return NextResponse.json({ success: true });
 }

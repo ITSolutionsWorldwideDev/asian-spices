@@ -6,10 +6,15 @@ import GeneralSettingsForm from "@/components/platform/settings/GeneralSettingsF
 import BillingSettingsForm from "@/components/platform/settings/BillingSettingsForm";
 import FeatureFlagsForm from "@/components/platform/settings/FeatureFlagsForm";
 
+interface PlatformSettingRow {
+  key: string;
+  value: any;
+}
+
 export default async function PlatformSettingsPage() {
   await requirePlatformAdmin();
 
-  const { rows } = await pool.query(`SELECT key, value FROM platform_settings`);
+  const { rows } = await pool.query<PlatformSettingRow>(`SELECT key, value FROM platform_settings`);
 
   const settings = Object.fromEntries(rows.map((r) => [r.key, r.value]));
 

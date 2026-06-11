@@ -144,47 +144,74 @@ export async function GET() {
 
     /* ---------------- LOOKUP SHEETS ---------------- */
 
+    // const catSheet = workbook.addWorksheet("Categories");
+    // categories.rows.forEach((r, i) => {
+    //   catSheet.getCell(`A${i + 1}`).value = r.name;
+    // });
+
+    // const brandSheet = workbook.addWorksheet("Brands");
+    // brands.rows.forEach((r, i) => {
+    //   brandSheet.getCell(`A${i + 1}`).value = r.name;
+    // });
+
+    // const countrySheet = workbook.addWorksheet("Countries");
+    // countries.rows.forEach((r, i) => {
+    //   countrySheet.getCell(`A${i + 1}`).value = r.name;
+    // });
+
     const catSheet = workbook.addWorksheet("Categories");
-    categories.rows.forEach((r, i) => {
+
+    categories.rows.forEach((r: { name: string }, i) => {
       catSheet.getCell(`A${i + 1}`).value = r.name;
     });
 
     const brandSheet = workbook.addWorksheet("Brands");
-    brands.rows.forEach((r, i) => {
+
+    brands.rows.forEach((r: { name: string }, i) => {
       brandSheet.getCell(`A${i + 1}`).value = r.name;
     });
 
     const countrySheet = workbook.addWorksheet("Countries");
-    countries.rows.forEach((r, i) => {
+
+    countries.rows.forEach((r: { name: string }, i) => {
       countrySheet.getCell(`A${i + 1}`).value = r.name;
     });
 
     /* ---------------- SUBCATEGORY (DEPENDENT) ---------------- */
 
+    // const subSheet = workbook.addWorksheet("Subcategories");
+
+    // // Group subcategories by category
+    // const grouped: Record<string, string[]> = {};
+
+    // const categoryMap = new Map(
+    //   categories.rows.map((c) => [String(c.id), c.name]),
+    // );
+
+    // subcategories.rows.forEach((r) => {
+    //   const cat = categoryMap.get(String(r.category_id));
+    //   if (!cat) return;
+
+    //   if (!grouped[cat]) grouped[cat] = [];
+    //   grouped[cat].push(r.name);
+    // });
+
     const subSheet = workbook.addWorksheet("Subcategories");
 
-    // Group subcategories by category
     const grouped: Record<string, string[]> = {};
 
-    const categoryMap = new Map(
-      categories.rows.map((c) => [String(c.id), c.name]),
+    const categoryMap = new Map<string, string>(
+      categories.rows.map((c: { id: number | string; name: string }) => [String(c.id), c.name]),
     );
 
-    subcategories.rows.forEach((r) => {
+
+    subcategories.rows.forEach((r: { category_id: number | string; name: string }) => {
       const cat = categoryMap.get(String(r.category_id));
       if (!cat) return;
 
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(r.name);
     });
-
-    // subcategories.rows.forEach((r) => {
-    //   const cat = categories.rows.find((c) => c.id === r.category_id)?.name;
-    //   if (!cat) return;
-
-    //   if (!grouped[cat]) grouped[cat] = [];
-    //   grouped[cat].push(r.name);
-    // });
 
     // Create named ranges per category
     let colIndex = 1;

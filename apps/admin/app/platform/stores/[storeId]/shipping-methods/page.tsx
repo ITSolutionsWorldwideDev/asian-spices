@@ -4,6 +4,14 @@ import { pool } from "@acme/db";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import StoreMethodAssignCard from "@/components/platform/shipping/StoreMethodAssignCard";
 
+
+interface StoreShippingMethodAssignment {
+  id: string | number;
+  store_id: string | number;
+  method_id: string;
+  is_active?: boolean;
+}
+
 export default async function StoreShippingMethodsPage({
   params,
 }: {
@@ -24,7 +32,7 @@ export default async function StoreShippingMethodsPage({
   `);
 
   // Existing assignments
-  const assignRes = await pool.query(
+  const assignRes = await pool.query<StoreShippingMethodAssignment>(
     `
     SELECT *
     FROM store_shipping_methods

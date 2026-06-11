@@ -8,11 +8,22 @@ type Props = {
   params: Promise<{ roleId: string }>;
 };
 
+interface RoleRow {
+  id: string | number;
+  key: string;
+  scope: string;
+}
+
+interface AssignedPermissionRow {
+  permission_id: string;
+}
+
+
 export default async function EditRolePage({ params }: Props) {
   const { roleId } = await params;
 
   // 1. Fetch the Role details
-  const roleRes = await pool.query(
+  const roleRes = await pool.query<RoleRow>(
     "SELECT id, key, scope FROM roles WHERE id = $1 AND scope = 'store'",
     [roleId],
   );
@@ -26,7 +37,7 @@ export default async function EditRolePage({ params }: Props) {
   );
 
   // 3. Fetch ONLY the permission IDs currently assigned to this role
-  const assignedPermsRes = await pool.query(
+  const assignedPermsRes = await pool.query<AssignedPermissionRow>(
     "SELECT permission_id FROM role_permissions WHERE role_id = $1",
     [roleId],
   );

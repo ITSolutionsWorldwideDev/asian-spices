@@ -2,8 +2,15 @@
 import { pool } from "@acme/db";
 import Link from "next/link";
 
+interface RoleWithPermCountRow {
+  id: string | number;
+  key: string;
+  scope: "store" | "platform" | string;
+  perm_count: string | number;
+}
+
 export default async function RolesPage() {
-  const roles = await pool.query(`
+  const roles = await pool.query<RoleWithPermCountRow>(`
     SELECT r.*, COUNT(rp.permission_id) as perm_count 
     FROM roles r 
     LEFT JOIN role_permissions rp ON r.id = rp.role_id

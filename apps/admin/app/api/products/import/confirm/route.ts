@@ -11,6 +11,8 @@ type ImportRow = {
   errors: string[];
 };
 
+type ProductSkuRow = { sku: string };
+
 export async function POST(req: NextRequest) {
   await requirePlatformAdmin();
 
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     /* ---------------- EXISTING SKU CACHE ---------------- */
 
-    const existing = await client.query(
+    const existing = await client.query<ProductSkuRow>(
       `SELECT sku FROM store_products`
     );
 
@@ -171,7 +173,8 @@ export async function POST(req: NextRequest) {
 
         if (row["B2B Prices"]) {
           try {
-            const tiers = JSON.parse(row["B2B Prices"]);
+            // const tiers = JSON.parse(row["B2B Prices"]);
+            const tiers = JSON.parse(row["B2B Prices"]) as Array<{ min_quantity: number; price: number }>;
 
             for (const t of tiers) {
               await client.query(
