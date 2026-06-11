@@ -21,10 +21,10 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@acme/ui": ["../../packages/ui"],
-      "@repo/ui": ["../../packages/ui/src"],
-      "@acme/utils": ["../../packages/utils"],
-      "@acme/db": ["../../packages/db"]
+      // "@acme/ui": ["../../packages/ui"],
+      // "@repo/ui": ["../../packages/ui/src"],
+      // "@acme/utils": ["../../packages/utils"],
+      // "@acme/db": ["../../packages/db"]
     }
   },
   "include": [
@@ -40,4 +40,4 @@
   ],
   "exclude": ["node_modules"]
 }
-// "../../packages/auth/types/**/*.d.ts"
+

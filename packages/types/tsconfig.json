@@ -1,15 +1,38 @@
 // packages/types/tsconfig.json
+
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": false,
-    "outDir": "dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "noEmit": true
   },
-  "include": ["*.ts", "**/*.ts"]
+  "include": ["index.ts", "src/**/*"]
+  // "include": ["*.ts", "**/*.ts"]
 }
+// {
+//   "extends": "../../tsconfig.base.json",
+//   "compilerOptions": {
+//     "composite": true,
+//     "declaration": true,
+//     "declarationMap": true,
+//     "emitDeclarationOnly": true, // <-- CHANGE THIS TO TRUE
+//     "outDir": "dist",
+//     "esModuleInterop": true,
+//     "forceConsistentCasingInFileNames": true
+//   },
+//   "include": ["*.ts", "**/*.ts"]
+// }
+
+// {
+//   "extends": "../../tsconfig.base.json",
+//   "compilerOptions": {
+//     "composite": true,
+//     "declaration": true,
+//     "declarationMap": true,
+//     "emitDeclarationOnly": false,
+//     "outDir": "dist",
+//     "esModuleInterop": true,
+//     "forceConsistentCasingInFileNames": true
+//   },
+//   "include": ["*.ts", "**/*.ts"]
+// }
 

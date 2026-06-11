@@ -1,3 +1,5 @@
+// packages/eslint-config/next.js
+
 import js from "@eslint/js";
 import { globalIgnores } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier";

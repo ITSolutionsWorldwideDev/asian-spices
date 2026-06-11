@@ -1,3 +1,4 @@
+// apps/web/tsconfig.json
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
@@ -8,7 +9,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@acme/ui": ["../../packages/ui"],
+      "@repo/ui": ["../../packages/ui"],
       "@acme/utils": ["../../packages/utils"],
       "@acme/db": ["../../packages/db"],
       "@acme/order-routing": ["../../packages/order-routing"]

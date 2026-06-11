@@ -10,5 +10,12 @@
       "types": "./index.ts",
       "default": "./index.ts"
     }
+  },
+  "scripts": {
+    "check-types": "npx tsc --noEmit",
+    "build": "echo 'No-op build step (source-first)'"
+  },
+  "scripts23": {
+    "build": ""
   }
 }

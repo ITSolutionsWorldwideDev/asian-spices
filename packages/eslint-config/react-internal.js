@@ -1,3 +1,5 @@
+// packages\eslint-config\react-internal.js
+
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import tseslint from "typescript-eslint";

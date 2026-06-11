@@ -9,7 +9,8 @@
     { "path": "packages/order-routing" },
     { "path": "packages/packaging-service" },
     { "path": "packages/payments" },
-    { "path": "packages/idin" }
+    { "path": "packages/idin" },
+    { "path": "packages/ui" }
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -18,9 +19,10 @@
       "@acme/payments": ["packages/payments/src/index.ts"],
       "@acme/idin": ["packages/idin/src/index.ts"],
       "@acme/auth": ["packages/auth/index.ts"],
-      "@acme/utils": ["packages/utils"],
+      "@acme/utils": ["packages/utils/index.ts"],
+      // "@acme/utils": ["packages/utils"],
       "@acme/types": ["packages/types"],
-      "@acme/ui": ["packages/ui"],
+      // "@repo/ui": ["packages/ui"],
       "@repo/ui": ["packages/ui/src/index.ts"],
       "@acme/order-routing": ["packages/order-routing/index.ts"],
       "@acme/packaging-service": ["packages/packaging-service/index.ts"]

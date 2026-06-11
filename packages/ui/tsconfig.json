@@ -1,14 +1,24 @@
+// packages/ui/tsconfig.json
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
-    "composite": true
+    "noEmit": true,
+    "types": []
   },
-  "references": [
-    { "path": "../types" }
-  ],
-  "include": ["src"]
+  "include": ["src/**/*"]
 }
+// {
+//   "extends": "../../tsconfig.json",
+//   "compilerOptions": {
+//     "jsx": "preserve",
+//     "composite": true
+//   },
+//   "references": [
+//     { "path": "../types" }
+//   ],
+//   "include": ["src"]
+// }
 
 
 /* {

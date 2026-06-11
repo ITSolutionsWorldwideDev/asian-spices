@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
     // De-duplicate if a method returned a city record AND a country record
     const uniqueOptionsMap = new Map();
-    rows.forEach((row) => {
+    rows.forEach((row:any) => {
       if (!uniqueOptionsMap.has(row.method_id)) {
         uniqueOptionsMap.set(row.method_id, {
           id: row.method_id,

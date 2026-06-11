@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const id = searchParams.get("id");
   const page = Number(searchParams.get("page") || 1);
-  const limit = Number(searchParams.get("limit") || 20);
+  const limit = Number(searchParams.get("limit") || 1000);
   const search = searchParams.get("search");
   const sort = searchParams.get("sort");
 
