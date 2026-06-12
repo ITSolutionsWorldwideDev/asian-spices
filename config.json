@@ -1,0 +1,86 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "lib": [
+            "es2022",
+            "dom",
+            "dom.iterable"
+        ],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "incremental": true,
+        "types": [
+            "node"
+        ],
+        "baseUrl": "./",
+        "paths": {
+            "@acme/db": [
+                "packages/db/src"
+            ],
+            "@acme/auth": [
+                "packages/auth/index.ts"
+            ],
+            "@acme/utils": [
+                "packages/utils/index.ts"
+            ],
+            "@acme/types": [
+                "packages/types"
+            ],
+            "@repo/ui": [
+                "packages/ui"
+            ],
+            "@acme/order-routing": [
+                "packages/order-routing/index.ts"
+            ],
+            "@acme/packaging-service": [
+                "packages/packaging-service/index.ts"
+            ]
+        },
+        "allowSyntheticDefaultImports": true,
+        "resolvePackageJsonExports": true,
+        "resolvePackageJsonImports": true,
+        "preserveConstEnums": true,
+        "useDefineForClassFields": true,
+        "noImplicitThis": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "strictBuiltinIteratorReturn": true,
+        "alwaysStrict": true,
+        "useUnknownInCatchVariables": true
+    },
+    "references": [
+        {
+            "path": "packages/db"
+        },
+        {
+            "path": "packages/auth"
+        },
+        {
+            "path": "packages/order-routing"
+        },
+        {
+            "path": "packages/packaging-service"
+        },
+        {
+            "path": "packages/utils"
+        },
+        {
+            "path": "packages/types"
+        },
+        {
+            "path": "packages/ui"
+        },
+        {
+            "path": "apps/web"
+        }
+    ]
+}
