@@ -1,21 +1,38 @@
 // /packages/auth/core/authorize.ts
 import * as bcrypt from "bcryptjs";
 import { runQuery } from "@acme/db";
+import type { StoreRole } from "./types";
 
-export async function authorizeUser(email: string, password: string) {
+export interface AuthUser {
+  id: string;
+  email: string;
+  isPlatformAdmin: boolean;
+  storeRoles: {
+    store_id: string;
+    role: string;
+    slug: string;
+  }[];
+}
+
+export async function authorizeUser(email: string, password: string): Promise<AuthUser>{
   const userRes = await runQuery(
     `SELECT id, email, password_hash, is_platform_admin
      FROM users WHERE email = $1 AND status = 'active'`,
     [email]
   );
 
-  if (userRes.rowCount === 0) throw new Error("Invalid credentials");
-
   const user = userRes.rows[0];
-  const isValid = await bcrypt.compare(password, user.password_hash);
-  if (!isValid) throw new Error("Invalid credentials");
 
-  const rolesRes = await runQuery(
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isValid = await bcrypt.compare(password, user.password_hash);
+  if (!isValid) {
+    throw new Error("Invalid credentials");
+  }
+
+  const rolesRes = await runQuery<{ store_id: string; role: string; slug: string }>(
     `SELECT su.store_id, r.key AS role, s.slug
      FROM store_users su
      JOIN stores s ON s.id = su.store_id
@@ -27,7 +44,7 @@ export async function authorizeUser(email: string, password: string) {
   return {
     id: user.id,
     email: user.email,
-    isPlatformAdmin: user.is_platform_admin,
+    isPlatformAdmin: !!user.is_platform_admin,
     storeRoles: rolesRes.rows
   };
 }

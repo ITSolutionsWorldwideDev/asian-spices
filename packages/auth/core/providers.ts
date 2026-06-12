@@ -6,9 +6,15 @@ import { AUTH_ROLES } from "./constants";
 type AppType = "admin" | "web";
 
 interface StoreRole {
-  role: (typeof AUTH_ROLES)[keyof typeof AUTH_ROLES] | string;
-  storeId?: string;
+  role: string;
+  store_id: string;
+  slug: string;
 }
+
+// interface StoreRole {
+//   role: (typeof AUTH_ROLES)[keyof typeof AUTH_ROLES] | string;
+//   storeId?: string;
+// }
 
 export function credentialsProvider(app: AppType) {
   return CredentialsProvider({
@@ -30,8 +36,7 @@ export function credentialsProvider(app: AppType) {
       if (app === "admin") {
         const isAdmin =
           user.isPlatformAdmin === true ||
-          (user.storeRoles as StoreRole[] | undefined)?.some((r) =>
-            // 🟢 Add 'as string[]' here so TypeScript allows general string lookups
+          (user.storeRoles as StoreRole[])?.some((r) =>
             (
               [
                 AUTH_ROLES.ADMIN,
@@ -72,7 +77,7 @@ export function credentialsProvider(app: AppType) {
         } */
       }
 
-      return user;
+      return user as any;
     },
   });
 }
