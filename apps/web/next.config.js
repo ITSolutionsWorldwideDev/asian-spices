@@ -3,6 +3,13 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  // eslint: {
+  //   // 🟢 ADD THIS: Also skip ESLint validation checks so style errors don't break the build
+  //   ignoreDuringBuilds: true,
+  // },
   images: {
     remotePatterns: [
       {
@@ -21,20 +28,19 @@ const nextConfig = {
     ],
   },
 
-  // ADD THIS BLOCK HERE:
   transpilePackages: [
     "@acme/db",
-    "@acme/payments",
-    "@acme/idin",
+    // "@acme/idin",
     "@acme/auth",
     "@acme/types",
     "@repo/ui",
     "@acme/order-routing",
-    "@acme/packaging-service"
+    "@acme/packaging-service",
   ],
 };
 
 export default nextConfig;
+// module.exports = nextConfig;
 
 /*
 

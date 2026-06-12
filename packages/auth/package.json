@@ -6,17 +6,20 @@
   "main": "index.ts",
   "types": "index.ts",
   "exports": {
-    ".": "./index.ts",
-    "./admin": "./admin/auth-options.ts",
-    "./web": "./web/auth-options.ts",
-    "./constants": "./constants.ts"
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    }
   },
   "scripts": {
-    "build": "node -p 0",
-  "check-types": "npx tsc --noEmit"
+    "build": "tsc -b",
+    "check-types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "next-auth": "^4.24.5",
     "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6"
   }
 }

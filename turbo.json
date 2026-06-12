@@ -1,57 +1,22 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "DATABASE_URL",
-    "NEXTAUTH_URL",
-    "NEXTAUTH_SECRET",
-    "UPLOADTHING_TOKEN",
-    "NODE_ENV",
-    "CREDENTIAL_SECRET",
-    "PAYNL_SERVICE_ID",
-    "PAYNL_API_TOKEN",
-    "PAYPAL_ENV",
-    "PAYPAL_CLIENT_ID",
-    "PAYPAL_SECRET",
-    "NEXT_PUBLIC_SITE_URL",
-    "UPLOADTHING_SECRET",
-    "UPLOADTHING_APP_ID",
-    "SITE_ACCESS_PASSWORD",
-    "SITE_LOCK_ENABLED",
-    "ADYEN_API_KEY",
-    "ADYEN_MERCHANT",
-    "MOLLIE_API_KEY"
-  ],
+  "globalEnv": ["DATABASE_URL", "NEXTAUTH_URL", "NEXTAUTH_SECRET", "NODE_ENV"],
   "tasks": {
-
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": []
-    },
-
-    "web#build": {
-      "dependsOn": ["^build"],
       "outputs": [
-        ".next/**", 
+        "**/*.d.ts",
+        "**/*.d.ts.map",
+        "**/*.js",
+        "**/*.js.map",
+        "tsconfig.tsbuildinfo",
+        "dist/**",
+        ".next/**",
         "!.next/cache/**"
       ]
     },
-
-    "admin#build": {
-      "dependsOn": ["^build"],
-      "outputs": [
-        ".next/**", 
-        "!.next/cache/**"
-      ]
-    },
-
-    "@acme/types#build": { "dependsOn": [] },
-    "@acme/utils#build": { "dependsOn": [] },
-    "@acme/auth#build": { "dependsOn": [] },
-    "@acme/payments#build": { "dependsOn": [] },
-    "@acme/packaging-service#build": { "dependsOn": [] },
-    "@acme/db#build": { "dependsOn": [] },
 
     "lint": {
       "dependsOn": ["^lint"]
@@ -60,7 +25,6 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     }

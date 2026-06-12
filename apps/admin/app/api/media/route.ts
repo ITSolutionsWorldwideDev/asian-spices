@@ -1,7 +1,7 @@
 // apps/admin/app/api/media/route.ts
 
 import { getServerSession } from "next-auth";
-import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
 import { NextResponse, NextRequest } from "next/server";
 import { pool } from "@acme/db";
 

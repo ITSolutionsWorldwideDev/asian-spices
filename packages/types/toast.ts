@@ -1,4 +1,4 @@
-// types/toast.ts
+// packages/types/toast.ts
 export type ToastType = "success" | "error"  | "danger" | "primary";
 
 export interface ToastPayload {

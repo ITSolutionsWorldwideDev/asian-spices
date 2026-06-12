@@ -5,7 +5,8 @@ import { pool } from "@acme/db";
 
 import { getServerSession } from "next-auth";
 // import { authOptions } from "@acme/auth";
-import { adminAuthOptions } from "@acme/auth/admin";
+// import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
 
 /* ------------------------------------
    GET

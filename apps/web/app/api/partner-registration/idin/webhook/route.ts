@@ -1,12 +1,12 @@
 // apps/web/app/api/partner-registration/idin/webhook/route.ts
 
 import { NextResponse } from "next/server";
-import { verifyIDIN } from "@acme/idin";
-import {
+// import { verifyIDIN } from "@acme/idin";
+/* import {
   updateVerificationByReference,
   getVerificationByReference,
   updateTenantById,
-} from "@acme/db";
+} from "@acme/db"; */
 
 export async function POST(req: Request) {
   try {
@@ -22,14 +22,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await verifyIDIN(transactionId);
+    // const result = await verifyIDIN(transactionId);
 
-    if (result.status !== "success") {
-      return NextResponse.json({ status: "ignored" });
-    }
+    // if (result.status !== "success") {
+    //   return NextResponse.json({ status: "ignored" });
+    // }
+    return NextResponse.json({ status: "ignored" });
 
     // fallback: get ref from DB if not provided
-    const verification = ref ? await getVerificationByReference(ref) : null;
+    /* const verification = ref ? await getVerificationByReference(ref) : null;
 
     if (verification) {
       await updateVerificationByReference(verification.merchant_reference, {
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
       await updateTenantById(verification.tenant_id, {
         idin_verified: true,
       });
-    }
+    } */
 
     return NextResponse.json({ status: "ok" });
   } catch (err) {

@@ -2,7 +2,8 @@
 
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
+// import { adminAuthOptions } from "@acme/auth/admin";
 import Link from "next/link";
 import { getPlatformDashboardData } from "@/lib/services/platformDashboard";
 import AdminAnalytics from "@/components/platform/stores/AdminAnalytics";

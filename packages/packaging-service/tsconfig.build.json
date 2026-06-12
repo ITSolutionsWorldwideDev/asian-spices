@@ -1,0 +1,10 @@
+
+// packages/packaging-service/tsconfig.build.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": false
+  },
+  "include": ["**/*.ts"]
+}

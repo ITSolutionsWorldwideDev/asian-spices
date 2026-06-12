@@ -2,7 +2,8 @@
 
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { getServerSession } from "next-auth";
-import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
+// import { adminAuthOptions } from "@acme/auth/admin";
 import { pool } from "@acme/db";
 
 const f = createUploadthing();

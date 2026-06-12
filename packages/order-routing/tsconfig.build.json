@@ -1,0 +1,10 @@
+
+// packages/order-routing/tsconfig.build.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": false
+  },
+  "include": ["**/*.ts"]
+}

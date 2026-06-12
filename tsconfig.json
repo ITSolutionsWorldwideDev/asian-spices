@@ -4,29 +4,32 @@
   "files": [],
   "references": [
     { "path": "packages/db" },
-    { "path": "packages/types" },
     { "path": "packages/auth" },
     { "path": "packages/order-routing" },
     { "path": "packages/packaging-service" },
-    { "path": "packages/payments" },
-    { "path": "packages/idin" },
-    { "path": "packages/ui" }
+    // { "path": "packages/payments" },
+    // { "path": "packages/idin" },
+    { "path": "packages/utils" },
+    { "path": "packages/types" },
+    { "path": "packages/ui" },
+    { "path": "apps/web" }
   ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@acme/db": ["packages/db/src/index.ts"],
-      "@acme/payments": ["packages/payments/src/index.ts"],
-      "@acme/idin": ["packages/idin/src/index.ts"],
+      // "@acme/db": ["packages/db"],
+      "@acme/db": ["packages/db/src"],
+      // "@acme/db": ["packages/db/src/index.ts"],
       "@acme/auth": ["packages/auth/index.ts"],
       "@acme/utils": ["packages/utils/index.ts"],
-      // "@acme/utils": ["packages/utils"],
       "@acme/types": ["packages/types"],
-      // "@repo/ui": ["packages/ui"],
-      "@repo/ui": ["packages/ui/src/index.ts"],
+      "@repo/ui": ["packages/ui"],
+      // "@acme/payments": ["packages/payments/src/index.ts"],
+      // "@acme/idin": ["packages/idin/src/index.ts"],
+      // "@acme/utils": ["packages/utils"],
+      // "@repo/ui": ["packages/ui/src/index.ts"],
       "@acme/order-routing": ["packages/order-routing/index.ts"],
       "@acme/packaging-service": ["packages/packaging-service/index.ts"]
     }
   }
-  // "include": ["src", "types/**/*.d.ts", "next-auth.d.ts"]
 }

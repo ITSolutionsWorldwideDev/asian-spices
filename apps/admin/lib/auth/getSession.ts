@@ -1,6 +1,7 @@
 // apps/admin/lib/auth/getSession.ts
 import { getServerSession } from "next-auth";
-import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
+// import { adminAuthOptions } from "@acme/auth/admin";
 import { redirect } from "next/navigation";
 
 export async function getSessionUser() {

@@ -2,12 +2,12 @@
 
 export const dynamic = "force-dynamic";
 
-import { verifyIDIN } from "@acme/idin";
-import {
-  updateVerificationByReference,
-  getVerificationByReference,
-  updateTenantById,
-} from "@acme/db";
+// import { verifyIDIN } from "@acme/idin";
+// import {
+//   updateVerificationByReference,
+//   getVerificationByReference,
+//   updateTenantById,
+// } from "@acme/db";
 
 import { NextResponse } from "next/server";
 
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       );
     }
 
-    let verification = ref ? await getVerificationByReference(ref) : null;
+    /* let verification = ref ? await getVerificationByReference(ref) : null;
 
     console.log('verification process completed === ',verification);
 
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
       return NextResponse.redirect(
         new URL(`/partner-registration/success?ref=${ref}`, req.url),
       );
-    }
+    } */
 
     return NextResponse.redirect(
       new URL("/partner-registration/idin/failed", req.url),

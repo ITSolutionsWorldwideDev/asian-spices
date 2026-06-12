@@ -277,7 +277,7 @@ export default function IdentityVerification({
 
         {/* Verify Button */}
         <div>
-          <button
+          {/* <button
             disabled={!selectedBank}
             onClick={handleIDIN}
             type="button"
@@ -288,7 +288,7 @@ export default function IdentityVerification({
             }`}
           >
             🛡 Verify with iDIN →
-          </button>
+          </button> */}
 
           <p className="text-xs text-gray-400 text-center mt-2">
             You will be redirected to your bank's secure environment

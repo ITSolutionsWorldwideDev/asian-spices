@@ -2,9 +2,9 @@
 
 import { NextResponse } from "next/server";
 
-import { updateVerificationByReference, updateTenantById } from "@acme/db";
+// import { updateVerificationByReference, updateTenantById } from "@acme/db";
 
-import { mapIDINResponse } from "@acme/payments";
+// import { mapIDINResponse } from "@acme/payments";
 
 export async function POST(req: Request) {
   try {
@@ -36,19 +36,19 @@ export async function POST(req: Request) {
 
       const tenantId = merchantReference.split("-")[1];
 
-      const identityData = mapIDINResponse(additionalData);
+      // const identityData = mapIDINResponse(additionalData);
 
-      await updateVerificationByReference(merchantReference, {
-        status: isSuccess ? "verified" : "failed",
-        psp_reference: pspReference,
-        ...identityData,
-        raw_response: notification,
-      });
+      // await updateVerificationByReference(merchantReference, {
+      //   status: isSuccess ? "verified" : "failed",
+      //   psp_reference: pspReference,
+      //   ...identityData,
+      //   raw_response: notification,
+      // });
 
-      await updateTenantById(tenantId, {
-        idin_verified: isSuccess,
-        idin_status: isSuccess ? "verified" : "failed",
-      });
+      // await updateTenantById(tenantId, {
+      //   idin_verified: isSuccess,
+      //   idin_status: isSuccess ? "verified" : "failed",
+      // });
     }
 
     return NextResponse.json({ notificationResponse: "[accepted]" });

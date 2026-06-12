@@ -2,7 +2,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
-import { adminAuthOptions } from "@acme/auth/admin";
+import { adminAuthOptions } from "@acme/auth";
+// import { adminAuthOptions } from "@acme/auth/admin";
 
 const PLATFORM_SUBDOMAIN = "admin";
 

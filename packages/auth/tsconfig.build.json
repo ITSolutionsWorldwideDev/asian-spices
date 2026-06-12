@@ -1,0 +1,10 @@
+
+// packages/auth/tsconfig.build.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": false
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

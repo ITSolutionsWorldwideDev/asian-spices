@@ -3,10 +3,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "composite": true,
+    "outDir": "dist",
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
-  "include": ["index.ts", "src/**/*"]
-  // "include": ["*.ts", "**/*.ts"]
+  "include": [
+    "*.ts"
+  ],
+  "exclude": ["node_modules"]
 }
 // {
 //   "extends": "../../tsconfig.base.json",

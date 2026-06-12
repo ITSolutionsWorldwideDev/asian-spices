@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "./index.ts",
+  "types": "./index.ts",
   "exports": {
     ".": {
       "types": "./index.ts",
@@ -12,11 +12,7 @@
     }
   },
   "scripts": {
-
-    "build": "node -p 0",
-  "check-types": "npx tsc --noEmit"
-  },
-  "scripts23": {
-    "build": ""
+    "build": "tsc -b",
+    "check-types": "tsc -p tsconfig.json --noEmit"
   }
 }

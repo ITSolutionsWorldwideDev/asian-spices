@@ -3,10 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    }
+  },
   "scripts": {
-    "build": "node -p 0",
-    "check-types": "tsc --noEmit"
+    "build": "tsc -b",
+    "check-types": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@acme/db": "*"
   }
 }
