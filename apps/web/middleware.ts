@@ -1,16 +1,40 @@
 // apps/web/middleware.ts
 
 import { NextRequest, NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  if (
+    pathname.startsWith("/maintenance") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
+
+  return NextResponse.redirect(
+    new URL("/maintenance", request.url)
+  );
+}
+
+export const config = {
+  matcher: "/:path*",
+};
+
+/* import { NextRequest, NextResponse } from "next/server";
 
 const COOKIE_NAME = "site-access";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  /* // Skip site lock for Vercel preview/domain
-  if (hostname === "asian-spices-web.vercel.app") {
-    return NextResponse.next();
-  } */
+  // // Skip site lock for Vercel preview/domain
+  // if (hostname === "asian-spices-web.vercel.app") {
+  //   return NextResponse.next();
+  // }
 
   const hostname = req.nextUrl.hostname;
 
@@ -72,3 +96,4 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image).*)"],
 };
+ */
