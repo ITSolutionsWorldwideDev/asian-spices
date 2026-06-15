@@ -1,27 +1,32 @@
 // apps/admin/middleware.ts
 
-import { NextRequest, NextResponse } from "next/server";
-// import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
 
+  // 1. Bypass middleware for static assets, internal Next.js paths, and the maintenance page itself
   if (
-    pathname.startsWith("/maintenance") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/static") ||
+    pathname === "/maintenance" ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(
-    new URL("/maintenance", request.url)
-  );
+  // 2. Rewrite everything else to the maintenance page
+  // A rewrite serves the maintenance page content while keeping the user's current URL intact
+  return NextResponse.rewrite(new URL("/maintenance", request.url));
 }
 
+// 3. Stop the middleware from executing on obvious asset files
 export const config = {
-  matcher: "/:path*",
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|vercel.svg).*)',
+  ],
 };
 
 
